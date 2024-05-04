@@ -1,6 +1,6 @@
-mov r0 7
-mov r1 12
-mov r3 0
+mov r0 #7
+mov r1 #12
+mov r3 #0
 cmp r0 r1
 
 jge @Label2
