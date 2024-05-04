@@ -1,6 +1,7 @@
 package ro.uaic.swqual;
 
 import ro.uaic.swqual.exception.InstructionError;
+import ro.uaic.swqual.model.operands.Register;
 
 public class ALU {
     Register flagRegister;
@@ -37,7 +38,6 @@ public class ALU {
             case ALU_SUB -> sub(destSource1, source2);
             case ALU_MUL -> mul(destSource1, source2);
             case ALU_DIV -> div(destSource1, source2);
-            case ALU_MOD -> mod(destSource1, source2);
             case ALU_GT -> greaterThan(destSource1, source2);
             case ALU_LT -> lessThan(destSource1, source2);
             case ALU_GE -> greaterEqual(destSource1, source2);
