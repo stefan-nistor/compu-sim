@@ -1,4 +1,4 @@
-package ro.uaic.swqual;
+package ro.uaic.swqual.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,8 +7,10 @@ public enum InstructionType {
     // ALU Ops
     ALU_ADD("add"),
     ALU_SUB("sub"),
-    ALU_MUL("mul"),
-    ALU_DIV("div"),
+    ALU_UMUL("umul"),
+    ALU_SMUL("smul"),
+    ALU_UDIV("udiv"),
+    ALU_SDIV("sdiv"),
     ALU_AND("and"),
     ALU_OR("or"),
     ALU_XOR("xor"),
