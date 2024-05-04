@@ -1,6 +1,6 @@
-package org.example;
+package ro.uaic.swqual;
 
-import org.example.operational.Add;
+import ro.uaic.swqual.operational.Add;
 
 public class Main {
 

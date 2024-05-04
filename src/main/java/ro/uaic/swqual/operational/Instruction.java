@@ -1,6 +1,4 @@
-package org.example.operational;
-
-import org.example.Registry;
+package ro.uaic.swqual.operational;
 
 import java.util.Map;
 
