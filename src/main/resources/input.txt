@@ -1,0 +1,16 @@
+mov r0 7
+mov r1 12
+mov r3 0
+cmp r0 r1
+
+jge @Label2
+add r0 r1
+mov r3 r0
+jmp @Label
+
+@Label2:
+sub r0 r1
+mov r3 r0
+
+@Label3:
+mov r4 #45

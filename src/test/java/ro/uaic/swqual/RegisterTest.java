@@ -3,6 +3,7 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Test;
 import ro.uaic.swqual.exception.ValueException;
+import ro.uaic.swqual.model.operands.Register;
 
 public class RegisterTest {
     @Test

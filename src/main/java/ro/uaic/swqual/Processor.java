@@ -1,6 +1,7 @@
 package ro.uaic.swqual;
 
 import ro.uaic.swqual.exception.InstructionError;
+import ro.uaic.swqual.model.operands.Register;
 
 import java.util.ArrayList;
 import java.util.List;

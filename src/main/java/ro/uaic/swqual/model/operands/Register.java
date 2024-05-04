@@ -1,12 +1,10 @@
-package ro.uaic.swqual;
+package ro.uaic.swqual.model.operands;
 
 import ro.uaic.swqual.exception.ValueException;
 
 import java.util.Objects;
 
-public class Register {
-    private short value;
-
+public class Register extends Parameter {
     public short getValue() {
         return value;
     }
