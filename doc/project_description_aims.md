@@ -21,7 +21,7 @@
 ## CPU
 
 ### Requirements:
-
+- [Project requirements webpage](https://edu.info.uaic.ro/calitatea-sistemelor-software/lab/proiect-cs.html)
 - 8 DR - d0...d7, 1 DR = 16b
 - 1 FR - operational result flags
 - n SR - PC, SP, ...
@@ -118,3 +118,11 @@ processor.getALU().add(processor.getD1(), 50);
 AssertEqauls(70, processor.getD1());
 AssertEqauls(70, (processor.getFP() & Registry::FlagBits::Overflow) == 0);
 ```
+
+
+### Graphical interface:
+
+- Text input panel for writing ASM code
+  - May include buttons for loading local ASM input files
+- Schema for peripheral devices with links between them
+- Panel for code output (text)
