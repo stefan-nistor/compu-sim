@@ -9,7 +9,7 @@ public class ProcessorTest {
     public void processorDataRegSize() {
         var processor = new Processor();
         var dataRegs = processor.getDataRegisters();
-        Assert.assertEquals(dataRegs.size(), 8);
+        Assert.assertEquals(8, dataRegs.size());
     }
 
     @Test
@@ -21,10 +21,10 @@ public class ProcessorTest {
             var reg2 = dataRegs.get(5);
             reg1.setValue(1234);
             reg2.setValue(5678);
-            Assert.assertEquals(reg1.getValue(), 1234);
-            Assert.assertEquals(reg2.getValue(), 5678);
-            Assert.assertEquals(processor.getDataRegisters().get(3).getValue(), 1234);
-            Assert.assertEquals(processor.getDataRegisters().get(5).getValue(), 5678);
+            Assert.assertEquals(1234, reg1.getValue());
+            Assert.assertEquals(5678, reg2.getValue());
+            Assert.assertEquals(1234, processor.getDataRegisters().get(3).getValue());
+            Assert.assertEquals(5678, processor.getDataRegisters().get(5).getValue());
         } catch (ValueException exception) {
             Assert.fail(exception.getMessage());
         }

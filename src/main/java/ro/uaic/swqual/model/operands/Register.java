@@ -12,7 +12,9 @@ public class Register extends Parameter {
         this.value = value;
     }
     public void setValue(int value) throws ValueException {
-        if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
+        if (value <= 0xFFFF && value > Short.MAX_VALUE) {
+            value = (value & 0x7FFF) | 0x8000;
+        } else if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
             throw new ValueException("Constant value '" + value + "' out of range for register range");
         }
         this.value = (short) value;

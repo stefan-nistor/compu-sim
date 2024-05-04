@@ -9,12 +9,13 @@ public enum InstructionType {
     ALU_SUB("sub"),
     ALU_MUL("mul"),
     ALU_DIV("div"),
-    ALU_GT("gt"),
-    ALU_LT("lt"),
-    ALU_GE("ge"),
-    ALU_LE("le"),
-    ALU_EQ("eq"),
-    ALU_NE("neq");
+    ALU_AND("and"),
+    ALU_OR("or"),
+    ALU_XOR("xor"),
+    ALU_SHL("shl"),
+    ALU_SHR("shr"),
+    ALU_NOT("not"),
+    ALU_CMP("cmp");
 
     private static final Map<String, InstructionType> BY_LABEL = new HashMap<>();
 
