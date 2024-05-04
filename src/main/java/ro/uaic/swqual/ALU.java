@@ -1,12 +1,13 @@
 package ro.uaic.swqual;
 
 import ro.uaic.swqual.exception.InstructionError;
+import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
 import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
 
-import static ro.uaic.swqual.FlagRegister.*;
+import static ro.uaic.swqual.model.operands.FlagRegister.*;
 
 public class ALU {
     FlagRegister flagRegister;

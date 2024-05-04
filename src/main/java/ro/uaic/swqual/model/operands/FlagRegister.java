@@ -1,4 +1,4 @@
-package ro.uaic.swqual;
+package ro.uaic.swqual.model.operands;
 
 public class FlagRegister extends Register {
     public static final short OVERFLOW_FLAG = 0x0001;

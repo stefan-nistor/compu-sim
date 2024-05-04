@@ -3,6 +3,8 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
+import ro.uaic.swqual.model.operands.FlagRegister;
+import ro.uaic.swqual.model.operands.Register;
 
 interface ALUTestConsumer {
     void apply(ALU alu, FlagRegister f, Register s) throws Throwable;
