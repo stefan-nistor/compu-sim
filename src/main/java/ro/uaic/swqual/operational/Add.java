@@ -1,4 +1,4 @@
-package org.example.operational;
+package ro.uaic.swqual.operational;
 
 import java.util.Map;
 

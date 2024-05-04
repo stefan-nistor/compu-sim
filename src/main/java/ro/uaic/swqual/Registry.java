@@ -1,4 +1,4 @@
-package org.example;
+package ro.uaic.swqual;
 
 import java.util.Objects;
 

@@ -1,6 +1,6 @@
-package org.example;
+package ro.uaic.swqual;
 
-import org.example.operational.Instruction;
+import ro.uaic.swqual.operational.Instruction;
 
 import java.util.HashMap;
 import java.util.Map;
