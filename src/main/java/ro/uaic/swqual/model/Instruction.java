@@ -55,7 +55,7 @@ public class Instruction {
         this.param2 = param2;
     }
 
-    public void setParameters(ArrayList<Parameter> parameterList) {
+    public void setParameters(List<Parameter> parameterList) {
         this.param1 = parameterList.getFirst();
         this.param2 = parameterList.getLast();
     }

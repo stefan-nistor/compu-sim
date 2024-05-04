@@ -47,7 +47,7 @@ public class Parser {
             }
 
             if (param.startsWith("#")) {
-                short value = Short.parseShort(param.substring(1));
+                short value = (short)Int.parseInt(param.substring(1));
                 parameterList.add(new Constant(value));
             }
         }
