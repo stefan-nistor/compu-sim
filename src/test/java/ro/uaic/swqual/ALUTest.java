@@ -3,6 +3,7 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
+import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -35,7 +36,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(10);
             r2.setValue(15);
-            alu.execute(InstructionType.ALU_ADD, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_ADD, r1, r2));
             Assert.assertEquals(25, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -50,7 +51,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0);
             r2.setValue(0);
-            alu.execute(InstructionType.ALU_ADD, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_ADD, r1, r2));
             Assert.assertEquals(0, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertTrue(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -65,7 +66,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFF);
             r2.setValue(0xFFFF);
-            alu.execute(InstructionType.ALU_ADD, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_ADD, r1, r2));
             Assert.assertEquals((short)0xFFFE, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -80,7 +81,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFF); // -1
             r2.setValue(0xFFFE); // -2
-            alu.execute(InstructionType.ALU_ADD, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_ADD, r1, r2));
             Assert.assertEquals((short)0xFFFD, r1.getValue()); // -3
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -95,7 +96,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFE); // -2
             r2.setValue(0x0001); // 1
-            alu.execute(InstructionType.ALU_ADD, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_ADD, r1, r2));
             Assert.assertEquals((short)0xFFFF, r1.getValue()); // -1
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -110,7 +111,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFE); // -2
             r2.setValue(0x0003); // 3
-            alu.execute(InstructionType.ALU_ADD, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_ADD, r1, r2));
             Assert.assertEquals((short)0x0001, r1.getValue()); // 1
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -125,7 +126,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0002);
             r2.setValue(0x0001);
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0x0001, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -140,7 +141,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0002);
             r2.setValue(0x0002);
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0x0000, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertTrue(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -155,7 +156,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0002);
             r2.setValue(0x0003);
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0xFFFF, r1.getValue()); // -1
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -170,7 +171,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0002);
             r2.setValue(0x0004);
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0xFFFE, r1.getValue()); // -2
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -185,7 +186,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFC); // -4
             r2.setValue(0x0002);
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0xFFFA, r1.getValue()); // -6
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -200,7 +201,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFC); // -4
             r2.setValue(0xFFFA); // -6
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0x0002, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -215,7 +216,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFA); // -6
             r2.setValue(0xFFFC); // -4
-            alu.execute(InstructionType.ALU_SUB, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_SUB, r1, r2));
             Assert.assertEquals((short)0xFFFE, r1.getValue()); // -2
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -230,7 +231,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0004);
             r2.setValue(0x0008);
-            alu.execute(InstructionType.ALU_MUL, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_MUL, r1, r2));
             Assert.assertEquals((short)0x0020, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertFalse(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -245,7 +246,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0004);
             r2.setValue(0x0000);
-            alu.execute(InstructionType.ALU_MUL, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_MUL, r1, r2));
             Assert.assertEquals((short)0x0000, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertTrue(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -260,7 +261,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0000);
             r2.setValue(0x0004);
-            alu.execute(InstructionType.ALU_MUL, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_MUL, r1, r2));
             Assert.assertEquals((short)0x0000, r1.getValue());
             Assert.assertFalse(flag.isSet(FlagRegister.OVERFLOW_FLAG));
             Assert.assertTrue(flag.isSet(FlagRegister.ZERO_FLAG));
@@ -275,7 +276,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0100);
             r2.setValue(0x0102);
-            alu.execute(InstructionType.ALU_MUL, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_MUL, r1, r2));
             Assert.assertEquals((short)0x0200, r1.getValue());
             Assert.assertEquals((short)0x0001, specOut.getValue());
             Assert.assertTrue(flag.isSet(FlagRegister.OVERFLOW_FLAG));
@@ -290,7 +291,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x6000);
             r2.setValue(0x0102);
-            alu.execute(InstructionType.ALU_MUL, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_MUL, r1, r2));
             Assert.assertEquals((short)0xC000, r1.getValue());
             Assert.assertEquals((short)0x0060, specOut.getValue());
             Assert.assertTrue(flag.isSet(FlagRegister.OVERFLOW_FLAG));
@@ -305,7 +306,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x1000);
             r2.setValue(0x1000);
-            alu.execute(InstructionType.ALU_MUL, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_MUL, r1, r2));
             Assert.assertEquals((short)0x0000, r1.getValue());
             Assert.assertEquals((short)0x0100, specOut.getValue());
             Assert.assertTrue(flag.isSet(FlagRegister.OVERFLOW_FLAG));
@@ -320,7 +321,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0005);
             r2.setValue(0x0005);
-            alu.execute(InstructionType.ALU_CMP, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_CMP, r1, r2));
             Assert.assertEquals((short)0x0005, r1.getValue());
             Assert.assertEquals((short)0x0005, r2.getValue());
             Assert.assertEquals((short)0x0000, specOut.getValue());
@@ -336,7 +337,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0004);
             r2.setValue(0x0005);
-            alu.execute(InstructionType.ALU_CMP, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_CMP, r1, r2));
             Assert.assertEquals((short)0x0004, r1.getValue());
             Assert.assertEquals((short)0x0005, r2.getValue());
             Assert.assertEquals((short)0x0000, specOut.getValue());
@@ -352,7 +353,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0x0005);
             r2.setValue(0x0004);
-            alu.execute(InstructionType.ALU_CMP, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_CMP, r1, r2));
             Assert.assertEquals((short)0x0005, r1.getValue());
             Assert.assertEquals((short)0x0004, r2.getValue());
             Assert.assertEquals((short)0x0000, specOut.getValue());
@@ -368,7 +369,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFD); // -3
             r2.setValue(0xFFFD); // -3
-            alu.execute(InstructionType.ALU_CMP, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_CMP, r1, r2));
             Assert.assertEquals((short)0xFFFD, r1.getValue());
             Assert.assertEquals((short)0xFFFD, r2.getValue());
             Assert.assertEquals((short)0x0000, specOut.getValue());
@@ -384,7 +385,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFC); // -4
             r2.setValue(0xFFFD); // -3
-            alu.execute(InstructionType.ALU_CMP, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_CMP, r1, r2));
             Assert.assertEquals((short)0xFFFC, r1.getValue());
             Assert.assertEquals((short)0xFFFD, r2.getValue());
             Assert.assertEquals((short)0x0000, specOut.getValue());
@@ -400,7 +401,7 @@ public class ALUTest {
             var r2 = new Register();
             r1.setValue(0xFFFD); // -3
             r2.setValue(0xFFFC); // -4
-            alu.execute(InstructionType.ALU_CMP, r1, r2);
+            alu.execute(new Instruction(InstructionType.ALU_CMP, r1, r2));
             Assert.assertEquals((short)0xFFFD, r1.getValue());
             Assert.assertEquals((short)0xFFFC, r2.getValue());
             Assert.assertEquals((short)0x0000, specOut.getValue());

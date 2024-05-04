@@ -1,6 +1,8 @@
 package ro.uaic.swqual;
 
 import ro.uaic.swqual.exception.InstructionError;
+import ro.uaic.swqual.exception.ParameterError;
+import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -30,12 +32,12 @@ public class Processor {
             && inQuestion.ordinal() < upperExclusive.ordinal();
     }
 
-    public void execute(InstructionType instruction, Register destSource1, Register source2) throws InstructionError {
-        if (isInRange(instruction, ALU_ADD, ALU_CMP)) {
-            alu.execute(instruction, destSource1, source2);
+    public void execute(Instruction instruction) throws InstructionError, ParameterError {
+        if (isInRange(instruction.getType(), ALU_ADD, ALU_CMP)) {
+            alu.execute(instruction);
         }
 
-        throw new InstructionError("Unhandled instruction '" + instruction + "'");
+        throw new InstructionError("Unhandled instruction '" + instruction.getType() + "'");
     }
 
     public List<Register> getDataRegisters() {

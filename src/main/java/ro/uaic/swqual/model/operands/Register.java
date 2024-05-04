@@ -5,12 +5,10 @@ import ro.uaic.swqual.exception.ValueException;
 import java.util.Objects;
 
 public class Register extends Parameter {
-    public short getValue() {
-        return value;
-    }
     public void setValue(short value) {
         this.value = value;
     }
+
     public void setValue(int value) throws ValueException {
         if (value <= 0xFFFF && value > Short.MAX_VALUE) {
             value = (value & 0x7FFF) | 0x8000;
