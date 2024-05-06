@@ -5,7 +5,6 @@ import ro.uaic.swqual.exception.ValueException;
 import java.util.Objects;
 
 public class Register extends Parameter {
-
     @Override
     public void setValue(char value) {
         // Allow Registers to be writeable

@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-public class CPU {
+public class CPU implements ProcessingUnit {
     private final List<Register> dataRegisters = new ArrayList<>();
     private final FlagRegister flagRegister = new FlagRegister();
     private final Register programCounter = new Register();
@@ -45,6 +45,7 @@ public class CPU {
                 .filter(entry -> entry.getValue().test(instruction))
                 .map(Map.Entry::getKey)
                 .forEach(unit -> unit.execute(instruction));
+
     }
 
     public List<Register> getDataRegisters() {

@@ -10,7 +10,7 @@ import ro.uaic.swqual.model.operands.Register;
 
 import java.util.List;
 
-public class IPUTest extends ProcTest {
+public class IPUTest extends ProcTestUtility {
     private interface IPUTestConsumer {
         void apply(IPU ipu, FlagTestPredicate test, Register pc, List<Instruction> instructions) throws Throwable;
     }
@@ -75,31 +75,31 @@ public class IPUTest extends ProcTest {
                 Assert.assertEquals(instructions.getFirst(), ipu.next());
                 Assert.assertNull(cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(1), ipu.next());
                 Assert.assertEquals(instructions.get(0), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(2), ipu.next());
                 Assert.assertEquals(instructions.get(1), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(3), ipu.next());
                 Assert.assertEquals(instructions.get(2), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(4), ipu.next());
                 Assert.assertEquals(instructions.get(3), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(5), ipu.next());
                 Assert.assertEquals(instructions.get(4), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(3), ipu.next());
                 Assert.assertEquals(instructions.get(5), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertEquals(instructions.get(4), ipu.next());
                 Assert.assertEquals(instructions.get(3), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
@@ -130,16 +130,16 @@ public class IPUTest extends ProcTest {
                 Assert.assertEquals(instructions.getFirst(), ipu.next());
                 Assert.assertNull(cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
 
                 Assert.assertEquals(IPU.defaultInstruction, ipu.next());
                 Assert.assertEquals(instructions.getFirst(), cpu.lastExecuted);
                 Assert.assertTrue(test.test());
-                ipu.step();
+                ipu.onTick();
                 Assert.assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
                 Assert.assertEquals(instructions.getFirst(), ipu.next());
                 Assert.assertEquals(IPU.defaultInstruction, cpu.lastExecuted);
-                ipu.step();
+                ipu.onTick();
                 Assert.assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
                 Assert.assertEquals(IPU.defaultInstruction, ipu.next());
                 Assert.assertEquals(instructions.getFirst(), cpu.lastExecuted);
@@ -169,13 +169,13 @@ public class IPUTest extends ProcTest {
             ipu.reset();
             flags.clear();
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
 
             ipu.reset();
             flags.set(FlagRegister.EQUAL_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
         }));
     }
@@ -202,13 +202,13 @@ public class IPUTest extends ProcTest {
             ipu.reset();
             flags.clear();
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
 
             ipu.reset();
             flags.set(FlagRegister.EQUAL_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
         }));
     }
@@ -235,19 +235,19 @@ public class IPUTest extends ProcTest {
             ipu.reset();
             flags.clear();
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
 
             ipu.reset();
             flags.set(FlagRegister.LESS_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
 
             ipu.reset();
             flags.set(FlagRegister.EQUAL_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
         }));
     }
@@ -274,21 +274,21 @@ public class IPUTest extends ProcTest {
             ipu.reset();
             flags.clear();
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
 
             ipu.reset();
             flags.clear();
             flags.set(FlagRegister.LESS_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
 
             ipu.reset();
             flags.clear();
             flags.set(FlagRegister.EQUAL_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
 
             ipu.reset();
@@ -296,7 +296,7 @@ public class IPUTest extends ProcTest {
             flags.set(FlagRegister.EQUAL_FLAG);
             flags.set(FlagRegister.LESS_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
         }));
     }
@@ -323,21 +323,21 @@ public class IPUTest extends ProcTest {
             ipu.reset();
             flags.clear();
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
 
             ipu.reset();
             flags.clear();
             flags.set(FlagRegister.LESS_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
 
             ipu.reset();
             flags.clear();
             flags.set(FlagRegister.EQUAL_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
         }));
     }
@@ -364,21 +364,21 @@ public class IPUTest extends ProcTest {
             ipu.reset();
             flags.clear();
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
 
             ipu.reset();
             flags.clear();
             flags.set(FlagRegister.LESS_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(1), ipu.next());
 
             ipu.reset();
             flags.clear();
             flags.set(FlagRegister.EQUAL_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
 
             ipu.reset();
@@ -386,8 +386,18 @@ public class IPUTest extends ProcTest {
             flags.set(FlagRegister.EQUAL_FLAG);
             flags.set(FlagRegister.LESS_FLAG);
             Assert.assertEquals(instructions.getFirst(), ipu.next());
-            ipu.step();
+            ipu.onTick();
             Assert.assertEquals(instructions.get(2), ipu.next());
         }));
+    }
+
+    @Test
+    public void illegalIPUInstruction() {
+        final List<Instruction> emptyList = List.of();
+        Assert.assertThrows(InstructionException.class, () -> ipuTest(
+                emptyList, (ipu, flags, pc, instructions) -> ipu.execute(
+                        add(new Register(), _const(0))
+                )
+        ));
     }
 }

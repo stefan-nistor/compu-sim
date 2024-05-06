@@ -2,6 +2,7 @@ package ro.uaic.swqual.proc;
 
 import org.junit.Assert;
 import org.junit.Test;
+import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
@@ -9,7 +10,7 @@ import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
-public class ALUTest extends ProcTest {
+public class ALUTest extends ProcTestUtility {
     private interface ALUTestConsumer {
         void apply(ALU alu, FlagTestPredicate test, Register s) throws Throwable;
     }
@@ -1166,5 +1167,13 @@ public class ALUTest extends ProcTest {
             alu.execute(new Instruction(InstructionType.ALU_CMP, p1, p2));
             Assert.assertTrue(flagTest.test(FlagRegister.EQUAL_FLAG));
         }));
+    }
+
+    @Test
+    public void illegalALUInstruction() {
+        Assert.assertThrows(
+                InstructionException.class,
+                () -> aluTest((alu, flag, out) -> alu.execute(jmp(1))
+        ));
     }
 }

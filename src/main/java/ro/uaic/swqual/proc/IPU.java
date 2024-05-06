@@ -17,7 +17,7 @@ import java.util.function.Predicate;
  * It's purpose is to inform the units awaiting instructions of the next instruction, to advance the attached
  *      program counter, and to modify it on demand.
  */
-public class IPU implements ProcessingUnit {
+public class IPU implements ProcessingUnit, ClockDependent {
     private final FlagRegister flagRegister;
     private final Register programCounter;
     private final List<Instruction> instructions;
@@ -64,7 +64,8 @@ public class IPU implements ProcessingUnit {
         programCounter.setValue((char) 0);
     }
 
-    public void step() {
+    @Override
+    public void onTick() {
         var nextInstruction = next();
         if (nextInstruction == defaultInstruction) {
             // Executing the default instruction is equivalent to a "warm-reset"
