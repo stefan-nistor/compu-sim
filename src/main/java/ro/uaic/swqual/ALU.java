@@ -1,8 +1,11 @@
 package ro.uaic.swqual;
 
-import ro.uaic.swqual.exception.InstructionError;
+import ro.uaic.swqual.exception.InstructionException;
+import ro.uaic.swqual.exception.ParameterException;
+import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.Parameter;
 
 import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
@@ -18,22 +21,22 @@ public class ALU {
         this.additionalOutputRegister = additionalOutputRegister;
     }
 
-    public static int regRead(Register value) {
+    public static int regRead(Parameter value) {
         var first15 = value.getValue() & 0x7FFF;
         var negative = (value.getValue() & 0x8000) != 0;
         return first15 | (negative ? 0xFFFF8000 : 0x00000000);
     }
 
-    public static void regStore(Register to, int value) {
+    public static void regStore(Parameter to, int value) throws ParameterException {
         to.setValue((short) value);
     }
 
     private void computeAndSetOverflow(
             IntBinaryOperator compute,
-            Register ds1,
-            Register s2,
+            Parameter ds1,
+            Parameter s2,
             Consumer<Short> overflowConsumer
-    ) {
+    ) throws ParameterException {
         var result = compute.applyAsInt(regRead(ds1), regRead(s2));
         regStore(ds1, result);
         overflowConsumer.accept((short)(result >> 16));
@@ -45,47 +48,47 @@ public class ALU {
         }
     }
 
-    private void add(Register destSource1, Register source2) {
+    private void add(Parameter destSource1, Parameter source2) throws ParameterException {
         computeAndSetOverflow(Integer::sum, destSource1, source2, o -> {});
     }
 
-    private void sub(Register destSource1, Register source2) {
+    private void sub(Parameter destSource1, Parameter source2) throws ParameterException {
         computeAndSetOverflow((a, b) -> a - b, destSource1, source2, o -> {});
     }
 
-    private void mul(Register destSource1, Register source2) {
+    private void mul(Parameter destSource1, Parameter source2) throws ParameterException {
         computeAndSetOverflow((s1, s2) -> s1 * s2, destSource1, source2, o -> additionalOutputRegister.setValue(o));
     }
 
-    private void div(Register destSource1, Register source2) {
+    private void div(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void or(Register destSource1, Register source2) {
+    private void or(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void and(Register destSource1, Register source2) {
+    private void and(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void shl(Register destSource1, Register source2) {
+    private void shl(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void shr(Register destSource1, Register source2) {
+    private void shr(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void not(Register destSource1, Register source2) {
+    private void not(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void xor(Register destSource1, Register source2) {
+    private void xor(Parameter destSource1, Parameter source2) {
         throw new UnsupportedOperationException();
     }
 
-    private void compare(Register destSource1, Register source2) {
+    private void compare(Parameter destSource1, Parameter source2) {
         var s1 = (int)destSource1.getValue();
         var s2 = (int)source2.getValue();
 
@@ -102,20 +105,20 @@ public class ALU {
         }
     }
 
-    public void execute(InstructionType instruction, Register destSource1, Register source2) throws InstructionError {
-        switch (instruction) {
-            case ALU_ADD -> add(destSource1, source2);
-            case ALU_SUB -> sub(destSource1, source2);
-            case ALU_MUL -> mul(destSource1, source2);
-            case ALU_DIV -> div(destSource1, source2);
-            case ALU_OR -> or(destSource1, source2);
-            case ALU_AND -> and(destSource1, source2);
-            case ALU_XOR -> xor(destSource1, source2);
-            case ALU_SHL -> shl(destSource1, source2);
-            case ALU_SHR -> shr(destSource1, source2);
-            case ALU_NOT -> not(destSource1, source2);
-            case ALU_CMP -> compare(destSource1, source2);
-            default -> throw new InstructionError("Invalid instruction type received in ALU: \"" + instruction + "\"");
+    public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        switch (instruction.getType()) {
+            case ALU_ADD -> add(instruction.getParam1(), instruction.getParam2());
+            case ALU_SUB -> sub(instruction.getParam1(), instruction.getParam2());
+            case ALU_MUL -> mul(instruction.getParam1(), instruction.getParam2());
+            case ALU_DIV -> div(instruction.getParam1(), instruction.getParam2());
+            case ALU_OR -> or(instruction.getParam1(), instruction.getParam2());
+            case ALU_AND -> and(instruction.getParam1(), instruction.getParam2());
+            case ALU_XOR -> xor(instruction.getParam1(), instruction.getParam2());
+            case ALU_SHL -> shl(instruction.getParam1(), instruction.getParam2());
+            case ALU_SHR -> shr(instruction.getParam1(), instruction.getParam2());
+            case ALU_NOT -> not(instruction.getParam1(), instruction.getParam2());
+            case ALU_CMP -> compare(instruction.getParam1(), instruction.getParam2());
+            default -> throw new InstructionException("Invalid instruction type received in ALU: \"" + instruction + "\"");
         }
     }
 }
