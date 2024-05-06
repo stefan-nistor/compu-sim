@@ -1,7 +1,7 @@
 package ro.uaic.swqual;
 
-import ro.uaic.swqual.exception.InstructionError;
-import ro.uaic.swqual.exception.ParameterError;
+import ro.uaic.swqual.exception.InstructionException;
+import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
@@ -27,7 +27,7 @@ public class ALU {
         return first15 | (negative ? 0xFFFF8000 : 0x00000000);
     }
 
-    public static void regStore(Parameter to, int value) throws ParameterError {
+    public static void regStore(Parameter to, int value) throws ParameterException {
         to.setValue((short) value);
     }
 
@@ -36,7 +36,7 @@ public class ALU {
             Parameter ds1,
             Parameter s2,
             Consumer<Short> overflowConsumer
-    ) throws ParameterError {
+    ) throws ParameterException {
         var result = compute.applyAsInt(regRead(ds1), regRead(s2));
         regStore(ds1, result);
         overflowConsumer.accept((short)(result >> 16));
@@ -48,15 +48,15 @@ public class ALU {
         }
     }
 
-    private void add(Parameter destSource1, Parameter source2) throws ParameterError {
+    private void add(Parameter destSource1, Parameter source2) throws ParameterException {
         computeAndSetOverflow(Integer::sum, destSource1, source2, o -> {});
     }
 
-    private void sub(Parameter destSource1, Parameter source2) throws ParameterError {
+    private void sub(Parameter destSource1, Parameter source2) throws ParameterException {
         computeAndSetOverflow((a, b) -> a - b, destSource1, source2, o -> {});
     }
 
-    private void mul(Parameter destSource1, Parameter source2) throws ParameterError {
+    private void mul(Parameter destSource1, Parameter source2) throws ParameterException {
         computeAndSetOverflow((s1, s2) -> s1 * s2, destSource1, source2, o -> additionalOutputRegister.setValue(o));
     }
 
@@ -105,7 +105,7 @@ public class ALU {
         }
     }
 
-    public void execute(Instruction instruction) throws InstructionError, ParameterError {
+    public void execute(Instruction instruction) throws InstructionException, ParameterException {
         switch (instruction.getType()) {
             case ALU_ADD -> add(instruction.getParam1(), instruction.getParam2());
             case ALU_SUB -> sub(instruction.getParam1(), instruction.getParam2());
@@ -118,7 +118,7 @@ public class ALU {
             case ALU_SHR -> shr(instruction.getParam1(), instruction.getParam2());
             case ALU_NOT -> not(instruction.getParam1(), instruction.getParam2());
             case ALU_CMP -> compare(instruction.getParam1(), instruction.getParam2());
-            default -> throw new InstructionError("Invalid instruction type received in ALU: \"" + instruction + "\"");
+            default -> throw new InstructionException("Invalid instruction type received in ALU: \"" + instruction + "\"");
         }
     }
 }
