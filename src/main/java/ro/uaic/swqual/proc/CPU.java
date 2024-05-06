@@ -50,6 +50,7 @@ public class CPU implements ProcessingUnit {
                 .filter(entry -> entry.getValue().test(instruction))
                 .map(Map.Entry::getKey)
                 .forEach(unit -> unit.execute(instruction));
+
     }
 
     public List<Register> getDataRegisters() {
