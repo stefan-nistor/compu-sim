@@ -11,7 +11,7 @@ import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
-public class ALUTest extends ProcTestUtility {
+public class ALUTest implements ProcTestUtility {
     private interface ALUTestConsumer {
         void apply(ALU alu, FlagTestPredicate test, Register s) throws Throwable;
     }

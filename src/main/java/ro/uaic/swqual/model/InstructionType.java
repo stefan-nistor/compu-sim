@@ -4,6 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum InstructionType {
+    // MMU Ops
+    MMU_MOV("mov"),
+    MMU_PUSH("push"),
+    MMU_POP("pop"),
+    MMU_CALL("call"),
+    MMU_RET("ret"),
+
     // ALU Ops
     ALU_ADD("add"),
     ALU_SUB("sub"),
@@ -19,6 +26,7 @@ public enum InstructionType {
     ALU_NOT("not"),
     ALU_CMP("cmp"),
 
+    // IPU Ops
     IPU_JMP("jmp"),
     IPU_JEQ("jeq"),
     IPU_JNE("jne"),
@@ -27,6 +35,7 @@ public enum InstructionType {
     IPU_JGT("jgt"),
     IPU_JGE("jge"),
 
+    // Dummy Op
     LABEL("@");
 
     private static final Map<String, InstructionType> BY_LABEL = new HashMap<>();

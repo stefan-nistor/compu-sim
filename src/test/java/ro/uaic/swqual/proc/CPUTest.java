@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-public class CPUTest extends ProcTestUtility {
+public class CPUTest implements ProcTestUtility {
     @Test
     public void processorDataRegSize() {
         var processor = new CPU();
@@ -59,7 +59,7 @@ public class CPUTest extends ProcTestUtility {
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu0 = new ALU(freg, dregs.get(7));
-            processor.registerUnit(alu0);
+            processor.registerExecutor(alu0);
             dregs.get(0).setValue((char)0x1002);
             dregs.get(1).setValue((char)0x5000);
             processor.execute(new Instruction(InstructionType.ALU_UMUL, dregs.get(0), dregs.get(1)));
@@ -93,10 +93,10 @@ public class CPUTest extends ProcTestUtility {
             var freg = processor.getFlagRegister();
             var alu0 = new ALU(freg, dregs.get(6));
             var alu1 = new ALU(freg, dregs.get(7));
-            processor.registerUnit(alu0, i -> i.getType().ordinal() >= InstructionType.ALU_ADD.ordinal()
-                                           && i.getType().ordinal() <= InstructionType.ALU_SUB.ordinal());
-            processor.registerUnit(alu1, i -> i.getType().ordinal() >= InstructionType.ALU_UMUL.ordinal()
-                                           && i.getType().ordinal() <= InstructionType.ALU_SDIV.ordinal());
+            processor.registerExecutor(alu0, i -> i.getType().ordinal() >= InstructionType.ALU_ADD.ordinal()
+                                               && i.getType().ordinal() <= InstructionType.ALU_SUB.ordinal());
+            processor.registerExecutor(alu1, i -> i.getType().ordinal() >= InstructionType.ALU_UMUL.ordinal()
+                                               && i.getType().ordinal() <= InstructionType.ALU_SDIV.ordinal());
             var d0 = dregs.get(0);
             var d1 = dregs.get(1);
             var d6 = dregs.get(6);
@@ -165,8 +165,8 @@ public class CPUTest extends ProcTestUtility {
                 instruction.setParam2(registerMapping.apply(cpu, (RegisterReference) instruction.getParam2()));
             }
         }).toList(), flags, pc);
-        cpu.registerUnit(new ALU(flags, dregs.get(aluOutIdx)));
-        cpu.registerUnit(ipu);
+        cpu.registerExecutor(new ALU(flags, dregs.get(aluOutIdx)));
+        cpu.registerExecutor(ipu);
         ipu.subscribe(cpu);
         consumer.apply(cpu, ipu);
     }

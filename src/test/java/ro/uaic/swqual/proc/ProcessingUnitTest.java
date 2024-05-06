@@ -52,7 +52,7 @@ public class ProcessingUnitTest {
             }
         };
         var proc = new CPU();
-        proc.registerUnit(unit);
+        proc.registerExecutor(unit);
 
         var instructions = List.of(
                 new Instruction(InstructionType.ALU_ADD, null, null),

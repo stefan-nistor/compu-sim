@@ -10,7 +10,7 @@ import ro.uaic.swqual.model.operands.Register;
 
 import java.util.List;
 
-public class IPUTest extends ProcTestUtility {
+public class IPUTest implements ProcTestUtility {
     private interface IPUTestConsumer {
         void apply(IPU ipu, FlagTestPredicate test, Register pc, List<Instruction> instructions) throws Throwable;
     }

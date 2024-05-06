@@ -1,4 +1,3 @@
 package ro.uaic.swqual.model.operands;
 
-public class MemoryLocation extends Parameter{
-}
+public abstract class MemoryLocation extends Parameter {}
