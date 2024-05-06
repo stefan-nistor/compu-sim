@@ -13,13 +13,14 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-public class Processor {
+public class CPU {
     private final List<Register> dataRegisters = new ArrayList<>();
     private final FlagRegister flagRegister = new FlagRegister();
+    private final Register programCounter = new Register();
 
     private final Map<ProcessingUnit, Predicate<Instruction>> processingUnits = new HashMap<>();
 
-    public Processor() {
+    public CPU() {
         IntStream.range(0, 8).forEach(regIndex -> dataRegisters.add(new Register()));
     }
 
@@ -33,6 +34,10 @@ public class Processor {
 
     public FlagRegister getFlagRegister() {
         return flagRegister;
+    }
+
+    public Register getProgramCounter() {
+        return programCounter;
     }
 
     public void execute(Instruction instruction) throws InstructionException, ParameterException {

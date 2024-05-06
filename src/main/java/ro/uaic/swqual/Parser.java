@@ -8,7 +8,7 @@ import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.Label;
 import ro.uaic.swqual.model.operands.Parameter;
-import ro.uaic.swqual.proc.Processor;
+import ro.uaic.swqual.proc.CPU;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Parser {
-    private final Processor processor;
+    private final CPU CPU;
     private final List<Instruction> instructions = new ArrayList<>();
     private final Map<String, Constant> jumpMap = new HashMap<>();
 
-    public Parser(Processor processor) {
-        this.processor = processor;
+    public Parser(CPU CPU) {
+        this.CPU = CPU;
     }
 
     public List<Instruction> parse(String path) {
@@ -58,7 +58,7 @@ public class Parser {
         for (String param : parsed) {
             if (param.startsWith("r")) {
                 var registerIndex = Integer.parseInt(param.substring(1));
-                parameterList.add(processor.getDataRegisters().get(registerIndex));
+                parameterList.add(CPU.getDataRegisters().get(registerIndex));
             }
 
             if (param.startsWith("#")) {

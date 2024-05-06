@@ -19,15 +19,14 @@ public enum InstructionType {
     ALU_NOT("not"),
     ALU_CMP("cmp"),
 
+    IPU_JMP("jmp"),
+    IPU_JEQ("jeq"),
+    IPU_JNE("jne"),
+    IPU_JLT("jlt"),
+    IPU_JLE("jle"),
+    IPU_JGT("jgt"),
+    IPU_JGE("jge"),
 
-    // Jump ops (TODO: to be completed)
-    JMP("jmp"),
-    JMP_EQ("jeq"),
-    JMP_NEQ("jne"),
-    JMP_GT("jgt"),
-    JMP_LT("jlt"),
-
-    // Label special ops
     LABEL("@");
 
     private static final Map<String, InstructionType> BY_LABEL = new HashMap<>();

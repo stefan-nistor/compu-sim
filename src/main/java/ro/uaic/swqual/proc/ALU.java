@@ -28,14 +28,12 @@ import static ro.uaic.swqual.model.operands.FlagRegister.*;
  */
 public class ALU implements ProcessingUnit {
     private final FlagRegister flagRegister;
-    private final Register additionalOutputRegister;
 
     private final Consumer<Character> ignoreOverflow;
     private final Consumer<Character> acceptOverflow;
 
     public ALU(FlagRegister flagRegister, Register additionalOutputRegister) {
         this.flagRegister = flagRegister;
-        this.additionalOutputRegister = additionalOutputRegister;
         this.ignoreOverflow = o -> {};
         this.acceptOverflow = additionalOutputRegister::setValue;
     }

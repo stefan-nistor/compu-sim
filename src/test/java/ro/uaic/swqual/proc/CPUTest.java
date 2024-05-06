@@ -2,7 +2,6 @@ package ro.uaic.swqual.proc;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
 import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
@@ -10,18 +9,10 @@ import ro.uaic.swqual.model.operands.FlagRegister;
 
 import java.util.Arrays;
 
-public class ProcessorTest {
-    void exceptionLess(ThrowingRunnable r) {
-        try {
-            r.run();
-        } catch (Throwable t) {
-            Assert.fail(t.getMessage());
-        }
-    }
-
+public class CPUTest extends ProcTest {
     @Test
     public void processorDataRegSize() {
-        var processor = new Processor();
+        var processor = new CPU();
         var dataRegs = processor.getDataRegisters();
         Assert.assertEquals(8, dataRegs.size());
     }
@@ -29,7 +20,7 @@ public class ProcessorTest {
     @Test
     public void processorDataRegStore() {
         try {
-            var processor = new Processor();
+            var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
             var reg1 = dataRegs.get(3);
             var reg2 = dataRegs.get(5);
@@ -47,7 +38,7 @@ public class ProcessorTest {
     @Test
     public void handleAllInstructions() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
             var reg0 = dataRegs.get(0);
             var reg1 = dataRegs.get(1);
@@ -59,7 +50,7 @@ public class ProcessorTest {
     @Test
     public void handleInstructionPassing() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu0 = new ALU(freg, dregs.get(7));
@@ -76,7 +67,7 @@ public class ProcessorTest {
     @Test
     public void handleInstructionPassingDoNotPassUnregistered() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu = new ALU(freg, dregs.get(7));
@@ -92,7 +83,7 @@ public class ProcessorTest {
     @Test
     public void handleInstructionFiltering() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu0 = new ALU(freg, dregs.get(6));
