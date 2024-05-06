@@ -25,11 +25,15 @@ public class Parser {
 
     public List<Instruction> parse(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            var lineIndex = 0;
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
+                ++lineIndex;
+                if (line.trim().isEmpty() || line.trim().startsWith("//")) {
+                    continue;
+                }
                 if (!line.trim().startsWith("@")) {
-                    instructions.add(parseInstruction(line));
+                    instructions.add(parseInstruction(lineIndex, line));
                 } else {
                     var labelKey = line.trim().substring(0, line.length() - 1);
                     if (jumpMap.containsKey(labelKey)) {
@@ -44,11 +48,10 @@ public class Parser {
         }
     }
 
-    public Instruction parseInstruction(String line) {
+    public Instruction parseInstruction(int lineIndex, String line) {
         var parsed = line.trim().split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
-        var lineIndex = 0;
 
         instruction.setType(InstructionType.fromLabel(parsed[0]));
 
@@ -65,7 +68,6 @@ public class Parser {
             if (param.startsWith("@")) {
                 parameterList.add(new Label(param));
             }
-            ++lineIndex;
         }
 
         instruction.setParameters(parameterList);

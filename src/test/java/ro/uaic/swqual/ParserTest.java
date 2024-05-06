@@ -3,6 +3,7 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.proc.Processor;
@@ -11,7 +12,7 @@ import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.RegisterReference;
 
-import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 public class ParserTest {
@@ -26,7 +27,7 @@ public class ParserTest {
     @Test
     public void testParseInstructionLineShouldSucceed() {
         var line = "add r0 #7";
-        var instruction = parser.parseInstruction(line);
+        var instruction = parser.parseInstruction(1, line);
 
         Assert.assertEquals(InstructionType.ALU_ADD, instruction.getType());
         Assert.assertEquals(2, instruction.getParameters().size());
@@ -73,14 +74,14 @@ public class ParserTest {
 
     @Test
     public void testParseResolveReferencesShouldSucceed() {
-        var code = List.of(
-                "add r0 r1",
-                "sub r3 r4",
-                "cmp r7 #1"
+        var code = Map.of(
+                1, "add r0 r1",
+                2, "sub r3 r4",
+                3, "cmp r7 #1"
         );
 
         var parser = new Parser();
-        var instructions = code.stream().map(parser::parseInstruction).toList();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
         var cpu = new Processor();
 
         Predicate<Instruction> containsUnresolvedReferences =
@@ -98,5 +99,45 @@ public class ParserTest {
 
         Assert.assertTrue(instructions.stream().noneMatch(containsUnresolvedReferences));
         Assert.assertTrue(instructions.stream().allMatch(containsResolvedReferences));
+    }
+
+    @Test
+    public void testParseResolveFirstReferenceShouldFail() {
+        var code = Map.of(
+                1, "@Label:",
+                2, "add r0 r1",
+                3, "jmp @Label",
+                4, "sub r11 r4"
+        );
+
+        var parser = new Parser();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
+        var cpu = new Processor();
+
+        Assert.assertThrows(
+                "Error at line 4: Undefined Reference to symbol 'r11'",
+                UndefinedReferenceException.class,
+                () -> Parser.resolveReferences(instructions, cpu.registryReferenceMap)
+        );
+    }
+
+    @Test
+    public void testParseResolveSecondReferenceShouldFail() {
+        var code = Map.of(
+                1, "@Label:",
+                2, "add r0 r1",
+                3, "jmp @Label",
+                4, "sub r4 r16"
+        );
+
+        var parser = new Parser();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
+        var cpu = new Processor();
+
+        Assert.assertThrows(
+                "Error at line 4: Undefined Reference to symbol 'r16'",
+                UndefinedReferenceException.class,
+                () -> Parser.resolveReferences(instructions, cpu.registryReferenceMap)
+        );
     }
 }
