@@ -11,15 +11,21 @@ import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
-interface FlagTestPredicate {
-    boolean test(char... flags);
-}
-
-interface ALUTestConsumer {
-    void apply(ALU alu, FlagTestPredicate test, Register s) throws Throwable;
-}
-
 public class ALUTest {
+    private interface FlagTestPredicate {
+        boolean test(char... flags);
+    }
+
+    private interface ALUTestConsumer {
+        void apply(ALU alu, FlagTestPredicate test, Register s) throws Throwable;
+    }
+
+    static class TestRegister extends Register {
+        public TestRegister(int value) throws ValueException {
+            setValue(value);
+        }
+    }
+
     void exceptionLess(ThrowingRunnable r) {
         try {
             r.run();
@@ -43,12 +49,6 @@ public class ALUTest {
             return allFlags == flagReg.getValue();
         };
         r.apply(alu, test, specOutReg);
-    }
-
-    static class TestRegister extends Register {
-        public TestRegister(int value) throws ValueException {
-            setValue(value);
-        }
     }
 
     @Test
