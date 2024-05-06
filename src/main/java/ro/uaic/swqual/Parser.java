@@ -2,8 +2,10 @@ package ro.uaic.swqual;
 
 import ro.uaic.swqual.exception.ParserException;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.Parameter;
+import ro.uaic.swqual.proc.Processor;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -42,12 +44,12 @@ public class Parser {
 
         for (String param : parsed) {
             if (param.startsWith("r")) {
-                int registerIndex = Integer.parseInt(param.substring(1));
+                var registerIndex = Integer.parseInt(param.substring(1));
                 parameterList.add(processor.getDataRegisters().get(registerIndex));
             }
 
             if (param.startsWith("#")) {
-                short value = (short)Integer.parseInt(param.substring(1));
+                var value = (char)Integer.parseInt(param.substring(1));
                 parameterList.add(new Constant(value));
             }
         }

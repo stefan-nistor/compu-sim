@@ -1,6 +1,5 @@
 package ro.uaic.swqual.model;
 
-import ro.uaic.swqual.InstructionType;
 import ro.uaic.swqual.model.operands.Parameter;
 
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package ro.uaic.swqual.model.operands;
 
 public class Constant extends Parameter {
-    public Constant(short value) {
+    public Constant(char value) {
         this.value = value;
     }
 }

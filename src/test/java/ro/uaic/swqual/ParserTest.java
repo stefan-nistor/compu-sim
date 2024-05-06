@@ -3,6 +3,8 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ro.uaic.swqual.model.InstructionType;
+import ro.uaic.swqual.proc.Processor;
 
 
 public class ParserTest {
