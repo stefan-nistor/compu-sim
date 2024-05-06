@@ -1,8 +1,6 @@
 package ro.uaic.swqual;
 
-import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
-import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
-import ro.uaic.swqual.exception.parser.ParserException;
+import ro.uaic.swqual.exception.parser.*;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
@@ -50,27 +48,37 @@ public class Parser {
 
     public Instruction parseInstruction(String line) {
         var parsed = line.trim().split("\\s+");
+
+        if(parsed.length > 3) {
+            throw new TooManyASMArgumentsException(parsed.length);
+        }
+
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
-
         instruction.setType(InstructionType.fromLabel(parsed[0]));
 
-        for (String param : parsed) {
-            if (param.startsWith("r")) {
-                var registerIndex = Integer.parseInt(param.substring(1));
+        for (int i = 1; i < parsed.length; i++) {
+            if (parsed[i].startsWith("r")) {
+                var registerIndex = Integer.parseInt(parsed[i].substring(1));
                 parameterList.add(processor.getDataRegisters().get(registerIndex));
             }
 
-            if (param.startsWith("#")) {
-                var value = (char) Integer.parseInt(param.substring(1));
+            else if (parsed[i].startsWith("#")) {
+                var value = (char) Integer.parseInt(parsed[i].substring(1));
                 parameterList.add(new Constant(value));
             }
 
-            if (param.startsWith("@")) {
-                parameterList.add(new Label(param));
+            else if (parsed[i].startsWith("@")) {
+                parameterList.add(new Label(parsed[i]));
+            }
+
+            else {
+                throw new ASMParserException(parsed[i]);
             }
         }
-
+        if(parameterList.isEmpty()) {
+            throw new ParserException("No parameters found for instruction: " + line);
+        }
         instruction.setParameters(parameterList);
         return instruction;
     }

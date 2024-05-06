@@ -39,7 +39,11 @@ public enum InstructionType {
     }
 
     public static InstructionType fromLabel(String label) {
-        return BY_LABEL.get(label);
+        var value = BY_LABEL.get(label);
+        if (value == null) {
+            throw new IllegalArgumentException("Unknown instruction type: " + label);
+        }
+        return value;
     }
 
     public final String label;

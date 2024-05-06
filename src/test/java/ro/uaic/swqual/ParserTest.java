@@ -3,8 +3,7 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
-import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
+import ro.uaic.swqual.exception.parser.*;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.proc.Processor;
 
@@ -27,6 +26,30 @@ public class ParserTest {
         Assert.assertEquals(InstructionType.ALU_ADD, instruction.getType());
         Assert.assertEquals(2, instruction.getParameters().size());
         Assert.assertEquals(7, instruction.getParam2().getValue());
+    }
+
+    @Test
+    public void testInvalidInstructionType() {
+        var line = "some_bs r0 #7";
+        Assert.assertThrows(IllegalArgumentException.class, () -> parser.parseInstruction(line));
+    }
+
+    @Test
+    public void testInvalidNumberArgs() {
+        var line = "add r3 r2 r1";
+        Assert.assertThrows(TooManyASMArgumentsException.class, () -> parser.parseInstruction(line));
+    }
+
+    @Test
+    public void testNoParameter() {
+        var line = "add";
+        Assert.assertThrows(ParserException.class, () -> parser.parseInstruction(line));
+    }
+
+    @Test
+    public void testInvalidParameterIdentifier() {
+        var line = "add 3 $aaa";
+        Assert.assertThrows(ASMParserException.class, () -> parser.parseInstruction(line));
     }
 
     @Test
