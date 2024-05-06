@@ -6,7 +6,7 @@ import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
-import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
 import ro.uaic.swqual.proc.ProcessingUnit;
 
 import java.util.List;
@@ -63,7 +63,7 @@ class ProcessingUnitTest implements ProcTestUtility {
                 discard(value);
             }
         };
-        var proc = new CPU();
+        var proc = new CentralProcessingUnit();
         proc.registerExecutor(unit);
 
         var instructions = List.of(

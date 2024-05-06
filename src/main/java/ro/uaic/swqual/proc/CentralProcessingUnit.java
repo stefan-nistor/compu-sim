@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-public class CPU extends DelegatingUnit {
+public class CentralProcessingUnit extends DelegatingUnit {
     private final List<Register> dataRegisters = new ArrayList<>();
 
     // Special purpose registers
@@ -19,7 +19,7 @@ public class CPU extends DelegatingUnit {
 
     public final Map<String, Register> registryReferenceMap = new HashMap<>();
 
-    public CPU() {
+    public CentralProcessingUnit() {
         IntStream.range(0, 8).forEach(regIndex -> {
             dataRegisters.add(new Register());
             registryReferenceMap.put("r" + regIndex, dataRegisters.getLast());

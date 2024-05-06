@@ -115,8 +115,8 @@ Practical Example (more present in tests)
 // add d1 50
 CPU.setD1(20) // Equivalent to mov d1 20
 CPU.getALU().add(CPU.getD1(), 50);
-AssertEqauls(70, CPU.getD1());
-AssertEqauls(70, (CPU.getFP() & Registry::FlagBits::Overflow) == 0);
+assertEquals(70, CPU.getD1());
+assertEquals(70, (CPU.getFP() & Registry::FlagBits::Overflow) == 0);
 ```
 
 

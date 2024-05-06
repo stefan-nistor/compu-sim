@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
-import ro.uaic.swqual.mem.RAM;
+import ro.uaic.swqual.mem.RandomAccessMemory;
 import ro.uaic.swqual.proc.ProcessingUnit;
 import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.FlagRegister;
-import ro.uaic.swqual.proc.MMU;
+import ro.uaic.swqual.proc.MemoryManagementUnit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class MMUTest implements ProcTestUtility, MemTestUtility {
+class MemoryManagementUnitTest implements ProcTestUtility, MemTestUtility {
     @Test
     void movRegRegTest() {
         var r0 = reg(10);
         var r1 = reg();
         var sp = reg();
-        var mmu = new MMU(freg(), sp);
+        var mmu = new MemoryManagementUnit(freg(), sp);
         mmu.execute(new Instruction(InstructionType.MMU_MOV, r0, r1));
         assertEquals(r0.getValue(), r1.getValue());
     }
@@ -43,8 +43,8 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
             var sp = reg();
             var freg = freg();
 
-            var mmu = new MMU(freg, sp);
-            var ram = new RAM((char) 0x1000, freg);
+            var mmu = new MemoryManagementUnit(freg, sp);
+            var ram = new RandomAccessMemory((char) 0x1000, freg);
 
             mmu.registerHardwareUnit(ram, (char) 0x0000, (location) -> location >= 0x100 && location <= 0x1000);
 
@@ -72,10 +72,10 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
         exceptionLess(() -> {
             var freg = freg();
             var sp = reg();
-            var mmu0 = new MMU(freg, sp);
-            var mmu1 = new MMU(freg, sp);
-            var ram0 = new RAM(0x1000, freg);
-            var ram1 = new RAM(0x2000, freg);
+            var mmu0 = new MemoryManagementUnit(freg, sp);
+            var mmu1 = new MemoryManagementUnit(freg, sp);
+            var ram0 = new RandomAccessMemory(0x1000, freg);
+            var ram1 = new RandomAccessMemory(0x2000, freg);
 
             // Offsets and comparators are RELATIVE to their unit
             // MMU0 has:
@@ -129,14 +129,14 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
             //                            = 0x2000 + 0x0000 + [0x0000, 0x2000)
             //                            = [0x2000, 0x4000)
 
-            var mmu0 = new MMU(freg, sp);
-            var mmu1 = new MMU(freg, sp);
+            var mmu0 = new MemoryManagementUnit(freg, sp);
+            var mmu1 = new MemoryManagementUnit(freg, sp);
 
             var ram0Size = (char) 0x1000;
             var ram1Size = (char) 0x2000;
 
-            var ram0 = new RAM(ram0Size, freg);
-            var ram1 = new RAM(ram1Size, freg);
+            var ram0 = new RandomAccessMemory(ram0Size, freg);
+            var ram1 = new RandomAccessMemory(ram1Size, freg);
 
             // Relative to MM0
             mmu0.registerHardwareUnit(ram0, (char) 0x0000, ram0Size);
@@ -163,7 +163,7 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
     @Test
     void movWithRamShouldSuccessfullyStoreAndRead() {
         var freg = freg();
-        var mmu0 = new MMU(freg, reg());
+        var mmu0 = new MemoryManagementUnit(freg, reg());
         var storage = new AtomicInteger(0);
         var ramProxy = proxyRWMemoryUnit(l -> (char) storage.get(), (l, v) -> storage.set(v));
         mmu0.registerHardwareUnit(ramProxy, (char) 0, (char) 0x100);
@@ -182,7 +182,7 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
     @Test
     void movBetweenUnitsShouldStoreSuccessfully() {
         var freg = freg();
-        var mmu0 = new MMU(freg, reg());
+        var mmu0 = new MemoryManagementUnit(freg, reg());
         var storage0 = new AtomicInteger(0);
         var storage1 = new AtomicInteger(0);
         var ramProxy0 = proxyRWMemoryUnit(l -> (char) storage0.get(), (l, v) -> storage0.set(v));
@@ -207,7 +207,7 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
 
     @Test
     void defaultFilterShouldAcceptOnlyMmuOperations() {
-        var mmu = new MMU(freg(), reg());
+        var mmu = new MemoryManagementUnit(freg(), reg());
         var pred = mmu.getDefaultFilter();
         assertEquals(
                 InstructionType.MMU_MOV,
@@ -225,7 +225,7 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
 
     @Test
     void executeInvalidInstructionShouldThrow() {
-        var mmu = new MMU(freg(), reg());
+        var mmu = new MemoryManagementUnit(freg(), reg());
         assertThrows(InstructionException.class, () -> mmu.execute(add(null, null)));
     }
 
@@ -234,8 +234,8 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
         exceptionLess(() -> {
             var sp = reg();
             var freg = freg();
-            var mmu = new MMU(freg, sp);
-            var ram = new RAM(0x1000, freg);
+            var mmu = new MemoryManagementUnit(freg, sp);
+            var ram = new RandomAccessMemory(0x1000, freg);
             mmu.registerHardwareUnit(ram, (char) 0x0000, (char) 0x1000);
 
             var executor = new ProcessingUnit() {
@@ -278,8 +278,8 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
         exceptionLess(() -> {
             var sp = reg((char) 6); // setting to 6, since a 0 value and request of pop will trigger SEG_FLAG
             var freg = freg();
-            var mmu = new MMU(freg, sp);
-            var ram = new RAM(0x1000, freg);
+            var mmu = new MemoryManagementUnit(freg, sp);
+            var ram = new RandomAccessMemory(0x1000, freg);
             mmu.registerHardwareUnit(ram, (char) 0x0000, (char) 0x1000);
 
             var executor = new ProcessingUnit() {
@@ -316,8 +316,8 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
         exceptionLess(() -> {
             var sp = reg((char) 0); // empty stack
             var freg = freg();
-            var mmu = new MMU(freg, sp);
-            var ram = new RAM(0x1000, freg);
+            var mmu = new MemoryManagementUnit(freg, sp);
+            var ram = new RandomAccessMemory(0x1000, freg);
             mmu.registerHardwareUnit(ram, (char) 0x0000, (char) 0x1000);
 
             var executor = new ProcessingUnit() {

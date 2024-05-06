@@ -29,11 +29,11 @@ import ro.uaic.swqual.model.operands.MemoryLocation;
  *   Cons of LE:
  *      - Confusing if not layout is unknown.
  */
-public class RAM implements ReadableWriteableMemoryUnit {
+public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
     final byte[] bytes;
     final FlagRegister flagRegister;
 
-    public RAM(int sizeInBytes, FlagRegister flagRegister) throws ValueException {
+    public RandomAccessMemory(int sizeInBytes, FlagRegister flagRegister) throws ValueException {
         if (sizeInBytes < 2 || sizeInBytes > Character.MAX_VALUE + 1) {
             throw new ValueException("Unaddressable memory size provided: '" + sizeInBytes + "'. "
                     + "Required size: [2, 65536] byte");

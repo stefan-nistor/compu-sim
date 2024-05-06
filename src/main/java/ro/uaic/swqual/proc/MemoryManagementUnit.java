@@ -22,7 +22,7 @@ import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
  * Memory Management Unit
  * Its purpose is to handle data transfer operations between different storable locations
  */
-public class MMU extends ProxyUnit<MemoryUnit> {
+public class MemoryManagementUnit extends ProxyUnit<MemoryUnit> {
     private final AbsoluteMemoryLocation stackHeadReference;
     private final FlagRegister flagRegister;
 
@@ -31,7 +31,7 @@ public class MMU extends ProxyUnit<MemoryUnit> {
     private final Supplier<Boolean> preDecrementStackPointer;
     private static final Constant STACK_POINTER_OFFSET_ON_CHANGE = new Constant((char) 2);
 
-    public MMU(FlagRegister flagRegister, Register stackPointer) {
+    public MemoryManagementUnit(FlagRegister flagRegister, Register stackPointer) {
         this.flagRegister = flagRegister;
         stackHeadReference = new AbsoluteMemoryLocation(stackPointer);
         incrementStackPointer = new Instruction(ALU_ADD, stackPointer, STACK_POINTER_OFFSET_ON_CHANGE);
