@@ -3,6 +3,7 @@ package ro.uaic.swqual;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.exception.parser.ParserException;
+import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
@@ -19,13 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Parser {
-    private final CPU CPU;
     private final List<Instruction> instructions = new ArrayList<>();
     private final Map<String, Constant> jumpMap = new HashMap<>();
-
-    public Parser(CPU CPU) {
-        this.CPU = CPU;
-    }
 
     public List<Instruction> parse(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -52,13 +48,13 @@ public class Parser {
         var parsed = line.trim().split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
+        var lineIndex = 0;
 
         instruction.setType(InstructionType.fromLabel(parsed[0]));
 
         for (String param : parsed) {
             if (param.startsWith("r")) {
-                var registerIndex = Integer.parseInt(param.substring(1));
-                parameterList.add(CPU.getDataRegisters().get(registerIndex));
+                parameterList.add(new RegisterReference(lineIndex, param));
             }
 
             if (param.startsWith("#")) {
@@ -69,12 +65,12 @@ public class Parser {
             if (param.startsWith("@")) {
                 parameterList.add(new Label(param));
             }
+            ++lineIndex;
         }
 
         instruction.setParameters(parameterList);
         return instruction;
     }
-
 
     public void link() {
         instructions.stream()
@@ -89,4 +85,26 @@ public class Parser {
                 });
     }
 
+    public static List<Instruction> resolveReferences(
+            List<Instruction> instructions,
+            Map<String, Register> registerMap
+    ) throws UndefinedReferenceException {
+        return instructions.stream().map(instruction -> {
+            if (instruction.getParam1() instanceof RegisterReference ref) {
+                var resolved = registerMap.get(ref.getName());
+                if (resolved == null) {
+                    throw new UndefinedReferenceException(ref);
+                }
+                instruction.setParam1(resolved);
+            }
+            if (instruction.getParam2() instanceof RegisterReference ref) {
+                var resolved = registerMap.get(ref.getName());
+                if (resolved == null) {
+                    throw new UndefinedReferenceException(ref);
+                }
+                instruction.setParam2(resolved);
+            }
+            return instruction;
+        }).toList();
+    }
 }

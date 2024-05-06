@@ -18,10 +18,15 @@ public class CPU implements ProcessingUnit {
     private final FlagRegister flagRegister = new FlagRegister();
     private final Register programCounter = new Register();
 
+    public final Map<String, Register> registryReferenceMap = new HashMap<>();
+
     private final Map<ProcessingUnit, Predicate<Instruction>> processingUnits = new HashMap<>();
 
     public CPU() {
-        IntStream.range(0, 8).forEach(regIndex -> dataRegisters.add(new Register()));
+        IntStream.range(0, 8).forEach(regIndex -> {
+            dataRegisters.add(new Register());
+            registryReferenceMap.put("r" + regIndex, dataRegisters.getLast());
+        });
     }
 
     public void registerUnit(ProcessingUnit unit, Predicate<Instruction> filter) {
@@ -45,7 +50,6 @@ public class CPU implements ProcessingUnit {
                 .filter(entry -> entry.getValue().test(instruction))
                 .map(Map.Entry::getKey)
                 .forEach(unit -> unit.execute(instruction));
-
     }
 
     public List<Register> getDataRegisters() {
