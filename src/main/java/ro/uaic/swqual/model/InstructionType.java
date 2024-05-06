@@ -17,7 +17,18 @@ public enum InstructionType {
     ALU_SHL("shl"),
     ALU_SHR("shr"),
     ALU_NOT("not"),
-    ALU_CMP("cmp");
+    ALU_CMP("cmp"),
+
+
+    // Jump ops (TODO: to be completed)
+    JMP("jmp"),
+    JMP_EQ("jeq"),
+    JMP_NEQ("jne"),
+    JMP_GT("jgt"),
+    JMP_LT("jlt"),
+
+    // Label special ops
+    LABEL("@");
 
     private static final Map<String, InstructionType> BY_LABEL = new HashMap<>();
 
