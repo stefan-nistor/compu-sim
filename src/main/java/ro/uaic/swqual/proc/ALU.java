@@ -27,8 +27,8 @@ import static ro.uaic.swqual.model.operands.FlagRegister.*;
  *            p0 = 0x000B / p1 = 0x0003 will result in p0 = 0x0003, additional = 0x0002  <br/>
  */
 public class ALU implements ProcessingUnit {
-    final FlagRegister flagRegister;
-    final Register additionalOutputRegister;
+    private final FlagRegister flagRegister;
+    private final Register additionalOutputRegister;
 
     private final Consumer<Character> ignoreOverflow;
     private final Consumer<Character> acceptOverflow;
