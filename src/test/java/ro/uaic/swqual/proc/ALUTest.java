@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
+import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Constant;
