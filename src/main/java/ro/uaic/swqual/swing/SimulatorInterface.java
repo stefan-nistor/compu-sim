@@ -19,6 +19,24 @@ public class SimulatorInterface extends JFrame {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 0.4;
         gbc.weighty = 0.5;
+      
+        JLabel headerLabel = new JLabel("Simulator Interface", SwingConstants.CENTER);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        GridBagConstraints gbcHeader = new GridBagConstraints();
+        gbcHeader.gridx = 0;
+        gbcHeader.gridy = 0;
+        gbcHeader.gridwidth = 2;
+        gbcHeader.fill = GridBagConstraints.HORIZONTAL;
+        gbcHeader.insets = new Insets(10, 0, 20, 0);
+        mainPanel.add(headerLabel, gbcHeader);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 0.5;
+        gbc.weighty = 1.0;
+
         gbc.insets = new Insets(10, 20, 20, 0);
 
         CodePanel codePanel = new CodePanel();
@@ -69,6 +87,20 @@ public class SimulatorInterface extends JFrame {
         gbc.weighty = 0.4;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(10, 10, 10, 10);
+      
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 0.5;
+        gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(10, 20, 10, 10); // Spațiere între componente
+
+        JPanel processorPanel = new JPanel();
+        processorPanel.setBorder(BorderFactory.createTitledBorder("Processor Section"));
+        processorPanel.setPreferredSize(new Dimension(400, 150));
+      
         mainPanel.add(processorPanel, gbc);
 
         gbc.gridy++;
@@ -79,6 +111,7 @@ public class SimulatorInterface extends JFrame {
 
         gbc.gridy++;
         gbc.weighty=0.2;
+
         JPanel memoryPanel = new JPanel();
         memoryPanel.setBorder(BorderFactory.createTitledBorder("Memory Section"));
         memoryPanel.setPreferredSize(new Dimension(200, 150));
