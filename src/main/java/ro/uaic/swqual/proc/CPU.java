@@ -21,8 +21,6 @@ public class CPU extends DelegatingUnit {
 
     public final Map<String, Register> registryReferenceMap = new HashMap<>();
 
-    private final Map<ProcessingUnit, Predicate<Instruction>> processingUnits = new HashMap<>();
-
     public CPU() {
         IntStream.range(0, 8).forEach(regIndex -> {
             dataRegisters.add(new Register());

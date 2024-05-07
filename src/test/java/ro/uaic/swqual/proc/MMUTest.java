@@ -3,12 +3,19 @@ package ro.uaic.swqual.proc;
 import org.junit.Assert;
 import org.junit.Test;
 import ro.uaic.swqual.mem.RAM;
+import ro.uaic.swqual.memory.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
+import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 
-public class MMUTest implements ProcTestUtility {
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+
+public class MMUTest implements ProcTestUtility, MemTestUtility {
     @Test
     public void movRegRegTest() {
         var r0 = reg(10);
@@ -28,7 +35,7 @@ public class MMUTest implements ProcTestUtility {
             var mmu = new MMU(freg, sp);
             var ram = new RAM((char) 0x1000, freg);
 
-            mmu.registerMemoryUnit(ram, (location) -> location.getValue() >= 0x100 && location.getValue() <= 0x1000);
+            mmu.registerHardwareUnit(ram, new Constant((char) 0x0000), (location) -> location.getValue() >= 0x100 && location.getValue() <= 0x1000);
 
             var addr = reg(0x50); // mov r0 0x50
             var loc = new AbsoluteMemoryLocation(addr); // define [r0] (add pointer)
@@ -46,6 +53,40 @@ public class MMUTest implements ProcTestUtility {
             Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
             Assert.assertNotNull(location.getValue());
             Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        });
+    }
+
+    @Test
+    public void movDelegateRamShouldBeDifferentFromMmuRam() {
+        exceptionLess(() -> {
+            var freg = freg();
+            var sp = reg();
+            var mmu0 = new MMU(freg, sp);
+            var mmu1 = new MMU(freg, sp);
+            var ram0 = new RAM(0x1000, freg);
+            var ram1 = new RAM(0x2000, freg);
+            mmu0.registerHardwareUnit(ram0, new Constant((char) 0x0000), (location) -> location.getValue() + 1 < 0x1000);
+            mmu0.registerLocator(mmu1);
+            mmu1.registerHardwareUnit(ram1, new Constant((char) 0x2000), (location) -> location.getValue() >= 0x2000 && location.getValue() + 1 < 0x4000);
+
+            var addr = reg();
+            var loc = aloc(addr);
+            var memVal = mmu0.locate(loc);
+
+            Function<Boolean, BiPredicate<Character, Character>> memoryValidator = (validity) ->
+                    (start, end) -> IntStream.range(start, end)
+                            .mapToObj(addrVal -> {
+                                freg.clear();
+                                addr.setValue((char) addrVal);
+                                consume(mmu0.locate(loc).getValue());
+                                return null;
+                            })
+                            .allMatch(ignored -> freg.isSet(FlagRegister.SEG_FLAG) != validity);
+            addr.setValue(0);
+            Assert.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
+            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
+            Assert.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
+            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
         });
     }
 }

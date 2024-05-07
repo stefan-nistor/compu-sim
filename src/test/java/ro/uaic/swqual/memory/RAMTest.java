@@ -11,7 +11,7 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
     @Test
     public void readWriteCompleteTest() {
         exceptionLess(() -> {
-            var flags = reg();
+            var flags = freg();
             var ram = new RAM(65536, flags);
             var value = 0;
             var addr = reg();
@@ -38,7 +38,7 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
         exceptionLess(() -> {
             // Little endian, keep in mind.
 
-            var flags = reg();
+            var flags = freg();
             var ram = new RAM(1024, flags);
             var addr = reg();
             var loc = aloc(addr);
@@ -60,7 +60,7 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
     @Test
     public void partialOverwriteTest() {
         exceptionLess(() -> {
-            var flags = reg();
+            var flags = freg();
             var ram = new RAM(1024, flags);
             var addr = reg();
             var loc = aloc(addr);

@@ -11,4 +11,6 @@ public interface TestUtility {
             Assert.fail(t.getMessage());
         }
     }
+
+    default <T> void consume(T value) {}
 }
