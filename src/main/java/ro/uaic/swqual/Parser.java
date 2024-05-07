@@ -3,12 +3,14 @@ package ro.uaic.swqual;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.exception.parser.ParserException;
+import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.Label;
 import ro.uaic.swqual.model.operands.Parameter;
-import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.RegisterReference;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,23 +19,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Parser {
-    private final CPU CPU;
     private final List<Instruction> instructions = new ArrayList<>();
     private final Map<String, Constant> jumpMap = new HashMap<>();
 
-    public Parser(CPU CPU) {
-        this.CPU = CPU;
-    }
-
     public List<Instruction> parse(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            var lineIndex = 0;
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
+                ++lineIndex;
+                if (line.trim().isEmpty() || line.trim().startsWith("//")) {
+                    continue;
+                }
                 if (!line.trim().startsWith("@")) {
-                    instructions.add(parseInstruction(line));
+                    instructions.add(parseInstruction(lineIndex, line));
                 } else {
                     var labelKey = line.trim().substring(0, line.length() - 1);
                     if (jumpMap.containsKey(labelKey)) {
@@ -48,7 +52,7 @@ public class Parser {
         }
     }
 
-    public Instruction parseInstruction(String line) {
+    public Instruction parseInstruction(int lineIndex, String line) {
         var parsed = line.trim().split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
@@ -57,8 +61,7 @@ public class Parser {
 
         for (String param : parsed) {
             if (param.startsWith("r")) {
-                var registerIndex = Integer.parseInt(param.substring(1));
-                parameterList.add(CPU.getDataRegisters().get(registerIndex));
+                parameterList.add(new RegisterReference(lineIndex, param));
             }
 
             if (param.startsWith("#")) {
@@ -75,7 +78,6 @@ public class Parser {
         return instruction;
     }
 
-
     public void link() {
         instructions.stream()
                 .filter(instruction -> instruction.getParam1() instanceof Label)
@@ -89,4 +91,24 @@ public class Parser {
                 });
     }
 
+    public static List<Instruction> resolveReferences(
+            List<Instruction> instructions,
+            Map<String, Register> registerMap
+    ) throws UndefinedReferenceException {
+        return instructions.stream().map(instruction -> {
+            BiConsumer<Supplier<Parameter>, Consumer<Parameter>> referenceResolver = (supplier, consumer) -> {
+                var param = supplier.get();
+                if (param instanceof RegisterReference ref) {
+                    var resolved = registerMap.get(ref.getName());
+                    if (resolved == null) {
+                        throw new UndefinedReferenceException(ref);
+                    }
+                    consumer.accept(resolved);
+                }
+            };
+            referenceResolver.accept(instruction::getParam1, instruction::setParam1);
+            referenceResolver.accept(instruction::getParam2, instruction::setParam2);
+            return instruction;
+        }).toList();
+    }
 }

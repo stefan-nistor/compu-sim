@@ -3,11 +3,17 @@ package ro.uaic.swqual;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
+import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
+import ro.uaic.swqual.model.operands.RegisterReference;
 import ro.uaic.swqual.proc.CPU;
 
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class ParserTest {
 
@@ -15,18 +21,19 @@ public class ParserTest {
 
     @Before
     public void setUp() {
-        CPU CPU = new CPU();
-        parser = new Parser(CPU);
+        parser = new Parser();
     }
 
     @Test
     public void testParseInstructionLineShouldSucceed() {
         var line = "add r0 #7";
-        var instruction = parser.parseInstruction(line);
+        var instruction = parser.parseInstruction(1, line);
 
         Assert.assertEquals(InstructionType.ALU_ADD, instruction.getType());
         Assert.assertEquals(2, instruction.getParameters().size());
         Assert.assertEquals(7, instruction.getParam2().getValue());
+        Assert.assertTrue(instruction.getParam1() instanceof RegisterReference);
+        Assert.assertEquals("r0", ((RegisterReference) instruction.getParam1()).getName());
     }
 
     @Test
@@ -63,5 +70,74 @@ public class ParserTest {
     public void testParseShouldThrowDuplicateException() {
         var path = "src/test/resources/test-jmp-failure-dup.txt";
         Assert.assertThrows(DuplicateJumpTargetException.class ,() -> parser.parse(path));
+    }
+
+    @Test
+    public void testParseResolveReferencesShouldSucceed() {
+        var code = Map.of(
+                1, "add r0 r1",
+                2, "sub r3 r4",
+                3, "cmp r7 #1"
+        );
+
+        var parser = new Parser();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
+        var cpu = new CPU();
+
+        Predicate<Instruction> containsUnresolvedReferences =
+                (i) -> i.getParam1() instanceof RegisterReference || i.getParam2() instanceof RegisterReference;
+        Predicate<Instruction> containsResolvedReferences =
+                (i) -> i.getParam1() instanceof Register || i.getParam2() instanceof Register;
+
+        Assert.assertEquals(3, instructions.size());
+
+        Assert.assertTrue(instructions.stream().allMatch(containsUnresolvedReferences));
+        Assert.assertTrue(instructions.stream().noneMatch(containsResolvedReferences));
+
+        var resolved = Parser.resolveReferences(instructions, cpu.registryReferenceMap);
+        Assert.assertEquals(3, resolved.size());
+
+        Assert.assertTrue(instructions.stream().noneMatch(containsUnresolvedReferences));
+        Assert.assertTrue(instructions.stream().allMatch(containsResolvedReferences));
+    }
+
+    @Test
+    public void testParseResolveFirstReferenceShouldFail() {
+        var code = Map.of(
+                1, "@Label:",
+                2, "add r0 r1",
+                3, "jmp @Label",
+                4, "sub r11 r4"
+        );
+
+        var parser = new Parser();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
+        var cpu = new CPU();
+
+        Assert.assertThrows(
+                "Error at line 4: Undefined Reference to symbol 'r11'",
+                UndefinedReferenceException.class,
+                () -> Parser.resolveReferences(instructions, cpu.registryReferenceMap)
+        );
+    }
+
+    @Test
+    public void testParseResolveSecondReferenceShouldFail() {
+        var code = Map.of(
+                1, "@Label:",
+                2, "add r0 r1",
+                3, "jmp @Label",
+                4, "sub r4 r16"
+        );
+
+        var parser = new Parser();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
+        var cpu = new CPU();
+
+        Assert.assertThrows(
+                "Error at line 4: Undefined Reference to symbol 'r16'",
+                UndefinedReferenceException.class,
+                () -> Parser.resolveReferences(instructions, cpu.registryReferenceMap)
+        );
     }
 }
