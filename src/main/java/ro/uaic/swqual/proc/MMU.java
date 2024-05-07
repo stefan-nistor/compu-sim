@@ -103,17 +103,21 @@ public class MMU extends DelegatingUnit {
             return discardingMemoryUnit;
         };
 
-        Function<Parameter, ReadableMemoryUnit> acquireReadableMemoryUnitForLocation = addressSpaceLocation ->
-            Objects.requireNonNullElse(
-                    (ReadableMemoryUnit) acquireMemoryUnitForLocation.apply(addressSpaceLocation),
-                    discardingMemoryUnit
-            );
+        Function<Parameter, ReadableMemoryUnit> acquireReadableMemoryUnitForLocation = addressSpaceLocation -> {
+            var unit = acquireMemoryUnitForLocation.apply(addressSpaceLocation);
+            if (unit instanceof ReadableMemoryUnit readable) {
+                return readable;
+            }
+            return discardingMemoryUnit;
+        };
 
-        Function<Parameter, WriteableMemoryUnit> acquireWriteableMemoryUnitForLocation = addressSpaceLocation ->
-            Objects.requireNonNullElse(
-                    (WriteableMemoryUnit) acquireMemoryUnitForLocation.apply(addressSpaceLocation),
-                    discardingMemoryUnit
-            );
+        Function<Parameter, WriteableMemoryUnit> acquireWriteableMemoryUnitForLocation = addressSpaceLocation -> {
+            var unit = acquireMemoryUnitForLocation.apply(addressSpaceLocation);
+            if (unit instanceof WriteableMemoryUnit writeable) {
+                return writeable;
+            }
+            return discardingMemoryUnit;
+        };
 
         var writeableMemoryUnit = acquireWriteableMemoryUnitForLocation.apply(location);
         var readableMemoryUnit = acquireReadableMemoryUnitForLocation.apply(location);
@@ -141,10 +145,10 @@ public class MMU extends DelegatingUnit {
         // Do not use default execute, as we want to delegate on push, pop, call, ret
         switch (instruction.getType()) {
             case MMU_MOV -> mov(locate(instruction.getParam1()), locate(instruction.getParam2()));
-            case MMU_POP -> pop(instruction.getParam1(), instruction.getParam2());
-            case MMU_PUSH -> push(instruction.getParam1(), instruction.getParam2());
+            case MMU_POP -> pop(locate(instruction.getParam1()), instruction.getParam2());
+            case MMU_PUSH -> push(locate(instruction.getParam1()), instruction.getParam2());
             case MMU_RET -> ret(instruction.getParam1(), instruction.getParam2());
-            case MMU_CALL -> call(instruction.getParam1(), instruction.getParam2());
+            case MMU_CALL -> call(locate(instruction.getParam1()), instruction.getParam2());
             default -> throw new InstructionException("Unsupported type: '" + instruction.getType() + "'");
         }
     }

@@ -7,7 +7,6 @@ import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.FlagRegister;
-import ro.uaic.swqual.model.operands.UndefinedMemoryLocation;
 
 public class MMUTest implements ProcTestUtility {
     @Test
