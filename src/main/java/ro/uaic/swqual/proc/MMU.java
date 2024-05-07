@@ -100,9 +100,6 @@ public class MMU extends DelegatingUnit {
                 flagRegister.set(FlagRegister.MULTISTATE_FLAG);
             }
 
-            if (identifiedUnits.isEmpty()) {
-                flagRegister.set(FlagRegister.SEG_FLAG);
-            }
             return discardingMemoryUnit;
         };
 
@@ -118,15 +115,17 @@ public class MMU extends DelegatingUnit {
                     discardingMemoryUnit
             );
 
+        var writeableMemoryUnit = acquireWriteableMemoryUnitForLocation.apply(location);
+        var readableMemoryUnit = acquireReadableMemoryUnitForLocation.apply(location);
         return new Parameter() {
             @Override
             public void setValue(char value) {
-                acquireWriteableMemoryUnitForLocation.apply(location).write(location, value);
+                writeableMemoryUnit.write(location, value);
             }
 
             @Override
             public char getValue() {
-                return acquireReadableMemoryUnitForLocation.apply(location).read(location);
+                return readableMemoryUnit.read(location);
             }
         };
     }
