@@ -9,7 +9,8 @@ import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.Label;
 import ro.uaic.swqual.model.operands.Parameter;
-import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.RegisterReference;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,6 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Parser {
     private final List<Instruction> instructions = new ArrayList<>();
@@ -92,20 +96,18 @@ public class Parser {
             Map<String, Register> registerMap
     ) throws UndefinedReferenceException {
         return instructions.stream().map(instruction -> {
-            if (instruction.getParam1() instanceof RegisterReference ref) {
-                var resolved = registerMap.get(ref.getName());
-                if (resolved == null) {
-                    throw new UndefinedReferenceException(ref);
+            BiConsumer<Supplier<Parameter>, Consumer<Parameter>> referenceResolver = (supplier, consumer) -> {
+                var param = supplier.get();
+                if (param instanceof RegisterReference ref) {
+                    var resolved = registerMap.get(ref.getName());
+                    if (resolved == null) {
+                        throw new UndefinedReferenceException(ref);
+                    }
+                    consumer.accept(resolved);
                 }
-                instruction.setParam1(resolved);
-            }
-            if (instruction.getParam2() instanceof RegisterReference ref) {
-                var resolved = registerMap.get(ref.getName());
-                if (resolved == null) {
-                    throw new UndefinedReferenceException(ref);
-                }
-                instruction.setParam2(resolved);
-            }
+            };
+            referenceResolver.accept(instruction::getParam1, instruction::setParam1);
+            referenceResolver.accept(instruction::getParam2, instruction::setParam2);
             return instruction;
         }).toList();
     }
