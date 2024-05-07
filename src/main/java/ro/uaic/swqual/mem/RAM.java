@@ -5,7 +5,7 @@ import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Register;
 
-public class RAM implements MemoryUnit {
+public class RAM implements ReadableWriteableMemoryUnit {
     final byte[] bytes;
     final Register flagRegister;
 

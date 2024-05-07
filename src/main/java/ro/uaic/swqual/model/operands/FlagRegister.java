@@ -13,7 +13,7 @@ public class FlagRegister extends Register {
      *      - ALU_DIV outputs a remainder that is not 0. Reg1 (first param) will contain
      *          the result, additionalOutputRegister will contain the register.
      */
-    public static final char OVERFLOW_FLAG = 0x0001;
+    public static final char OVERFLOW_FLAG      = 0x0001;
 
     /**
      * ZERO_FLAG is set when:
@@ -22,32 +22,39 @@ public class FlagRegister extends Register {
      *          Even if an overflow happens and the primary output (param0) is 0,
      *          this is not considered a zero-result. (ex. umul 0x0100, 0x0100)
      */
-    public static final char ZERO_FLAG     = 0x0002;
+    public static final char ZERO_FLAG          = 0x0002;
 
     /**
      * DIV_ZERO_FLAG is set when ALU_*DIV is invoked with the second param's evaluated value as 0
      */
-    public static final char DIV_ZERO_FLAG = 0x0004;
+    public static final char DIV_ZERO_FLAG      = 0x0004;
 
     /**
      * EQUAL_FLAG is set when ALU_CMP is invoked with equally evaluated parameters
      */
-    public static final char EQUAL_FLAG    = 0x0008;
+    public static final char EQUAL_FLAG         = 0x0008;
 
     /**
      * LESS_FLAG is set when ALU_CMP is invoked with the first parameter evaluated as less than the second
      */
-    public static final char LESS_FLAG     = 0x0010;
+    public static final char LESS_FLAG          = 0x0010;
 
     /**
      * ILLEGAL_FLAG is set when the IPU attempts to execute an illegal instruction
      */
-    public static final char ILLEGAL_FLAG  = 0x0020;
+    public static final char ILLEGAL_FLAG       = 0x0020;
 
     /**
      * SEG_FLAG is set when the MMU attempts access to an invalid memory location
      */
-    public static final char SEG_FLAG      = 0x0040;
+    public static final char SEG_FLAG           = 0x0040;
+
+    /**
+     * MULTISTATE_FLAG is set when the MMU receives a request to locate an address that resolves to more than one
+     *      memory space. Example: if I/O accepts addressed 0x20, 0x40, and RAM 0x40, 0x60, Addressing 0x40 causes
+     *      a multistate.
+     */
+    public static final char MULTISTATE_FLAG    = 0x0080;
 
     public void clear() {
         setValue((char)0);
