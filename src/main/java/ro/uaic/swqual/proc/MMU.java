@@ -56,6 +56,11 @@ public class MMU extends DelegatingUnit {
 
     @Override
     public Parameter locate(Parameter directOrLocation) {
+        var fromDelegate = super.locate(directOrLocation);
+        if (fromDelegate != null) {
+            return fromDelegate;
+        }
+
         if (!(directOrLocation instanceof MemoryLocation location)) {
             return directOrLocation;
         }
