@@ -44,6 +44,11 @@ public class FlagRegister extends Register {
      */
     public static final char ILLEGAL_FLAG  = 0x0020;
 
+    /**
+     * SEG_FLAG is set when the MMU attempts access to an invalid memory location
+     */
+    public static final char SEG_FLAG      = 0x0040;
+
     public void clear() {
         setValue((char)0);
     }

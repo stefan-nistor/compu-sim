@@ -6,6 +6,7 @@ import ro.uaic.swqual.mem.MemoryUnit;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
+import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -44,6 +45,24 @@ public class MMU extends DelegatingProcessingUnit {
         throw new UnsupportedOperationException();
     }
 
+    private Parameter locate(Parameter writeableOrLocation) {
+        if (writeableOrLocation instanceof MemoryLocation location) {
+            return new Parameter() {
+                @Override
+                public void setValue(char value) {
+                    primaryMemoryUnit.write(location, value);
+                }
+
+                @Override
+                public char getValue() {
+                    return primaryMemoryUnit.read(location);
+                }
+            };
+        }
+
+        return writeableOrLocation;
+    }
+
     @Override
     public Predicate<Instruction> getDefaultFilter() {
         return instruction -> instruction.getType().ordinal() >= InstructionType.MMU_MOV.ordinal()
@@ -54,7 +73,7 @@ public class MMU extends DelegatingProcessingUnit {
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
         // Do not use default execute, as we want to delegate on push, pop, call, ret
         switch (instruction.getType()) {
-            case MMU_MOV -> mov(instruction.getParam1(), instruction.getParam2());
+            case MMU_MOV -> mov(locate(instruction.getParam1()), locate(instruction.getParam2()));
             case MMU_POP -> pop(instruction.getParam1(), instruction.getParam2());
             case MMU_PUSH -> push(instruction.getParam1(), instruction.getParam2());
             case MMU_RET -> ret(instruction.getParam1(), instruction.getParam2());

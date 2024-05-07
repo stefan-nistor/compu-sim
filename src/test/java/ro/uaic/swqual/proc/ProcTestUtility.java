@@ -5,6 +5,7 @@ import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
+import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -62,6 +63,10 @@ public interface ProcTestUtility extends TestUtility {
 
     default Register reg() {
         return new Register();
+    }
+
+    default FlagRegister freg() {
+        return new FlagRegister();
     }
 
     interface FlagTestPredicate {
