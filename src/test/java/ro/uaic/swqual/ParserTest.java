@@ -6,7 +6,7 @@ import org.junit.Test;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
-import ro.uaic.swqual.proc.Processor;
+import ro.uaic.swqual.proc.CPU;
 
 
 public class ParserTest {
@@ -15,8 +15,8 @@ public class ParserTest {
 
     @Before
     public void setUp() {
-        Processor processor = new Processor();
-        parser = new Parser(processor);
+        CPU CPU = new CPU();
+        parser = new Parser(CPU);
     }
 
     @Test

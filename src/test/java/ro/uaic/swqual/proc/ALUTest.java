@@ -2,36 +2,17 @@ package ro.uaic.swqual.proc;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
-import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
-public class ALUTest {
-    private interface FlagTestPredicate {
-        boolean test(char... flags);
-    }
-
+public class ALUTest extends ProcTestUtility {
     private interface ALUTestConsumer {
         void apply(ALU alu, FlagTestPredicate test, Register s) throws Throwable;
-    }
-
-    static class TestRegister extends Register {
-        public TestRegister(int value) throws ValueException {
-            setValue(value);
-        }
-    }
-
-    void exceptionLess(ThrowingRunnable r) {
-        try {
-            r.run();
-        } catch (Throwable t) {
-            Assert.fail(t.getMessage());
-        }
     }
 
     void aluTest(ALUTestConsumer r) throws Throwable {
@@ -1186,5 +1167,13 @@ public class ALUTest {
             alu.execute(new Instruction(InstructionType.ALU_CMP, p1, p2));
             Assert.assertTrue(flagTest.test(FlagRegister.EQUAL_FLAG));
         }));
+    }
+
+    @Test
+    public void illegalALUInstruction() {
+        Assert.assertThrows(
+                InstructionException.class,
+                () -> aluTest((alu, flag, out) -> alu.execute(jmp(1))
+        ));
     }
 }

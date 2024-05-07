@@ -51,7 +51,7 @@ public class ProcessingUnitTest {
                 last = instruction;
             }
         };
-        var proc = new Processor();
+        var proc = new CPU();
         proc.registerUnit(unit);
 
         var instructions = List.of(

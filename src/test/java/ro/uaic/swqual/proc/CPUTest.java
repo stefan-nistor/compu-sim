@@ -2,26 +2,22 @@ package ro.uaic.swqual.proc;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
 import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
+import ro.uaic.swqual.model.operands.Parameter;
+import ro.uaic.swqual.model.operands.Register;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
-public class ProcessorTest {
-    void exceptionLess(ThrowingRunnable r) {
-        try {
-            r.run();
-        } catch (Throwable t) {
-            Assert.fail(t.getMessage());
-        }
-    }
-
+public class CPUTest extends ProcTestUtility {
     @Test
     public void processorDataRegSize() {
-        var processor = new Processor();
+        var processor = new CPU();
         var dataRegs = processor.getDataRegisters();
         Assert.assertEquals(8, dataRegs.size());
     }
@@ -29,7 +25,7 @@ public class ProcessorTest {
     @Test
     public void processorDataRegStore() {
         try {
-            var processor = new Processor();
+            var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
             var reg1 = dataRegs.get(3);
             var reg2 = dataRegs.get(5);
@@ -47,7 +43,7 @@ public class ProcessorTest {
     @Test
     public void handleAllInstructions() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
             var reg0 = dataRegs.get(0);
             var reg1 = dataRegs.get(1);
@@ -59,7 +55,7 @@ public class ProcessorTest {
     @Test
     public void handleInstructionPassing() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu0 = new ALU(freg, dregs.get(7));
@@ -76,7 +72,7 @@ public class ProcessorTest {
     @Test
     public void handleInstructionPassingDoNotPassUnregistered() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu = new ALU(freg, dregs.get(7));
@@ -92,7 +88,7 @@ public class ProcessorTest {
     @Test
     public void handleInstructionFiltering() {
         exceptionLess(() -> {
-            var processor = new Processor();
+            var processor = new CPU();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
             var alu0 = new ALU(freg, dregs.get(6));
@@ -133,5 +129,79 @@ public class ProcessorTest {
             Assert.assertEquals((char) 0x0000, d6.getValue());
             Assert.assertEquals((char) 0x000F, d7.getValue());
         });
+    }
+
+    private interface CpuAluIpuConsumer {
+        void apply(CPU cpu, ClockDependent stepper) throws Throwable;
+    }
+
+    private static class RegisterReference extends Parameter {
+        private final String name;
+
+        public RegisterReference(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    private void cpuAluIpuTest(
+            List<Instruction> instructions,
+            int aluOutIdx,
+            BiFunction<CPU, RegisterReference, Register> registerMapping,
+            CpuAluIpuConsumer consumer
+    ) throws Throwable {
+        var cpu = new CPU();
+        var dregs = cpu.getDataRegisters();
+        var flags = cpu.getFlagRegister();
+        var pc = cpu.getProgramCounter();
+        var ipu = new IPU(instructions.stream().peek(instruction -> {
+            if (instruction.getParam1() instanceof RegisterReference) {
+                instruction.setParam1(registerMapping.apply(cpu, (RegisterReference) instruction.getParam1()));
+            }
+            if (instruction.getParam2() instanceof RegisterReference) {
+                instruction.setParam2(registerMapping.apply(cpu, (RegisterReference) instruction.getParam2()));
+            }
+        }).toList(), flags, pc);
+        cpu.registerUnit(new ALU(flags, dregs.get(aluOutIdx)));
+        cpu.registerUnit(ipu);
+        ipu.subscribe(cpu);
+        consumer.apply(cpu, ipu);
+    }
+
+    RegisterReference ref(String name) {
+        return new RegisterReference(name);
+    }
+
+    @Test
+    public void cpuModulesAluIpu() {
+        exceptionLess(() -> cpuAluIpuTest(
+                List.of(
+                        add(ref("r0"), _const(10)),
+                        // @StartLoop:
+                        add(ref("r1"), _const(2)),
+                        sub(ref("r0"), _const(1)),
+                        cmp(ref("r0"), _const(0)),
+                        jne(1), // @StartLoop
+                        umul(ref("r1"), _const(5))
+                ),
+                7,
+                (cpu, reference) -> {
+                    final var regMap = Map.of(
+                            "r0", cpu.getDataRegisters().get(0),
+                            "r1", cpu.getDataRegisters().get(1)
+                    );
+                    return regMap.get(reference.getName());
+                },
+                (cpu, stepper) -> {
+                    var flags = cpu.getFlagRegister();
+                    while (!flags.isSet(FlagRegister.ILLEGAL_FLAG)) {
+                        stepper.onTick();
+                    }
+                    Assert.assertEquals((char) 100, cpu.getDataRegisters().get(1).getValue());
+                }
+        ));
     }
 }

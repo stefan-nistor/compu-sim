@@ -113,10 +113,10 @@ For instructions that do not use all params, the param will be ignored
 Practical Example (more present in tests)
 ```
 // add d1 50
-processor.setD1(20) // Equivalent to mov d1 20
-processor.getALU().add(processor.getD1(), 50);
-AssertEqauls(70, processor.getD1());
-AssertEqauls(70, (processor.getFP() & Registry::FlagBits::Overflow) == 0);
+CPU.setD1(20) // Equivalent to mov d1 20
+CPU.getALU().add(CPU.getD1(), 50);
+AssertEqauls(70, CPU.getD1());
+AssertEqauls(70, (CPU.getFP() & Registry::FlagBits::Overflow) == 0);
 ```
 
 

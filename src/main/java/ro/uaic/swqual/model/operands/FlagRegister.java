@@ -39,6 +39,11 @@ public class FlagRegister extends Register {
      */
     public static final char LESS_FLAG     = 0x0010;
 
+    /**
+     * ILLEGAL_FLAG is set when the IPU attempts to execute an illegal instruction
+     */
+    public static final char ILLEGAL_FLAG  = 0x0020;
+
     public void clear() {
         setValue((char)0);
     }
