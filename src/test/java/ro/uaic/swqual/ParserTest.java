@@ -6,11 +6,11 @@ import org.junit.Test;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.Processor;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.proc.CPU;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -82,7 +82,7 @@ public class ParserTest {
 
         var parser = new Parser();
         var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
-        var cpu = new Processor();
+        var cpu = new CPU();
 
         Predicate<Instruction> containsUnresolvedReferences =
                 (i) -> i.getParam1() instanceof RegisterReference || i.getParam2() instanceof RegisterReference;
@@ -112,7 +112,7 @@ public class ParserTest {
 
         var parser = new Parser();
         var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
-        var cpu = new Processor();
+        var cpu = new CPU();
 
         Assert.assertThrows(
                 "Error at line 4: Undefined Reference to symbol 'r11'",
@@ -132,7 +132,7 @@ public class ParserTest {
 
         var parser = new Parser();
         var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
-        var cpu = new Processor();
+        var cpu = new CPU();
 
         Assert.assertThrows(
                 "Error at line 4: Undefined Reference to symbol 'r16'",
