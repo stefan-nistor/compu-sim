@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-public class CPU extends DelegatingProcessingUnit {
+public class CPU extends DelegatingUnit {
     private final List<Register> dataRegisters = new ArrayList<>();
 
     // Special purpose registers

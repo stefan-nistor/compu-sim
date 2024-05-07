@@ -5,10 +5,7 @@ import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.mem.MemoryUnit;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
-import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
-import ro.uaic.swqual.model.operands.MemoryLocation;
-import ro.uaic.swqual.model.operands.Parameter;
-import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.*;
 
 import java.util.function.Predicate;
 
@@ -16,12 +13,14 @@ import java.util.function.Predicate;
  * Memory Management Unit
  * Its purpose is to handle data transfer operations between different storable locations
  */
-public class MMU extends DelegatingProcessingUnit {
+public class MMU extends DelegatingUnit {
     final MemoryUnit primaryMemoryUnit;
     final AbsoluteMemoryLocation stackPointer;
+    final FlagRegister flagRegister;
 
-    public MMU(MemoryUnit primaryMemoryUnit, Register stackPointer) {
+    public MMU(MemoryUnit primaryMemoryUnit, FlagRegister flagRegister, Register stackPointer) {
         this.primaryMemoryUnit = primaryMemoryUnit;
+        this.flagRegister = flagRegister;
         this.stackPointer = new AbsoluteMemoryLocation(stackPointer);
     }
 
@@ -45,8 +44,24 @@ public class MMU extends DelegatingProcessingUnit {
         throw new UnsupportedOperationException();
     }
 
-    private Parameter locate(Parameter writeableOrLocation) {
+    @Override
+    public Parameter locate(Parameter writeableOrLocation) {
         if (writeableOrLocation instanceof MemoryLocation location) {
+            if (location instanceof UndefinedMemoryLocation) {
+                return new Parameter() {
+                    @Override
+                    public void setValue(char value) {
+                        flagRegister.set(FlagRegister.SEG_FLAG);
+                    }
+
+                    @Override
+                    public char getValue() {
+                        flagRegister.set(FlagRegister.SEG_FLAG);
+                        return 0;
+                    }
+                };
+            }
+
             return new Parameter() {
                 @Override
                 public void setValue(char value) {
