@@ -30,6 +30,11 @@ public class IPU implements ProcessingUnit, ClockDependent {
         this.instructions = instructions;
     }
 
+    @Override
+    public void raiseFlag(char value) {
+        flagRegister.set(value);
+    }
+
     public void subscribe(ProcessingUnit processingUnit) {
         instructionSubscribers.add(processingUnit);
     }

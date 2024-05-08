@@ -1,18 +1,18 @@
 package ro.uaic.swqual.model.operands;
 
 public class UnresolvedMemory extends Parameter {
-    final FlagRegister flagRegister;
+    final Runnable onAccess;
 
-    public UnresolvedMemory(FlagRegister flagRegister) {
-        this.flagRegister = flagRegister;
+    public UnresolvedMemory(Runnable onAccess) {
+        this.onAccess = onAccess;
     }
 
     @Override public void setValue(char value) {
-        flagRegister.set(FlagRegister.SEG_FLAG);
+        onAccess.run();
     }
 
     @Override public char getValue() {
-        flagRegister.set(FlagRegister.SEG_FLAG);
+        onAccess.run();
         return 0;
     }
 }

@@ -12,5 +12,5 @@ public interface TestUtility {
         }
     }
 
-    default <T> void consume(T value) {}
+    default <T> void discard(T value) {}
 }

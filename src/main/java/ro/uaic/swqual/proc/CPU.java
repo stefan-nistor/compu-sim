@@ -1,6 +1,5 @@
 package ro.uaic.swqual.proc;
 
-import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -8,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 public class CPU extends DelegatingUnit {
@@ -26,6 +24,10 @@ public class CPU extends DelegatingUnit {
             dataRegisters.add(new Register());
             registryReferenceMap.put("r" + regIndex, dataRegisters.getLast());
         });
+    }
+
+    @Override public void raiseFlag(char value) {
+        flagRegister.set(value);
     }
 
     public FlagRegister getFlagRegister() {

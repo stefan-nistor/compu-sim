@@ -18,10 +18,16 @@ import java.util.function.Predicate;
  */
 public class MMU extends ProxyUnit<MemoryUnit> {
     private final AbsoluteMemoryLocation stackPointer;
+    private final FlagRegister flagRegister;
 
     public MMU(FlagRegister flagRegister, Register stackPointer) {
-        super(flagRegister);
+        this.flagRegister = flagRegister;
         this.stackPointer = new AbsoluteMemoryLocation(stackPointer);
+    }
+
+    @Override
+    public void raiseFlag(char value) {
+        this.flagRegister.set(value);
     }
 
     private void mov(Parameter dst, Parameter src) {

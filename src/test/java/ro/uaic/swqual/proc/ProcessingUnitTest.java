@@ -9,7 +9,7 @@ import ro.uaic.swqual.model.InstructionType;
 
 import java.util.List;
 
-public class ProcessingUnitTest {
+public class ProcessingUnitTest implements ProcTestUtility {
     @Test
     public void dummyProcessingUnitTest() {
         var p = new ProcessingUnit() {
@@ -22,6 +22,11 @@ public class ProcessingUnitTest {
             @Override
             public void execute(Instruction instruction) throws InstructionException, ParameterException {
                 last = instruction;
+            }
+
+            @Override
+            public void raiseFlag(char value) {
+                discard(value);
             }
         };
 
@@ -49,6 +54,11 @@ public class ProcessingUnitTest {
             @Override
             public void execute(Instruction instruction) throws InstructionException, ParameterException {
                 last = instruction;
+            }
+
+            @Override
+            public void raiseFlag(char value) {
+                discard(value);
             }
         };
         var proc = new CPU();

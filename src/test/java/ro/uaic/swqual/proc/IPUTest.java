@@ -67,6 +67,11 @@ public class IPUTest implements ProcTestUtility {
                         }
                         lastExecuted = instruction;
                     }
+
+                    @Override
+                    public void raiseFlag(char value) {
+                        discard(value);
+                    }
                 };
                 ipu.subscribe(cpu);
 
@@ -124,6 +129,11 @@ public class IPUTest implements ProcTestUtility {
                         }
                         lastExecuted = instruction;
                     }
+
+                    @Override
+                    public void raiseFlag(char value) {
+                        discard(value);
+                    }
                 };
                 ipu.subscribe(cpu);
 
@@ -163,6 +173,11 @@ public class IPUTest implements ProcTestUtility {
                     }
                     lastExecuted = instruction;
                 }
+
+                @Override
+                public void raiseFlag(char value) {
+                    flags.set(value);
+                }
             };
             ipu.subscribe(cpu);
 
@@ -196,6 +211,11 @@ public class IPUTest implements ProcTestUtility {
                     }
                     lastExecuted = instruction;
                 }
+
+                @Override
+                public void raiseFlag(char value) {
+                    flags.set(value);
+                }
             };
             ipu.subscribe(cpu);
 
@@ -228,6 +248,11 @@ public class IPUTest implements ProcTestUtility {
                         ipu.execute(instruction);
                     }
                     lastExecuted = instruction;
+                }
+
+                @Override
+                public void raiseFlag(char value) {
+                    flags.set(value);
                 }
             };
             ipu.subscribe(cpu);
@@ -267,6 +292,11 @@ public class IPUTest implements ProcTestUtility {
                         ipu.execute(instruction);
                     }
                     lastExecuted = instruction;
+                }
+
+                @Override
+                public void raiseFlag(char value) {
+                    flags.set(value);
                 }
             };
             ipu.subscribe(cpu);
@@ -317,6 +347,11 @@ public class IPUTest implements ProcTestUtility {
                     }
                     lastExecuted = instruction;
                 }
+
+                @Override
+                public void raiseFlag(char value) {
+                    flags.set(value);
+                }
             };
             ipu.subscribe(cpu);
 
@@ -357,6 +392,11 @@ public class IPUTest implements ProcTestUtility {
                         ipu.execute(instruction);
                     }
                     lastExecuted = instruction;
+                }
+
+                @Override
+                public void raiseFlag(char value) {
+                    flags.set(value);
                 }
             };
             ipu.subscribe(cpu);

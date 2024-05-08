@@ -38,6 +38,10 @@ public class ALU implements ProcessingUnit {
         this.acceptOverflow = additionalOutputRegister::setValue;
     }
 
+    @Override public void raiseFlag(char value) {
+        flagRegister.set(value);
+    }
+
     private void computeAndSetOverflow(
             IntBinaryOperator compute, Parameter destSource0, Parameter source1, Consumer<Character> overflowConsumer
     ) throws ParameterException {

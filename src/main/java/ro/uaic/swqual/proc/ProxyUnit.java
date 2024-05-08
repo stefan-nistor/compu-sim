@@ -5,26 +5,23 @@ import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.mem.ReadableWriteableMemoryUnit;
 import ro.uaic.swqual.mem.WriteableMemoryUnit;
 import ro.uaic.swqual.model.operands.*;
+import ro.uaic.swqual.util.Tuple;
+import ro.uaic.swqual.util.Tuple3;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends DelegatingUnit {
-    protected final Map<HardwareUnit, Map.Entry<Constant, Predicate<Parameter>>> hardwareUnits = new HashMap<>();
-    protected final FlagRegister flagRegister;
-
-    protected ProxyUnit(FlagRegister flagRegister) {
-        this.flagRegister = flagRegister;
-    }
+    protected final List<Tuple3<HardwareUnit, Character, Predicate<Character>>> hardwareUnits = new ArrayList<>();
 
     public void registerHardwareUnit(
             HardwareUnit hardwareUnit,
-            Constant offset,
-            Predicate<Parameter> addressSpaceValidator
+            Character offset,
+            Predicate<Character> addressSpaceValidator
     ) {
-        hardwareUnits.put(hardwareUnit, Map.entry(offset, addressSpaceValidator));
+        hardwareUnits.add(Tuple.of(hardwareUnit, offset, addressSpaceValidator));
     }
 
     @Override public Parameter locate(Parameter directOrLocation) {
@@ -32,73 +29,56 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
             return directOrLocation;
         }
 
-        if (location instanceof UndefinedMemoryLocation) {
-            return new UnresolvedMemory(flagRegister);
+        var acceptingUnits = hardwareUnits.stream()
+                .filter(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.getThird().test(location.getValue()))
+                .map(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.map(
+                        (first, second, third) -> Tuple.of((MemoryUnit) first, second, third)
+                ))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (acceptingUnits.size() > 1) {
+            raiseFlag(FlagRegister.MULTISTATE_FLAG);
+            acceptingUnits.clear();
         }
 
-        var targetedLocation = new AbsoluteMemoryLocation(new Constant(directOrLocation.getValue()));
+        var fromDelegate = super.locate(location);
+        if (acceptingUnits.isEmpty()) {
+            if (fromDelegate instanceof ResolvedMemory) {
+                return fromDelegate;
+            }
+            return unresolvedSink;
+        }
+
+        if (fromDelegate instanceof ResolvedMemory) {
+            raiseFlag(FlagRegister.MULTISTATE_FLAG);
+            return unresolvedSink;
+        }
+
+        var acceptingUnitOffsetTuple =
+                acceptingUnits.getFirst().map((first, second, ignored) -> Tuple.of(first, second));
+        var unit = acceptingUnitOffsetTuple.getFirst();
+        var offset = acceptingUnitOffsetTuple.getSecond();
+        var directLocation = new DirectMemoryLocation((char) (location.getValue() - offset));
         var discardingMemoryUnit = new ReadableWriteableMemoryUnit() {
             @Override public void write(MemoryLocation location, char value) {
-                flagRegister.set(FlagRegister.SEG_FLAG);
+                raiseFlag(FlagRegister.SEG_FLAG);
             }
 
             @Override public char read(MemoryLocation location) {
-                flagRegister.set(FlagRegister.SEG_FLAG);
+                raiseFlag(FlagRegister.SEG_FLAG);
                 return 0;
             }
         };
 
-        Function<Parameter, Map.Entry<MemoryUnit, Constant>> acquireMemoryUnitForLocation = addressSpaceLocation -> {
-            var identifiedUnits = hardwareUnits.entrySet().stream()
-                    .filter(entry -> entry.getValue().getValue().test(addressSpaceLocation))
-                    .limit(2).toList();
-            if (identifiedUnits.size() == 1) {
-                return Map.entry(identifiedUnits.getFirst().getKey(), identifiedUnits.getFirst().getValue().getKey());
-            }
-
-            if (identifiedUnits.size() > 1) {
-                flagRegister.set(FlagRegister.MULTISTATE_FLAG);
-            }
-
-            return Map.entry(discardingMemoryUnit, new Constant((char) 0));
-        };
-
-        Function<Parameter,  Map.Entry<ReadableMemoryUnit, Constant>> acquireReadableMemoryUnitForLocation = addressSpaceLocation -> {
-            var unitAndOffset = acquireMemoryUnitForLocation.apply(addressSpaceLocation);
-            if (unitAndOffset.getKey() instanceof ReadableMemoryUnit readable) {
-                return Map.entry(readable, unitAndOffset.getValue());
-            }
-            return Map.entry(discardingMemoryUnit, new Constant((char) 0));
-        };
-
-        Function<Parameter,  Map.Entry<WriteableMemoryUnit, Constant>> acquireWritableMemoryUnitForLocation = addressSpaceLocation -> {
-            var unitAndOffset = acquireMemoryUnitForLocation.apply(addressSpaceLocation);
-            if (unitAndOffset.getKey() instanceof WriteableMemoryUnit writeable) {
-                return Map.entry(writeable, unitAndOffset.getValue());
-            }
-            return Map.entry(discardingMemoryUnit, new Constant((char) 0));
-        };
-
-        var writeableMemoryUnitAndOffset = acquireWritableMemoryUnitForLocation.apply(targetedLocation);
-        var readableMemoryUnitAndOffset = acquireReadableMemoryUnitForLocation.apply(targetedLocation);
-
-        var fromDelegate = super.locate(directOrLocation);
-        if (fromDelegate instanceof ResolvedMemory && (writeableMemoryUnitAndOffset.getKey() != discardingMemoryUnit || readableMemoryUnitAndOffset.getKey() != discardingMemoryUnit)) {
-            flagRegister.set(FlagRegister.MULTISTATE_FLAG);
-            return new UnresolvedMemory(flagRegister);
-        }
-
-        if (fromDelegate instanceof ResolvedMemory) {
-            return fromDelegate;
-        }
-
-        if (fromDelegate instanceof UndefinedMemoryLocation && readableMemoryUnitAndOffset.getKey() == discardingMemoryUnit && writeableMemoryUnitAndOffset.getKey() == discardingMemoryUnit) {
-            return new UnresolvedMemory(flagRegister);
-        }
-
+        var readableMemoryUnit = (unit instanceof ReadableMemoryUnit readable)
+                ? readable
+                : discardingMemoryUnit;
+        var writeableMemoryUnit = (unit instanceof WriteableMemoryUnit writeable)
+                ? writeable
+                : discardingMemoryUnit;
         return new ResolvedMemory(
-                () -> readableMemoryUnitAndOffset.getKey().read(new AbsoluteMemoryLocation(new Constant((char) (targetedLocation.getValue() - readableMemoryUnitAndOffset.getValue().getValue())))),
-                value -> writeableMemoryUnitAndOffset.getKey().write(new AbsoluteMemoryLocation(new Constant((char) (targetedLocation.getValue() - readableMemoryUnitAndOffset.getValue().getValue()))), value)
+                () -> readableMemoryUnit.read(directLocation),
+                (value) -> writeableMemoryUnit.write(directLocation, value)
         );
     }
 }

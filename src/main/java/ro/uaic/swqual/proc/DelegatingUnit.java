@@ -3,44 +3,79 @@ package ro.uaic.swqual.proc;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.operands.DirectMemoryLocation;
+import ro.uaic.swqual.model.operands.FlagRegister;
+import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
-import ro.uaic.swqual.model.operands.UndefinedMemoryLocation;
+import ro.uaic.swqual.model.operands.UnresolvedMemory;
+import ro.uaic.swqual.util.Tuple;
+import ro.uaic.swqual.util.Tuple2;
+import ro.uaic.swqual.util.Tuple3;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
-    protected final Map<ProcessingUnit, Predicate<Instruction>> executorUnits = new HashMap<>();
-    protected final List<LocatingUnit> locatingUnits = new ArrayList<>();
+    protected final List<Tuple2<ProcessingUnit, Predicate<Instruction>>> executorUnits = new ArrayList<>();
+    protected final List<Tuple3<LocatingUnit, Character, Predicate<Character>>> locatingUnits = new ArrayList<>();
+    protected final UnresolvedMemory unresolvedSink;
+
+    protected DelegatingUnit() {
+        this.unresolvedSink = new UnresolvedMemory(() -> raiseFlag(FlagRegister.SEG_FLAG));
+    }
 
     public void registerExecutor(ProcessingUnit unit, Predicate<Instruction> filter) {
-        executorUnits.put(unit, filter);
+        executorUnits.add(Tuple.of(unit, filter));
     }
 
     public void registerExecutor(ProcessingUnit unit) {
-        executorUnits.put(unit, unit.getDefaultFilter());
+        executorUnits.add(Tuple.of(unit, unit.getDefaultFilter()));
     }
 
-    public void registerLocator(LocatingUnit unit) {
-        locatingUnits.add(unit);
+    public void registerLocator(
+            LocatingUnit unit,
+            Character offset,
+            Predicate<Character> addressSpaceValidator
+    ) {
+        locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
     }
 
     public Parameter locate(Parameter parameterOrLocation) {
-        return locatingUnits.stream()
-                .map(unit -> unit.locate(parameterOrLocation))
-                .filter(Objects::nonNull)
-                .findFirst().orElse(new UndefinedMemoryLocation());
+        if (!(parameterOrLocation instanceof MemoryLocation location)) {
+            return parameterOrLocation;
+        }
+
+        var acceptingLocators = locatingUnits.stream()
+                .filter(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.getThird().test(location.getValue()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (acceptingLocators.size() > 1) {
+            raiseFlag(FlagRegister.MULTISTATE_FLAG);
+            acceptingLocators.clear();
+        }
+
+        if (acceptingLocators.isEmpty()) {
+            return unresolvedSink;
+        }
+
+        var acceptingLocatorOffsetValidatorTuple = acceptingLocators.getFirst();
+        var locator = acceptingLocatorOffsetValidatorTuple.getFirst();
+        var offset = acceptingLocatorOffsetValidatorTuple.getSecond();
+        var directLocation = new DirectMemoryLocation((char) (location.getValue() - offset));
+        return locator.locate(directLocation);
     }
 
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
-        executorUnits.entrySet().stream()
-                .filter(entry -> entry.getValue().test(instruction))
-                .map(Map.Entry::getKey)
+        executorUnits.stream()
+                .filter(executorValidatorTuple -> executorValidatorTuple.getSecond().test(instruction))
+                .map(Tuple2::getFirst)
                 .forEach(unit -> unit.execute(instruction));
     }
 
     @Override
     public Predicate<Instruction> getDefaultFilter() {
-        return executorUnits.values().stream().reduce(i -> true, Predicate::or);
+        return executorUnits.stream().map(Tuple2::getSecond).reduce(i -> true, Predicate::or);
     }
 }
