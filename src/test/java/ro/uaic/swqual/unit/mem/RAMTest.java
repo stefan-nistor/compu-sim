@@ -1,14 +1,15 @@
-package ro.uaic.swqual.mem;
+package ro.uaic.swqual.unit.mem;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.ValueException;
+import ro.uaic.swqual.mem.RAM;
 import ro.uaic.swqual.model.operands.FlagRegister;
-import ro.uaic.swqual.proc.ProcTestUtility;
+import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
-public class RAMTest implements MemTestUtility, ProcTestUtility {
+class RAMTest implements MemTestUtility, ProcTestUtility {
     @Test
-    public void readWriteCompleteTest() {
+    void readWriteCompleteTest() {
         exceptionLess(() -> {
             var flags = freg();
             var ram = new RAM(65536, flags);
@@ -25,7 +26,7 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
             var cmpValue = 0;
             for (int i = 0; i < 65536; i+=2) {
                 var atMem = ram.read(loc);
-                Assert.assertEquals(atMem, (char)cmpValue);
+                Assertions.assertEquals(atMem, (char)cmpValue);
                 cmpValue += 4;
                 addr.setValue((char) (addr.getValue() + 2));
             }
@@ -33,7 +34,7 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
     }
 
     @Test
-    public void writeEvenReadOddTest() {
+    void writeEvenReadOddTest() {
         exceptionLess(() -> {
             // Little endian, keep in mind.
 
@@ -52,12 +53,12 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
 
             addr.setValue(0x101);
             var read = ram.read(loc);
-            Assert.assertEquals((char) 0x3456, read);
+            Assertions.assertEquals((char) 0x3456, read);
         });
     }
 
     @Test
-    public void partialOverwriteTest() {
+    void partialOverwriteTest() {
         exceptionLess(() -> {
             var flags = freg();
             var ram = new RAM(1024, flags);
@@ -76,13 +77,13 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
             addr.setValue(0x102);
             var read2 = ram.read(loc);
 
-            Assert.assertEquals((char) 0xFF11, read1);
-            Assert.assertEquals((char) 0x22FF, read2);
+            Assertions.assertEquals((char) 0xFF11, read1);
+            Assertions.assertEquals((char) 0x22FF, read2);
         });
     }
 
     @Test
-    public void segmentationTest() {
+    void segmentationTest() {
         exceptionLess(() -> {
             var flags = freg();
             var ram = new RAM(1024, flags);
@@ -91,21 +92,21 @@ public class RAMTest implements MemTestUtility, ProcTestUtility {
 
             addr.setValue(1022);
             ram.write(loc, (char) 0x1234);
-            Assert.assertEquals(0x1234, ram.read(loc));
-            Assert.assertEquals((char) 0x0, flags.getValue());
+            Assertions.assertEquals(0x1234, ram.read(loc));
+            Assertions.assertEquals((char) 0x0, flags.getValue());
 
             addr.setValue(1023);
             ram.write(loc, (char) 0x5678);
-            Assert.assertTrue(flags.isSet(FlagRegister.SEG_FLAG));
+            Assertions.assertTrue(flags.isSet(FlagRegister.SEG_FLAG));
             flags.clear();
-            Assert.assertEquals(0, ram.read(loc));
-            Assert.assertTrue(flags.isSet(FlagRegister.SEG_FLAG));
+            Assertions.assertEquals(0, ram.read(loc));
+            Assertions.assertTrue(flags.isSet(FlagRegister.SEG_FLAG));
         });
     }
 
     @Test
-    public void memorySizeTooLargeCreateTest() {
-        Assert.assertThrows(ValueException.class, () -> new RAM(65537, freg()));
-        Assert.assertThrows(ValueException.class, () -> new RAM(1, freg()));
+    void memorySizeTooLargeCreateTest() {
+        Assertions.assertThrows(ValueException.class, () -> new RAM(65537, freg()));
+        Assertions.assertThrows(ValueException.class, () -> new RAM(1, freg()));
     }
 }

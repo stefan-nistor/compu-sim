@@ -1,6 +1,6 @@
-package ro.uaic.swqual.proc;
+package ro.uaic.swqual.unit.proc;
 
-import ro.uaic.swqual.TestUtility;
+import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
@@ -9,6 +9,7 @@ import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.ResolvedMemory;
+import ro.uaic.swqual.proc.LocatingUnit;
 
 public interface ProcTestUtility extends TestUtility {
     default Instruction add(Parameter p0, Parameter p1) {

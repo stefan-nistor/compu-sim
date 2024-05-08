@@ -1,8 +1,8 @@
-package ro.uaic.swqual.proc;
+package ro.uaic.swqual.unit.proc;
 
-import org.junit.Assert;
-import org.junit.Test;
-import ro.uaic.swqual.mem.MemTestUtility;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.mem.MemoryUnit;
 import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.mem.ReadableWriteableMemoryUnit;
@@ -11,12 +11,13 @@ import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.ResolvedMemory;
 import ro.uaic.swqual.model.operands.UnresolvedMemory;
+import ro.uaic.swqual.proc.ProxyUnit;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
+class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
     public ProxyUnit<MemoryUnit> mockProxyUnit(FlagRegister register) {
         return new ProxyUnit<>() {
             @Override
@@ -56,38 +57,38 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
     }
 
     @Test
-    public void locateOfNonMemoryLocationShouldActAsIdentity() {
+    void locateOfNonMemoryLocationShouldActAsIdentity() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var c0 = _const(10);
         var r0 = reg();
-        Assert.assertEquals(c0, unit.locate(c0));
-        Assert.assertEquals(r0, unit.locate(r0));
+        Assertions.assertEquals(c0, unit.locate(c0));
+        Assertions.assertEquals(r0, unit.locate(r0));
     }
 
     @Test
-    public void locateOfNonHWShouldReturnUnresolvedMemoryAndNotRaiseSegFlag() {
+    void locateOfNonHWShouldReturnUnresolvedMemoryAndNotRaiseSegFlag() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var loc = dloc((char) 0x100);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfNonHWShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
+    void locateOfNonHWShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var loc = dloc((char) 0x100);
         var mem = unit.locate(loc);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         discard(mem.getValue());
-        Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfMultipleHWShouldReturnUnresolvedMemoryAndRaiseMultistateFlag() {
+    void locateOfMultipleHWShouldReturnUnresolvedMemoryAndRaiseMultistateFlag() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
 
@@ -99,13 +100,13 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
 
         var loc = dloc((char) 0x90);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-        Assert.assertTrue(freg.isSet(FlagRegister.MULTISTATE_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.MULTISTATE_FLAG));
     }
 
     @Test
-    public void locateOfHWAndDelegateOverlapShouldReturnUnresolvedMemoryAndRaiseMultistateFlag() {
+    void locateOfHWAndDelegateOverlapShouldReturnUnresolvedMemoryAndRaiseMultistateFlag() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
 
@@ -117,13 +118,13 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
 
         var loc = dloc((char) 0x90);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-        Assert.assertTrue(freg.isSet(FlagRegister.MULTISTATE_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.MULTISTATE_FLAG));
     }
 
     @Test
-    public void locateOfMultipleHWShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
+    void locateOfMultipleHWShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
 
@@ -135,14 +136,14 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
 
         var loc = dloc((char) 0x90);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         discard(mem.getValue());
-        Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfSingleHWShouldResolveCorrectly() {
+    void locateOfSingleHWShouldResolveCorrectly() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var hw = proxyRWMemoryUnit(null, null);
@@ -150,11 +151,11 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
     }
 
     @Test
-    public void locateOfSingleRWHWShouldReturnResolvedMemoryThatIsReadWriteable() {
+    void locateOfSingleRWHWShouldReturnResolvedMemoryThatIsReadWriteable() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var storage = new AtomicInteger(0);
@@ -166,16 +167,16 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         discard(mem.getValue());
-        Assert.assertEquals(0, freg.getValue());
+        Assertions.assertEquals(0, freg.getValue());
 
         mem.setValue((char) 10);
-        Assert.assertEquals(10, mem.getValue());
+        Assertions.assertEquals(10, mem.getValue());
     }
 
     @Test
-    public void locateOfSingleROHWShouldReturnResolvedMemoryThatIsReadableAndRaisesSegOnWrite() {
+    void locateOfSingleROHWShouldReturnResolvedMemoryThatIsReadableAndRaisesSegOnWrite() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var storage = new AtomicInteger(0);
@@ -186,20 +187,20 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         discard(mem.getValue());
-        Assert.assertEquals(0, freg.getValue());
+        Assertions.assertEquals(0, freg.getValue());
 
         storage.set(20);
-        Assert.assertEquals(20, mem.getValue());
-        Assert.assertEquals(0, freg.getValue());
+        Assertions.assertEquals(20, mem.getValue());
+        Assertions.assertEquals(0, freg.getValue());
 
         mem.setValue((char) 10);
-        Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfSingleWOHWShouldReturnResolvedMemoryThatIsWriteableAndRaisesSegOnRead() {
+    void locateOfSingleWOHWShouldReturnResolvedMemoryThatIsWriteableAndRaisesSegOnRead() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var storage = new AtomicInteger(0);
@@ -210,18 +211,18 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         discard(mem.getValue());
-        Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
 
         freg.clear();
         mem.setValue((char) 20);
-        Assert.assertEquals(0, freg.getValue());
-        Assert.assertEquals(20, storage.get());
+        Assertions.assertEquals(0, freg.getValue());
+        Assertions.assertEquals(20, storage.get());
     }
 
     @Test
-    public void locateOfSingleHWShouldReturnUnresolvedMemoryWhenOutOfRange() {
+    void locateOfSingleHWShouldReturnUnresolvedMemoryWhenOutOfRange() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var hw0 = proxyRWMemoryUnit(null, null);
@@ -229,23 +230,23 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw0, (char) 0x50, (char) 0xB0);
         var loc = dloc((char) 0x49);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x50);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFF);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
 
     @Test
-    public void locateOfSingleMappedByPredicateLocationShouldReturnUnresolvedMemoryWhenOutOfRange() {
+    void locateOfSingleMappedByPredicateLocationShouldReturnUnresolvedMemoryWhenOutOfRange() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var hw = proxyRWMemoryUnit(null, null);
@@ -253,23 +254,23 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw, (char) 0x50, addr -> addr >= 0x50 && addr + 1 < 0x100);
         var loc = dloc((char) 0x49);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x50);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFF);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
 
     @Test
-    public void locateOfAdjacentHwAndLocatorShouldReturnResolveInRangeAndNotResolveOutOfRange() {
+    void locateOfAdjacentHwAndLocatorShouldReturnResolveInRangeAndNotResolveOutOfRange() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var hw = proxyRWMemoryUnit(null, null);
@@ -279,35 +280,35 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(locator, (char)0x100, (char) 0x100);
         var loc = dloc((char) 0x49);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x50);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFF); // 1 byte in hw, 1 byte in loc
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x100);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0x1FE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0x1FF);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
 
     @Test
-    public void locateOfAdjacentLocatorAndHwShouldReturnResolveInRangeAndNotResolveOutOfRange() {
+    void locateOfAdjacentLocatorAndHwShouldReturnResolveInRangeAndNotResolveOutOfRange() {
         var freg = freg();
         var unit = mockProxyUnit(freg);
         var hw = proxyRWMemoryUnit(null, null);
@@ -317,30 +318,30 @@ public class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerHardwareUnit(hw, (char)0x100, (char) 0x100);
         var loc = dloc((char) 0x49);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x50);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFF); // 1 byte in hw, 1 byte in loc
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x100);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0x1FE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0x1FF);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
 }

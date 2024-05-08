@@ -1,17 +1,19 @@
-package ro.uaic.swqual.proc;
+package ro.uaic.swqual.unit.proc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
+import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.proc.ProcessingUnit;
 
 import java.util.List;
 
-public class ProcessingUnitTest implements ProcTestUtility {
+class ProcessingUnitTest implements ProcTestUtility {
     @Test
-    public void dummyProcessingUnitTest() {
+    void dummyProcessingUnitTest() {
         var p = new ProcessingUnit() {
             Instruction last = null;
 
@@ -38,12 +40,12 @@ public class ProcessingUnitTest implements ProcTestUtility {
 
         for (Instruction instruction : instructions) {
             p.execute(instruction);
-            Assert.assertEquals(p.getLast().getType(), instruction.getType());
+            Assertions.assertEquals(p.getLast().getType(), instruction.getType());
         }
     }
 
     @Test
-    public void dummyProcessingUnitDefaultFilterTest() {
+    void dummyProcessingUnitDefaultFilterTest() {
         var unit = new ProcessingUnit() {
             Instruction last = null;
 
@@ -72,7 +74,7 @@ public class ProcessingUnitTest implements ProcTestUtility {
 
         for (Instruction instruction : instructions) {
             proc.execute(instruction);
-            Assert.assertEquals(unit.getLast().getType(), instruction.getType());
+            Assertions.assertEquals(unit.getLast().getType(), instruction.getType());
         }
     }
 }

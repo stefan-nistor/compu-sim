@@ -1,6 +1,6 @@
-package ro.uaic.swqual.mem;
+package ro.uaic.swqual.unit.mem;
 
-import ro.uaic.swqual.TestUtility;
+import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;

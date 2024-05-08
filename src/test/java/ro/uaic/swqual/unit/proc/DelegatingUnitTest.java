@@ -1,15 +1,17 @@
-package ro.uaic.swqual.proc;
+package ro.uaic.swqual.unit.proc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
-import ro.uaic.swqual.mem.MemTestUtility;
+import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.ResolvedMemory;
 import ro.uaic.swqual.model.operands.UnresolvedMemory;
+import ro.uaic.swqual.proc.DelegatingUnit;
+import ro.uaic.swqual.proc.ProcessingUnit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
+class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
     DelegatingUnit mockDelegatingUnit(FlagRegister register) {
         return new DelegatingUnit() {
             @Override
@@ -28,38 +30,38 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
     }
 
     @Test
-    public void locateOfNonMemoryLocationShouldActAsIdentity() {
+    void locateOfNonMemoryLocationShouldActAsIdentity() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var c0 = _const(10);
         var r0 = reg();
-        Assert.assertEquals(c0, unit.locate(c0));
-        Assert.assertEquals(r0, unit.locate(r0));
+        Assertions.assertEquals(c0, unit.locate(c0));
+        Assertions.assertEquals(r0, unit.locate(r0));
     }
 
     @Test
-    public void locateOfNonMappedMemoryLocationShouldReturnUnresolvedMemoryAndNotRaiseSegFlag() {
+    void locateOfNonMappedMemoryLocationShouldReturnUnresolvedMemoryAndNotRaiseSegFlag() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var loc = dloc((char) 0x100);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfNonMappedMemoryLocationShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
+    void locateOfNonMappedMemoryLocationShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var loc = dloc((char) 0x100);
         var mem = unit.locate(loc);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         discard(mem.getValue());
-        Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfMultipleMappedMemoryLocationShouldReturnUnresolvedMemoryAndRaiseMultistateFlag() {
+    void locateOfMultipleMappedMemoryLocationShouldReturnUnresolvedMemoryAndRaiseMultistateFlag() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
 
@@ -71,13 +73,13 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
 
         var loc = dloc((char) 0x90);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-        Assert.assertTrue(freg.isSet(FlagRegister.MULTISTATE_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.MULTISTATE_FLAG));
     }
 
     @Test
-    public void locateOfMultipleMappedMemoryLocationShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
+    void locateOfMultipleMappedMemoryLocationShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
 
@@ -89,14 +91,14 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
 
         var loc = dloc((char) 0x90);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
-        Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
+        Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         discard(mem.getValue());
-        Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+        Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
     @Test
-    public void locateOfSingleMappedMemoryLocationShouldReturnResolvedMemory() {
+    void locateOfSingleMappedMemoryLocationShouldReturnResolvedMemory() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var resolvingSubUnit = singleLocationUnit(freg);
@@ -104,11 +106,11 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
     }
 
     @Test
-    public void locateOfSingleMappedMemoryLocationShouldReturnResolvedMemoryAndNotRaiseAnyFlag() {
+    void locateOfSingleMappedMemoryLocationShouldReturnResolvedMemoryAndNotRaiseAnyFlag() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var resolvingSubUnit = singleLocationUnit(freg);
@@ -116,13 +118,13 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         discard(mem.getValue());
-        Assert.assertEquals(0, freg.getValue());
+        Assertions.assertEquals(0, freg.getValue());
     }
 
     @Test
-    public void locateOfSingleMappedMemoryLocationShouldReturnResolvedMemoryThatStores() {
+    void locateOfSingleMappedMemoryLocationShouldReturnResolvedMemoryThatStores() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var resolvingSubUnit = singleLocationUnit(freg);
@@ -130,15 +132,15 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0x100);
         var loc = dloc((char) 0x75);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         mem.setValue((char) 0x256);
 
         var anotherMem = unit.locate(dloc((char) 0x75));
-        Assert.assertEquals(0x256, anotherMem.getValue());
+        Assertions.assertEquals(0x256, anotherMem.getValue());
     }
 
     @Test
-    public void locateOfSingleMappedMemoryLocationShouldReturnUnresolvedMemoryWhenOutOfRange() {
+    void locateOfSingleMappedMemoryLocationShouldReturnUnresolvedMemoryWhenOutOfRange() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var resolvingSubUnit = singleLocationUnit(freg);
@@ -146,23 +148,23 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0xB0);
         var loc = dloc((char) 0x49);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x50);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFF);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
 
     @Test
-    public void locateOfSingleMappedByPredicateLocationShouldReturnUnresolvedMemoryWhenOutOfRange() {
+    void locateOfSingleMappedByPredicateLocationShouldReturnUnresolvedMemoryWhenOutOfRange() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
         var resolvingSubUnit = singleLocationUnit(freg);
@@ -170,19 +172,19 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(resolvingSubUnit, (char) 0x50, addr -> addr >= 0x50 && addr + 1 < 0x100);
         var loc = dloc((char) 0x49);
         var mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
         loc = dloc((char) 0x50);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFE);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof ResolvedMemory);
+        Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
         loc = dloc((char) 0xFF);
         mem = unit.locate(loc);
-        Assert.assertTrue(mem instanceof UnresolvedMemory);
+        Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
 
     ProcessingUnit proxyExecutor(FlagRegister freg, Consumer<Instruction> onExecute) {
@@ -200,7 +202,7 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
     }
 
     @Test
-    public void registerExecutorShouldStoreForLaterExecution() {
+    void registerExecutorShouldStoreForLaterExecution() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
 
@@ -216,12 +218,12 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.execute(new Instruction());
         unit.execute(new Instruction());
 
-        Assert.assertEquals(2, proxy0ReceivedInstructions.get().size());
-        Assert.assertEquals(2, proxy1ReceivedInstructions.get().size());
+        Assertions.assertEquals(2, proxy0ReceivedInstructions.get().size());
+        Assertions.assertEquals(2, proxy1ReceivedInstructions.get().size());
     }
 
     @Test
-    public void registerFilteredExecutorShouldFilter() {
+    void registerFilteredExecutorShouldFilter() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
 
@@ -238,14 +240,14 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.execute(new Instruction(InstructionType.ALU_SUB));
         unit.execute(new Instruction(InstructionType.ALU_UMUL));
 
-        Assert.assertEquals(1, proxy0ReceivedInstructions.get().size());
-        Assert.assertEquals(1, proxy1ReceivedInstructions.get().size());
-        Assert.assertEquals(InstructionType.ALU_ADD, proxy0ReceivedInstructions.get().getFirst().getType());
-        Assert.assertEquals(InstructionType.ALU_SUB, proxy1ReceivedInstructions.get().getFirst().getType());
+        Assertions.assertEquals(1, proxy0ReceivedInstructions.get().size());
+        Assertions.assertEquals(1, proxy1ReceivedInstructions.get().size());
+        Assertions.assertEquals(InstructionType.ALU_ADD, proxy0ReceivedInstructions.get().getFirst().getType());
+        Assertions.assertEquals(InstructionType.ALU_SUB, proxy1ReceivedInstructions.get().getFirst().getType());
     }
 
     @Test
-    public void registerFilterExecutorShouldProvideAValidDefaultFilter() {
+    void registerFilterExecutorShouldProvideAValidDefaultFilter() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
 
@@ -259,7 +261,7 @@ public class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerExecutor(proxyExec1, instruction -> instruction.getType() == InstructionType.ALU_SUB);
 
         var filter = unit.getDefaultFilter();
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 Stream.of(
                         InstructionType.ALU_ADD,
                         InstructionType.ALU_SUB,

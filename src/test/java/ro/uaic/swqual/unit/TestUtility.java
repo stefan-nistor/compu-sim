@@ -1,14 +1,17 @@
-package ro.uaic.swqual;
+package ro.uaic.swqual.unit;
 
-import org.junit.Assert;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Assertions;
 
 public interface TestUtility {
+    interface ThrowingRunnable {
+        void run() throws Throwable;
+    }
+
     default void exceptionLess(ThrowingRunnable r) {
         try {
             r.run();
         } catch (Throwable t) {
-            Assert.fail(t.getMessage());
+            Assertions.fail(t.getMessage());
         }
     }
 

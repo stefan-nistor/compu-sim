@@ -1,29 +1,33 @@
-package ro.uaic.swqual.proc;
+package ro.uaic.swqual.unit.proc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.proc.ALU;
+import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.proc.ClockDependent;
+import ro.uaic.swqual.proc.IPU;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-public class CPUTest implements ProcTestUtility {
+class CPUTest implements ProcTestUtility {
     @Test
-    public void processorDataRegSize() {
+    void processorDataRegSize() {
         var processor = new CPU();
         var dataRegs = processor.getDataRegisters();
-        Assert.assertEquals(8, dataRegs.size());
+        Assertions.assertEquals(8, dataRegs.size());
     }
 
     @Test
-    public void processorDataRegStore() {
+    void processorDataRegStore() {
         try {
             var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
@@ -31,17 +35,17 @@ public class CPUTest implements ProcTestUtility {
             var reg2 = dataRegs.get(5);
             reg1.setValue(1234);
             reg2.setValue(5678);
-            Assert.assertEquals(1234, reg1.getValue());
-            Assert.assertEquals(5678, reg2.getValue());
-            Assert.assertEquals(1234, processor.getDataRegisters().get(3).getValue());
-            Assert.assertEquals(5678, processor.getDataRegisters().get(5).getValue());
+            Assertions.assertEquals(1234, reg1.getValue());
+            Assertions.assertEquals(5678, reg2.getValue());
+            Assertions.assertEquals(1234, processor.getDataRegisters().get(3).getValue());
+            Assertions.assertEquals(5678, processor.getDataRegisters().get(5).getValue());
         } catch (ValueException exception) {
-            Assert.fail(exception.getMessage());
+            Assertions.fail(exception.getMessage());
         }
     }
 
     @Test
-    public void handleAllInstructions() {
+    void handleAllInstructions() {
         exceptionLess(() -> {
             var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
@@ -53,7 +57,7 @@ public class CPUTest implements ProcTestUtility {
     }
 
     @Test
-    public void handleInstructionPassing() {
+    void handleInstructionPassing() {
         exceptionLess(() -> {
             var processor = new CPU();
             var dregs = processor.getDataRegisters();
@@ -63,14 +67,14 @@ public class CPUTest implements ProcTestUtility {
             dregs.get(0).setValue((char)0x1002);
             dregs.get(1).setValue((char)0x5000);
             processor.execute(new Instruction(InstructionType.ALU_UMUL, dregs.get(0), dregs.get(1)));
-            Assert.assertEquals((char)0x0500, dregs.get(7).getValue());
-            Assert.assertEquals((char)0xA000, dregs.get(0).getValue());
-            Assert.assertTrue(freg.isSet(FlagRegister.OVERFLOW_FLAG));
+            Assertions.assertEquals((char)0x0500, dregs.get(7).getValue());
+            Assertions.assertEquals((char)0xA000, dregs.get(0).getValue());
+            Assertions.assertTrue(freg.isSet(FlagRegister.OVERFLOW_FLAG));
         });
     }
 
     @Test
-    public void handleInstructionPassingDoNotPassUnregistered() {
+    void handleInstructionPassingDoNotPassUnregistered() {
         exceptionLess(() -> {
             var processor = new CPU();
             var dregs = processor.getDataRegisters();
@@ -79,14 +83,14 @@ public class CPUTest implements ProcTestUtility {
             dregs.get(0).setValue((char)0x1002);
             dregs.get(1).setValue((char)0x5000);
             processor.execute(new Instruction(InstructionType.ALU_UMUL, dregs.get(0), dregs.get(1)));
-            Assert.assertEquals((char)0x0000, dregs.get(7).getValue());
-            Assert.assertEquals((char)0x1002, dregs.get(0).getValue());
-            Assert.assertFalse(freg.isSet(FlagRegister.OVERFLOW_FLAG));
+            Assertions.assertEquals((char)0x0000, dregs.get(7).getValue());
+            Assertions.assertEquals((char)0x1002, dregs.get(0).getValue());
+            Assertions.assertFalse(freg.isSet(FlagRegister.OVERFLOW_FLAG));
         });
     }
 
     @Test
-    public void handleInstructionFiltering() {
+    void handleInstructionFiltering() {
         exceptionLess(() -> {
             var processor = new CPU();
             var dregs = processor.getDataRegisters();
@@ -105,29 +109,29 @@ public class CPUTest implements ProcTestUtility {
             d1.setValue((char) 0x0010);
 
             processor.execute(new Instruction(InstructionType.ALU_ADD, d0, d1));
-            Assert.assertEquals((char) 0x0110, d0.getValue());
-            Assert.assertEquals((char) 0x0000, d6.getValue());
-            Assert.assertEquals((char) 0x0000, d7.getValue());
+            Assertions.assertEquals((char) 0x0110, d0.getValue());
+            Assertions.assertEquals((char) 0x0000, d6.getValue());
+            Assertions.assertEquals((char) 0x0000, d7.getValue());
             processor.execute(new Instruction(InstructionType.ALU_UMUL, d0, d1));
-            Assert.assertEquals((char) 0x1100, d0.getValue());
-            Assert.assertEquals((char) 0x0000, d6.getValue());
-            Assert.assertEquals((char) 0x0000, d7.getValue());
+            Assertions.assertEquals((char) 0x1100, d0.getValue());
+            Assertions.assertEquals((char) 0x0000, d6.getValue());
+            Assertions.assertEquals((char) 0x0000, d7.getValue());
             processor.execute(new Instruction(InstructionType.ALU_SUB, d0, d1));
-            Assert.assertEquals((char) 0x10F0, d0.getValue());
-            Assert.assertEquals((char) 0x0000, d6.getValue());
-            Assert.assertEquals((char) 0x0000, d7.getValue());
+            Assertions.assertEquals((char) 0x10F0, d0.getValue());
+            Assertions.assertEquals((char) 0x0000, d6.getValue());
+            Assertions.assertEquals((char) 0x0000, d7.getValue());
             processor.execute(new Instruction(InstructionType.ALU_UDIV, d0, d1));
-            Assert.assertEquals((char) 0x010F, d0.getValue());
-            Assert.assertEquals((char) 0x0000, d6.getValue());
-            Assert.assertEquals((char) 0x0000, d7.getValue());
+            Assertions.assertEquals((char) 0x010F, d0.getValue());
+            Assertions.assertEquals((char) 0x0000, d6.getValue());
+            Assertions.assertEquals((char) 0x0000, d7.getValue());
             processor.execute(new Instruction(InstructionType.ALU_UDIV, d0, d1));
-            Assert.assertEquals((char) 0x0010, d0.getValue());
-            Assert.assertEquals((char) 0x0000, d6.getValue());
-            Assert.assertEquals((char) 0x000F, d7.getValue());
+            Assertions.assertEquals((char) 0x0010, d0.getValue());
+            Assertions.assertEquals((char) 0x0000, d6.getValue());
+            Assertions.assertEquals((char) 0x000F, d7.getValue());
             processor.execute(new Instruction(InstructionType.ALU_SUB, d0, d1));
-            Assert.assertEquals((char) 0x0000, d0.getValue());
-            Assert.assertEquals((char) 0x0000, d6.getValue());
-            Assert.assertEquals((char) 0x000F, d7.getValue());
+            Assertions.assertEquals((char) 0x0000, d0.getValue());
+            Assertions.assertEquals((char) 0x0000, d6.getValue());
+            Assertions.assertEquals((char) 0x000F, d7.getValue());
         });
     }
 
@@ -176,7 +180,7 @@ public class CPUTest implements ProcTestUtility {
     }
 
     @Test
-    public void cpuModulesAluIpu() {
+    void cpuModulesAluIpu() {
         exceptionLess(() -> cpuAluIpuTest(
                 List.of(
                         add(ref("r0"), _const(10)),
@@ -200,7 +204,7 @@ public class CPUTest implements ProcTestUtility {
                     while (!flags.isSet(FlagRegister.ILLEGAL_FLAG)) {
                         stepper.onTick();
                     }
-                    Assert.assertEquals((char) 100, cpu.getDataRegisters().get(1).getValue());
+                    Assertions.assertEquals((char) 100, cpu.getDataRegisters().get(1).getValue());
                 }
         ));
     }

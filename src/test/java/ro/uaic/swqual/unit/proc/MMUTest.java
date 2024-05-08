@@ -1,31 +1,32 @@
-package ro.uaic.swqual.proc;
+package ro.uaic.swqual.unit.proc;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.mem.RAM;
-import ro.uaic.swqual.mem.MemTestUtility;
+import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.FlagRegister;
+import ro.uaic.swqual.proc.MMU;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-public class MMUTest implements ProcTestUtility, MemTestUtility {
+class MMUTest implements ProcTestUtility, MemTestUtility {
     @Test
-    public void movRegRegTest() {
+    void movRegRegTest() {
         var r0 = reg(10);
         var r1 = reg();
         var sp = reg();
         var mmu = new MMU(freg(), sp);
         mmu.execute(new Instruction(InstructionType.MMU_MOV, r0, r1));
-        Assert.assertEquals(r0.getValue(), r1.getValue());
+        Assertions.assertEquals(r0.getValue(), r1.getValue());
     }
 
     @Test
-    public void movRegRamTest() {
+    void movRegRamTest() {
         exceptionLess(() -> {
             var sp = reg();
             var freg = freg();
@@ -39,23 +40,23 @@ public class MMUTest implements ProcTestUtility, MemTestUtility {
             var loc = new AbsoluteMemoryLocation(addr); // define [r0] (add pointer)
 
             var location = mmu.locate(loc); // locate [r0]
-            Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-            Assert.assertNotNull(location.getValue()); // actually access [r0]
-            Assert.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+            Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+            Assertions.assertNotNull(location.getValue()); // actually access [r0]
+            Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
 
 
             addr.setValue(0x150);
             location = mmu.locate(loc);
             freg.clear();
 
-            Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-            Assert.assertNotNull(location.getValue());
-            Assert.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+            Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
+            Assertions.assertNotNull(location.getValue());
+            Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         });
     }
 
     @Test
-    public void delegateRamShouldBeDifferentFromMmuRam() {
+    void delegateRamShouldBeDifferentFromMmuRam() {
         exceptionLess(() -> {
             var freg = freg();
             var sp = reg();
@@ -91,15 +92,15 @@ public class MMUTest implements ProcTestUtility, MemTestUtility {
                                 return null;
                             })
                             .allMatch(ignored -> freg.isSet(FlagRegister.SEG_FLAG) != validity);
-            Assert.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
-            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
-            Assert.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
-            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
+            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
+            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
+            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
+            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
         });
     }
 
     @Test
-    public void rangeBasedDelegateRamShouldBeDifferentFromMmuRam() {
+    void rangeBasedDelegateRamShouldBeDifferentFromMmuRam() {
         exceptionLess(() -> {
             var freg = freg();
             var sp = reg();
@@ -140,10 +141,10 @@ public class MMUTest implements ProcTestUtility, MemTestUtility {
                                 return null;
                             })
                             .allMatch(ignored -> freg.isSet(FlagRegister.SEG_FLAG) != validity);
-            Assert.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
-            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
-            Assert.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
-            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
+            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
+            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
+            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
+            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
         });
     }
 }
