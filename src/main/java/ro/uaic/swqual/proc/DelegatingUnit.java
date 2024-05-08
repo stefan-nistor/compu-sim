@@ -3,7 +3,7 @@ package ro.uaic.swqual.proc;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.Instruction;
-import ro.uaic.swqual.model.operands.DirectMemoryLocation;
+import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
@@ -84,7 +84,7 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
 
         var locator = locatorAndOffset.getFirst();
         var offset = locatorAndOffset.getSecond();
-        var directLocation = new DirectMemoryLocation((char) (location.getValue() - offset));
+        var directLocation = new ConstantMemoryLocation((char) (location.getValue() - offset));
         return locator.locate(directLocation);
     }
 

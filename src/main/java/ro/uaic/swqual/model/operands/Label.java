@@ -1,5 +1,7 @@
 package ro.uaic.swqual.model.operands;
 
+import ro.uaic.swqual.exception.ParameterException;
+
 public class Label extends Parameter {
     private final String name;
 
@@ -11,4 +13,7 @@ public class Label extends Parameter {
         return name;
     }
 
+    @Override public char getValue() throws ParameterException {
+        throw new ParameterException("Label does not contain an actual numeric value");
+    }
 }

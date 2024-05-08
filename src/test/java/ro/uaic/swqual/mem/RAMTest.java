@@ -1,9 +1,8 @@
-package ro.uaic.swqual.memory;
+package ro.uaic.swqual.mem;
 
 import org.junit.Assert;
 import org.junit.Test;
 import ro.uaic.swqual.exception.ValueException;
-import ro.uaic.swqual.mem.RAM;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.proc.ProcTestUtility;
 

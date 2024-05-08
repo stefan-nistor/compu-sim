@@ -8,6 +8,7 @@ import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.ResolvedMemory;
 
 public interface ProcTestUtility extends TestUtility {
     default Instruction add(Parameter p0, Parameter p1) {
@@ -77,5 +78,18 @@ public interface ProcTestUtility extends TestUtility {
         public TestRegister(int value) throws ValueException {
             setValue(value);
         }
+    }
+
+    default LocatingUnit singleLocationUnit(FlagRegister register) {
+        return new LocatingUnit() {
+            private final Register subStorage = reg();
+            @Override public void raiseFlag(char value) {
+                register.set(value);
+            }
+
+            @Override public Parameter locate(Parameter location) {
+                return new ResolvedMemory(subStorage::getValue, subStorage::setValue);
+            }
+        };
     }
 }

@@ -1,5 +1,7 @@
 package ro.uaic.swqual.model.operands;
 
+import ro.uaic.swqual.exception.ParameterException;
+
 public class RegisterReference extends Parameter {
     private final String asmName;
     private final int referencedAtLine;
@@ -15,5 +17,10 @@ public class RegisterReference extends Parameter {
 
     public int getReferencedAtLine() {
         return referencedAtLine;
+    }
+
+    @Override
+    public char getValue() throws ParameterException {
+        throw new ParameterException("Label does not contain an actual numeric value");
     }
 }

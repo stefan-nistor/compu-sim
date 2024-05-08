@@ -3,7 +3,7 @@ package ro.uaic.swqual.proc;
 import org.junit.Assert;
 import org.junit.Test;
 import ro.uaic.swqual.mem.RAM;
-import ro.uaic.swqual.memory.MemTestUtility;
+import ro.uaic.swqual.mem.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;

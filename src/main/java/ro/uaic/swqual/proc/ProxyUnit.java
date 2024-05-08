@@ -33,7 +33,7 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
             Character offset,
             Character size
     ) {
-        hardwareUnits.add(Tuple.of(hardwareUnit, offset, (location) -> location >= offset && location <= offset + size));
+        hardwareUnits.add(Tuple.of(hardwareUnit, offset, (location) -> location >= offset && location + 1 < offset + size));
     }
 
     @Override
@@ -58,7 +58,7 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
 
         var unit = localUnitAndOffset.getFirst();
         var offset = localUnitAndOffset.getSecond();
-        var directLocation = new DirectMemoryLocation((char) (location.getValue() - offset));
+        var directLocation = new ConstantMemoryLocation((char) (location.getValue() - offset));
         var readableMemoryUnit = (unit instanceof ReadableMemoryUnit readable) ? readable : invalidReadWriteSink;
         var writeableMemoryUnit = (unit instanceof WriteableMemoryUnit writeable) ? writeable : invalidReadWriteSink;
         return new ResolvedMemory(
