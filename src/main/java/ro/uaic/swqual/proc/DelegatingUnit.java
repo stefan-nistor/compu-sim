@@ -68,7 +68,7 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
             Character offset,
             Character size
     ) {
-        locatingUnits.add(Tuple.of(unit, offset, (location) -> location >= offset && location <= offset + size));
+        locatingUnits.add(Tuple.of(unit, offset, (location) -> location >= offset && location + 1 < offset + size));
     }
 
     @Override
@@ -98,6 +98,6 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
 
     @Override
     public Predicate<Instruction> getDefaultFilter() {
-        return executorUnits.stream().map(Tuple2::getSecond).reduce(i -> true, Predicate::or);
+        return executorUnits.stream().map(Tuple2::getSecond).reduce(i -> false, Predicate::or);
     }
 }
