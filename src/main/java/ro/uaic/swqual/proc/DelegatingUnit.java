@@ -25,22 +25,6 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
         this.unresolvedSink = new UnresolvedMemory(() -> raiseFlag(FlagRegister.SEG_FLAG));
     }
 
-    public void registerExecutor(ProcessingUnit unit, Predicate<Instruction> filter) {
-        executorUnits.add(Tuple.of(unit, filter));
-    }
-
-    public void registerExecutor(ProcessingUnit unit) {
-        executorUnits.add(Tuple.of(unit, unit.getDefaultFilter()));
-    }
-
-    public void registerLocator(
-            LocatingUnit unit,
-            Character offset,
-            Predicate<Character> addressSpaceValidator
-    ) {
-        locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
-    }
-
     protected <AbstractUnit> Tuple2<AbstractUnit, Character> getUnitAndOffsetForLocation(
             List<Tuple3<AbstractUnit, Character, Predicate<Character>>> units,
             MemoryLocation location
@@ -63,6 +47,23 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
         return acceptingUnits.getFirst();
     }
 
+    public void registerExecutor(ProcessingUnit unit, Predicate<Instruction> filter) {
+        executorUnits.add(Tuple.of(unit, filter));
+    }
+
+    public void registerExecutor(ProcessingUnit unit) {
+        executorUnits.add(Tuple.of(unit, unit.getDefaultFilter()));
+    }
+
+    public void registerLocator(
+            LocatingUnit unit,
+            Character offset,
+            Predicate<Character> addressSpaceValidator
+    ) {
+        locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
+    }
+
+    @Override
     public Parameter locate(Parameter parameterOrLocation) {
         if (!(parameterOrLocation instanceof MemoryLocation location)) {
             return parameterOrLocation;
@@ -79,6 +80,7 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
         return locator.locate(directLocation);
     }
 
+    @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
         executorUnits.stream()
                 .filter(executorValidatorTuple -> executorValidatorTuple.getSecond().test(instruction))

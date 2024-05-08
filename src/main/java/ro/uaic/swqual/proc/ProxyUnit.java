@@ -28,7 +28,8 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
         hardwareUnits.add(Tuple.of(hardwareUnit, offset, addressSpaceValidator));
     }
 
-    @Override public Parameter locate(Parameter directOrLocation) {
+    @Override
+    public Parameter locate(Parameter directOrLocation) {
         if (!(directOrLocation instanceof MemoryLocation location)) {
             return directOrLocation;
         }
