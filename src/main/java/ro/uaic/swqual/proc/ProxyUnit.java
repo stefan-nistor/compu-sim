@@ -28,6 +28,14 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
         hardwareUnits.add(Tuple.of(hardwareUnit, offset, addressSpaceValidator));
     }
 
+    public void registerHardwareUnit(
+            HardwareUnit hardwareUnit,
+            Character offset,
+            Character size
+    ) {
+        hardwareUnits.add(Tuple.of(hardwareUnit, offset, (location) -> location >= offset && location <= offset + size));
+    }
+
     @Override
     public Parameter locate(Parameter directOrLocation) {
         if (!(directOrLocation instanceof MemoryLocation location)) {

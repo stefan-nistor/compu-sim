@@ -7,7 +7,6 @@ import ro.uaic.swqual.memory.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
-import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 
 import java.util.function.BiPredicate;
@@ -56,7 +55,7 @@ public class MMUTest implements ProcTestUtility, MemTestUtility {
     }
 
     @Test
-    public void movDelegateRamShouldBeDifferentFromMmuRam() {
+    public void delegateRamShouldBeDifferentFromMmuRam() {
         exceptionLess(() -> {
             var freg = freg();
             var sp = reg();
@@ -83,6 +82,55 @@ public class MMUTest implements ProcTestUtility, MemTestUtility {
 
             // Relative to MM1
             mmu1.registerHardwareUnit(ram1, (char) 0x0000, (location) -> location + 1 < 0x2000);
+
+            Function<Boolean, BiPredicate<Character, Character>> memoryValidator = (validity) ->
+                    (start, end) -> IntStream.range(start, end)
+                            .mapToObj(addrVal -> {
+                                freg.clear();
+                                discard(mmu0.locate(aloc(reg(addrVal))).getValue());
+                                return null;
+                            })
+                            .allMatch(ignored -> freg.isSet(FlagRegister.SEG_FLAG) != validity);
+            Assert.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
+            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
+            Assert.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
+            Assert.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
+        });
+    }
+
+    @Test
+    public void rangeBasedDelegateRamShouldBeDifferentFromMmuRam() {
+        exceptionLess(() -> {
+            var freg = freg();
+            var sp = reg();
+
+            // Offsets and comparators are RELATIVE to their unit
+            // MMU0 has:
+            //   - RAM0 at offset 0x0000 ranging [0x0000, 0x1000)
+            //   - MMU1 at offset 0x2000 ranging [0x2000, 0x4000)
+            // MMU1 has:
+            //   - RAM1 ranging [0x0000, 0x2000)
+            // => MMU1 HW will range:
+            //      absoluteRangeOf(RAM1) = offsetOf(RAM1) + rangeOf(RAM1)
+            //                            = offsetOf(MMU0.MMU1) + offsetOf(MMU1.RAM1) + range(RAM1)
+            //                            = 0x2000 + 0x0000 + [0x0000, 0x2000)
+            //                            = [0x2000, 0x4000)
+
+            var mmu0 = new MMU(freg, sp);
+            var mmu1 = new MMU(freg, sp);
+
+            var ram0Size = (char) 0x1000;
+            var ram1Size = (char) 0x2000;
+
+            var ram0 = new RAM(ram0Size, freg);
+            var ram1 = new RAM(ram1Size, freg);
+
+            // Relative to MM0
+            mmu0.registerHardwareUnit(ram0, (char) 0x0000, ram0Size);
+            mmu0.registerLocator(mmu1, (char) 0x2000, ram1Size);
+
+            // Relative to MM1
+            mmu1.registerHardwareUnit(ram1, (char) 0x0000, ram1Size);
 
             Function<Boolean, BiPredicate<Character, Character>> memoryValidator = (validity) ->
                     (start, end) -> IntStream.range(start, end)

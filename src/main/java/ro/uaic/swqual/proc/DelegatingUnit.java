@@ -63,6 +63,14 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
         locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
     }
 
+    public void registerLocator(
+            LocatingUnit unit,
+            Character offset,
+            Character size
+    ) {
+        locatingUnits.add(Tuple.of(unit, offset, (location) -> location >= offset && location <= offset + size));
+    }
+
     @Override
     public Parameter locate(Parameter parameterOrLocation) {
         if (!(parameterOrLocation instanceof MemoryLocation location)) {
