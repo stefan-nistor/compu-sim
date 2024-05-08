@@ -15,7 +15,6 @@ import ro.uaic.swqual.util.Tuple3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
     protected final List<Tuple2<ProcessingUnit, Predicate<Instruction>>> executorUnits = new ArrayList<>();
@@ -42,27 +41,40 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
         locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
     }
 
+    protected <AbstractUnit> Tuple2<AbstractUnit, Character> getUnitAndOffsetForLocation(
+            List<Tuple3<AbstractUnit, Character, Predicate<Character>>> units,
+            MemoryLocation location
+    ) {
+        var acceptingUnits = units.stream()
+                .filter(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.getThird().test(location.getValue()))
+                .map(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.map(
+                        (first, second, discarded) -> Tuple.of(first, second)
+                )).toList();
+
+        if (acceptingUnits.size() > 1) {
+            raiseFlag(FlagRegister.MULTISTATE_FLAG);
+            return null;
+        }
+
+        if (acceptingUnits.isEmpty()) {
+            return null;
+        }
+
+        return acceptingUnits.getFirst();
+    }
+
     public Parameter locate(Parameter parameterOrLocation) {
         if (!(parameterOrLocation instanceof MemoryLocation location)) {
             return parameterOrLocation;
         }
 
-        var acceptingLocators = locatingUnits.stream()
-                .filter(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.getThird().test(location.getValue()))
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        if (acceptingLocators.size() > 1) {
-            raiseFlag(FlagRegister.MULTISTATE_FLAG);
-            acceptingLocators.clear();
-        }
-
-        if (acceptingLocators.isEmpty()) {
+        var locatorAndOffset = getUnitAndOffsetForLocation(locatingUnits, location);
+        if (locatorAndOffset == null) {
             return unresolvedSink;
         }
 
-        var acceptingLocatorOffsetValidatorTuple = acceptingLocators.getFirst();
-        var locator = acceptingLocatorOffsetValidatorTuple.getFirst();
-        var offset = acceptingLocatorOffsetValidatorTuple.getSecond();
+        var locator = locatorAndOffset.getFirst();
+        var offset = locatorAndOffset.getSecond();
         var directLocation = new DirectMemoryLocation((char) (location.getValue() - offset));
         return locator.locate(directLocation);
     }
