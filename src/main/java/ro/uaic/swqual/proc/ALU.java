@@ -8,9 +8,16 @@ import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.Parameter;
 
-import java.util.function.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.IntBinaryOperator;
+import java.util.function.Predicate;
 
-import static ro.uaic.swqual.model.operands.FlagRegister.*;
+import static ro.uaic.swqual.model.operands.FlagRegister.ZERO_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.OVERFLOW_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.DIV_ZERO_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.EQUAL_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.LESS_FLAG;
 
 /**
  * Class defining a basic 16-bit Arithmetic Logic Unit, allowing processing of the following: <br/>

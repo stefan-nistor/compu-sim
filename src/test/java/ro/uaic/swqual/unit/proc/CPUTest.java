@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
+
 class CPUTest implements ProcTestUtility {
     @Test
     void processorDataRegSize() {
@@ -46,6 +50,10 @@ class CPUTest implements ProcTestUtility {
 
     @Test
     void handleAllInstructions() {
+        // Sonar: FP S2699 - Does not check inside for assertions.
+        //      exceptionLess does assert on exception.
+        // This check inside functions is already done in S5961
+        //      so this can be backported, unless it is SE and not AST.
         exceptionLess(() -> {
             var processor = new CPU();
             var dataRegs = processor.getDataRegisters();
@@ -69,7 +77,7 @@ class CPUTest implements ProcTestUtility {
             processor.execute(new Instruction(InstructionType.ALU_UMUL, dregs.get(0), dregs.get(1)));
             Assertions.assertEquals((char)0x0500, dregs.get(7).getValue());
             Assertions.assertEquals((char)0xA000, dregs.get(0).getValue());
-            Assertions.assertTrue(freg.isSet(FlagRegister.OVERFLOW_FLAG));
+            assertTrue(freg.isSet(FlagRegister.OVERFLOW_FLAG));
         });
     }
 
@@ -207,5 +215,20 @@ class CPUTest implements ProcTestUtility {
                     Assertions.assertEquals((char) 100, cpu.getDataRegisters().get(1).getValue());
                 }
         ));
+    }
+
+    @Test
+    void cpuRaiseFlagShouldRaiseFlag() {
+        var cpu = new CPU();
+        var freg = cpu.getFlagRegister();
+        cpu.raiseFlag(SEG_FLAG);
+        assertTrue(freg.isSet(SEG_FLAG));
+    }
+
+    @Test
+    void cpuShouldHaveValidStackPointer() {
+        var cpu = new CPU();
+        var sp = cpu.getStackPointer();
+        assertInstanceOf(Register.class, sp);
     }
 }

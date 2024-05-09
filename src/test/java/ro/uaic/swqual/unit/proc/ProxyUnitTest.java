@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.mem.MemoryUnit;
 import ro.uaic.swqual.mem.ReadableMemoryUnit;
-import ro.uaic.swqual.mem.ReadableWriteableMemoryUnit;
 import ro.uaic.swqual.mem.WriteableMemoryUnit;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.MemoryLocation;
@@ -37,23 +36,6 @@ class ProxyUnitTest implements ProcTestUtility, MemTestUtility {
             BiConsumer<MemoryLocation, Character> consumer
     ) {
         return (WriteableMemoryUnit) consumer::accept;
-    }
-
-    public MemoryUnit proxyRWMemoryUnit(
-            Function <MemoryLocation, Character> mapper,
-            BiConsumer<MemoryLocation, Character> consumer
-    ) {
-        return new ReadableWriteableMemoryUnit() {
-            @Override
-            public char read(MemoryLocation location) {
-                return mapper.apply(location);
-            }
-
-            @Override
-            public void write(MemoryLocation location, char value) {
-                consumer.accept(location, value);
-            }
-        };
     }
 
     @Test

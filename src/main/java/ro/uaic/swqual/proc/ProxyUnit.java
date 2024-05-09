@@ -5,7 +5,11 @@ import ro.uaic.swqual.mem.MemoryUnit;
 import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.mem.ReadableWriteableMemoryUnit;
 import ro.uaic.swqual.mem.WriteableMemoryUnit;
-import ro.uaic.swqual.model.operands.*;
+import ro.uaic.swqual.model.operands.FlagRegister;
+import ro.uaic.swqual.model.operands.Parameter;
+import ro.uaic.swqual.model.operands.MemoryLocation;
+import ro.uaic.swqual.model.operands.ResolvedMemory;
+import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.util.Tuple;
 import ro.uaic.swqual.util.Tuple3;
 
@@ -33,7 +37,7 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
             Character offset,
             Character size
     ) {
-        hardwareUnits.add(Tuple.of(hardwareUnit, offset, (location) -> location >= offset && location + 1 < offset + size));
+        hardwareUnits.add(Tuple.of(hardwareUnit, offset, location -> location >= offset && location + 1 < offset + size));
     }
 
     @Override
@@ -63,7 +67,7 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
         var writeableMemoryUnit = (unit instanceof WriteableMemoryUnit writeable) ? writeable : invalidReadWriteSink;
         return new ResolvedMemory(
                 () -> readableMemoryUnit.read(directLocation),
-                (value) -> writeableMemoryUnit.write(directLocation, value)
+                value -> writeableMemoryUnit.write(directLocation, value)
         );
     }
 }

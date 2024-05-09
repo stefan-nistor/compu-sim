@@ -11,6 +11,7 @@ import ro.uaic.swqual.model.operands.Label;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.util.Tuple;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -74,7 +75,10 @@ public class Parser {
             }
         }
 
-        instruction.setParameters(parameterList);
+        instruction.setParameters(Tuple.of(
+                parameterList.isEmpty() ? null : parameterList.get(0),
+                parameterList.size() == 1 ? null : parameterList.get(1)
+        ));
         return instruction;
     }
 

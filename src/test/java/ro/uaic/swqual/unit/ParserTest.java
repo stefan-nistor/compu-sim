@@ -31,7 +31,8 @@ class ParserTest {
         var instruction = parser.parseInstruction(1, line);
 
         Assertions.assertEquals(InstructionType.ALU_ADD, instruction.getType());
-        Assertions.assertEquals(2, instruction.getParameters().size());
+        Assertions.assertNotNull(instruction.getParameters().getFirst());
+        Assertions.assertNotNull(instruction.getParameters().getSecond());
         Assertions.assertEquals(7, instruction.getParam2().getValue());
         Assertions.assertInstanceOf(RegisterReference.class, instruction.getParam1());
         Assertions.assertEquals("r0", ((RegisterReference) instruction.getParam1()).getName());

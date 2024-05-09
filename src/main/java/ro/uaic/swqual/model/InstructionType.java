@@ -8,8 +8,6 @@ public enum InstructionType {
     MMU_MOV("mov"),
     MMU_PUSH("push"),
     MMU_POP("pop"),
-    MMU_CALL("call"),
-    MMU_RET("ret"),
 
     // ALU Ops
     ALU_ADD("add"),
@@ -35,23 +33,38 @@ public enum InstructionType {
     IPU_JGT("jgt"),
     IPU_JGE("jge"),
 
+    // Will be done in IPU since these require knowledge of the program counter
+    // Logic will be IPU:
+    //          call(addr):
+    //                   --push(pc)-------> MMU --mov(sref, pc)--> RAM
+    //                                          --add(sp, 2)-----> ALU
+    //                   --mov(pc, addr)--> MMU
+    //          ret:
+    //                   --pop(pc)--------> MMU --mov(pc, sref)--> RAM
+    //                                          --sub(sp, 2)-----> ALU
+    //
+    //
+    // IPU_CALL
+    // IPU_RET
+
     // Dummy Op
     LABEL("@");
 
+    public final String label;
+
     private static final Map<String, InstructionType> BY_LABEL = new HashMap<>();
 
-    static {
-        for(InstructionType type : InstructionType.values()) {
-            BY_LABEL.put(type.label, type);
-        }
+    InstructionType(String label) {
+        this.label = label;
     }
 
     public static InstructionType fromLabel(String label) {
         return BY_LABEL.get(label);
     }
 
-    public final String label;
-    InstructionType(String label) {
-        this.label = label;
+    static {
+        for (var type : InstructionType.values()) {
+            BY_LABEL.put(type.label, type);
+        }
     }
 }

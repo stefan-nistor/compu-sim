@@ -1,4 +1,4 @@
-package ro.uaic.swqual.unit.operands;
+package ro.uaic.swqual.unit.model.operands;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

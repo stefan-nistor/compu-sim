@@ -55,6 +55,12 @@ public interface ProcTestUtility extends TestUtility {
         return new Instruction(InstructionType.ALU_CMP, p1, p2);
     }
 
+    default Instruction mov(Parameter p1, Parameter p2) { return new Instruction(InstructionType.MMU_MOV, p1, p2); }
+
+    default Instruction push(Parameter p1) { return new Instruction(InstructionType.MMU_PUSH, p1); }
+
+    default Instruction pop(Parameter p1) { return new Instruction(InstructionType.MMU_POP, p1); }
+
     default Constant _const(int value) { return new Constant((char) value); }
 
     default Register reg(int value) {

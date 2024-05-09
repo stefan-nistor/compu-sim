@@ -5,12 +5,18 @@ import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.InstructionException;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.proc.IPU;
 import ro.uaic.swqual.proc.ProcessingUnit;
 
 import java.util.List;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
 
 class IPUTest implements ProcTestUtility {
     private interface IPUTestConsumer {
@@ -81,35 +87,35 @@ class IPUTest implements ProcTestUtility {
                 Assertions.assertNull(cpu.lastExecuted);
                 Assertions.assertEquals(instructions.getFirst(), ipu.next());
                 Assertions.assertNull(cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(1), ipu.next());
                 Assertions.assertEquals(instructions.get(0), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(2), ipu.next());
                 Assertions.assertEquals(instructions.get(1), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(3), ipu.next());
                 Assertions.assertEquals(instructions.get(2), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(4), ipu.next());
                 Assertions.assertEquals(instructions.get(3), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(5), ipu.next());
                 Assertions.assertEquals(instructions.get(4), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(3), ipu.next());
                 Assertions.assertEquals(instructions.get(5), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
                 Assertions.assertEquals(instructions.get(4), ipu.next());
                 Assertions.assertEquals(instructions.get(3), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
             });
         });
     }
@@ -141,18 +147,18 @@ class IPUTest implements ProcTestUtility {
 
                 Assertions.assertEquals(instructions.getFirst(), ipu.next());
                 Assertions.assertNull(cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
 
                 Assertions.assertEquals(IPU.defaultInstruction, ipu.next());
                 Assertions.assertEquals(instructions.getFirst(), cpu.lastExecuted);
-                Assertions.assertTrue(test.test());
+                assertTrue(test.test());
                 ipu.onTick();
-                Assertions.assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
+                assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
                 Assertions.assertEquals(instructions.getFirst(), ipu.next());
                 Assertions.assertEquals(IPU.defaultInstruction, cpu.lastExecuted);
                 ipu.onTick();
-                Assertions.assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
+                assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
                 Assertions.assertEquals(IPU.defaultInstruction, ipu.next());
                 Assertions.assertEquals(instructions.getFirst(), cpu.lastExecuted);
             });
@@ -441,5 +447,30 @@ class IPUTest implements ProcTestUtility {
                         add(new Register(), _const(0))
                 )
         ));
+    }
+
+    @Test
+    void ipuRaiseFlagShouldRaiseFlag() {
+        var freg = freg();
+        var ipu = new IPU(List.of(), freg, reg());
+        ipu.raiseFlag(SEG_FLAG);
+        assertTrue(freg.isSet(SEG_FLAG));
+    }
+
+    @Test
+    void ipuDefaultFilterShouldAcceptOnlyIpuInstructions() {
+        var ipu = new IPU(List.of(), freg(), reg());
+        var pred = ipu.getDefaultFilter();
+        assertEquals(
+                InstructionType.IPU_JMP,
+                Stream.of(
+                        InstructionType.ALU_ADD,
+                        InstructionType.IPU_JMP,
+                        InstructionType.LABEL
+                )
+                        .filter(i -> pred.test(new Instruction(i)))
+                        .sorted() // force eval of all filters
+                        .findAny().orElse(InstructionType.LABEL)
+        );
     }
 }

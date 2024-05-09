@@ -2,7 +2,10 @@ package ro.uaic.swqual.unit.proc;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ro.uaic.swqual.exception.InstructionException;
+import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.mem.RAM;
+import ro.uaic.swqual.proc.ProcessingUnit;
 import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
@@ -10,9 +13,18 @@ import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.proc.MMU;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MMUTest implements ProcTestUtility, MemTestUtility {
     @Test
@@ -22,7 +34,7 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
         var sp = reg();
         var mmu = new MMU(freg(), sp);
         mmu.execute(new Instruction(InstructionType.MMU_MOV, r0, r1));
-        Assertions.assertEquals(r0.getValue(), r1.getValue());
+        assertEquals(r0.getValue(), r1.getValue());
     }
 
     @Test
@@ -41,8 +53,8 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
 
             var location = mmu.locate(loc); // locate [r0]
             Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-            Assertions.assertNotNull(location.getValue()); // actually access [r0]
-            Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+            discard(location.getValue()); // actually access [r0]
+            assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
 
 
             addr.setValue(0x150);
@@ -50,7 +62,7 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
             freg.clear();
 
             Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-            Assertions.assertNotNull(location.getValue());
+            discard(location.getValue());
             Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         });
     }
@@ -92,10 +104,10 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
                                 return null;
                             })
                             .allMatch(ignored -> freg.isSet(FlagRegister.SEG_FLAG) != validity);
-            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
-            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
-            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
-            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
+            assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
+            assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
+            assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
+            assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
         });
     }
 
@@ -141,10 +153,204 @@ class MMUTest implements ProcTestUtility, MemTestUtility {
                                 return null;
                             })
                             .allMatch(ignored -> freg.isSet(FlagRegister.SEG_FLAG) != validity);
-            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
-            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
-            Assertions.assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
-            Assertions.assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
+            assertTrue(memoryValidator.apply(true).test((char) 0, (char) 0x0FFF));
+            assertTrue(memoryValidator.apply(false).test((char) 0x0FFF, (char) 0x2000));
+            assertTrue(memoryValidator.apply(true).test((char) 0x2000, (char) 0x3FFF));
+            assertTrue(memoryValidator.apply(false).test((char) 0x3FFF, (char) 0x6000));
+        });
+    }
+
+    @Test
+    void movWithRamShouldSuccessfullyStoreAndRead() {
+        var freg = freg();
+        var mmu0 = new MMU(freg, reg());
+        var storage = new AtomicInteger(0);
+        var ramProxy = proxyRWMemoryUnit(l -> (char) storage.get(), (l, v) -> storage.set(v));
+        mmu0.registerHardwareUnit(ramProxy, (char) 0, (char) 0x100);
+
+        var r0 = reg((char) 0xAB);
+        var loc = dloc((char) 0x80); // in "range"
+
+        mmu0.execute(mov(loc, r0));
+        assertEquals(0xAB, storage.get());
+
+        storage.set(0xFF);
+        mmu0.execute(mov(r0, loc));
+        assertEquals(0xFF, r0.getValue());
+    }
+
+    @Test
+    void movBetweenUnitsShouldStoreSuccessfully() {
+        var freg = freg();
+        var mmu0 = new MMU(freg, reg());
+        var storage0 = new AtomicInteger(0);
+        var storage1 = new AtomicInteger(0);
+        var ramProxy0 = proxyRWMemoryUnit(l -> (char) storage0.get(), (l, v) -> storage0.set(v));
+        var ramProxy1 = proxyRWMemoryUnit(l -> (char) storage1.get(), (l, v) -> storage1.set(v));
+        mmu0.registerHardwareUnit(ramProxy0, (char) 0, (char) 0x100);
+        mmu0.registerHardwareUnit(ramProxy1, (char) 0x100, (char) 0x100);
+
+        var r0 = reg((char) 0xAB);
+        var loc0 = dloc((char) 0x80); // in "range" of ramProxy0
+        var loc1 = dloc((char) 0x180); // in "range" of ramProxy1
+
+        mmu0.execute(mov(loc0, r0));
+        assertEquals(0xAB, storage0.get());
+
+        mmu0.execute(mov(loc1, loc0));
+        assertEquals(0xAB, storage1.get());
+
+        var r1 = reg();
+        mmu0.execute(mov(r1, loc1));
+        assertEquals(0xAB, r1.getValue());
+    }
+
+    @Test
+    void defaultFilterShouldAcceptOnlyMmuOperations() {
+        var mmu = new MMU(freg(), reg());
+        var pred = mmu.getDefaultFilter();
+        assertEquals(
+                InstructionType.MMU_MOV,
+                Stream.of(
+                        InstructionType.ALU_ADD,
+                        InstructionType.IPU_JMP,
+                        InstructionType.MMU_MOV,
+                        InstructionType.LABEL
+                )
+                        .filter(i -> pred.test(new Instruction(i)))
+                        .sorted() // force eval of all filters
+                        .findAny().orElse(InstructionType.LABEL)
+        );
+    }
+
+    @Test
+    void executeInvalidInstructionShouldThrow() {
+        var mmu = new MMU(freg(), reg());
+        assertThrows(InstructionException.class, () -> mmu.execute(add(null, null)));
+    }
+
+    @Test
+    void executePushShouldRequestMoveOfStackPointer() {
+        exceptionLess(() -> {
+            var sp = reg();
+            var freg = freg();
+            var mmu = new MMU(freg, sp);
+            var ram = new RAM(0x1000, freg);
+            mmu.registerHardwareUnit(ram, (char) 0x0000, (char) 0x1000);
+
+            var executor = new ProcessingUnit() {
+                final List<Instruction> receivedInstructions = new ArrayList<>();
+                public void execute(Instruction instruction) throws InstructionException, ParameterException {
+                    receivedInstructions.add(instruction);
+                }
+
+                @Override
+                public void raiseFlag(char value) {
+                    freg.set(value);
+                }
+            };
+            mmu.registerExecutor(executor);
+
+            var r0 = reg((char) 10);
+            var r1 = reg((char) 20);
+            var c0 = _const((char) 30);
+            var spOffsetOnPush = _const((char) 2);
+            var loc = aloc(sp);
+
+            mmu.execute(push(r0));
+            mmu.execute(push(r1));
+            mmu.execute(push(c0));
+            assertEquals(
+                    List.of(add(sp, spOffsetOnPush), add(sp, spOffsetOnPush), add(sp, spOffsetOnPush)),
+                    executor.receivedInstructions
+            );
+
+            var top = reg();
+            mmu.execute(mov(top, loc));
+            // Should be 30, as nobody executed the requested instructions, and so the last value pushed is on the sp, which is 0.
+            assertEquals(0, sp.getValue());
+            assertEquals(30, top.getValue());
+        });
+    }
+
+    @Test
+    void executePopShouldRequestMoveOfStackPointer() {
+        exceptionLess(() -> {
+            var sp = reg((char) 6); // setting to 6, since a 0 value and request of pop will trigger SEG_FLAG
+            var freg = freg();
+            var mmu = new MMU(freg, sp);
+            var ram = new RAM(0x1000, freg);
+            mmu.registerHardwareUnit(ram, (char) 0x0000, (char) 0x1000);
+
+            var executor = new ProcessingUnit() {
+                final List<Instruction> receivedInstructions = new ArrayList<>();
+                public void execute(Instruction instruction) throws InstructionException, ParameterException {
+                    receivedInstructions.add(instruction);
+                }
+
+                @Override
+                public void raiseFlag(char value) {
+                    freg.set(value);
+                }
+            };
+            mmu.registerExecutor(executor);
+
+            var r0 = reg((char) 10);
+            var spOffsetOnPush = _const((char) 2);
+
+            mmu.execute(pop(r0));
+            mmu.execute(pop(r0));
+            mmu.execute(pop(r0));
+            assertEquals(
+                    List.of(sub(sp, spOffsetOnPush), sub(sp, spOffsetOnPush), sub(sp, spOffsetOnPush)),
+                    executor.receivedInstructions
+            );
+
+            // Should be 0, as no real executor is attached
+            assertEquals(6, sp.getValue());
+        });
+    }
+
+    @Test
+    void executePopOnEmptyStackShouldRaiseSegFlag() {
+        exceptionLess(() -> {
+            var sp = reg((char) 0); // empty stack
+            var freg = freg();
+            var mmu = new MMU(freg, sp);
+            var ram = new RAM(0x1000, freg);
+            mmu.registerHardwareUnit(ram, (char) 0x0000, (char) 0x1000);
+
+            var executor = new ProcessingUnit() {
+                final List<Instruction> receivedInstructions = new ArrayList<>();
+                public void execute(Instruction instruction) throws InstructionException, ParameterException {
+                    receivedInstructions.add(instruction);
+                }
+
+                @Override
+                public void raiseFlag(char value) {
+                    freg.set(value);
+                }
+            };
+            mmu.registerExecutor(executor);
+
+            mmu.execute(pop(reg()));
+            assertTrue(executor.receivedInstructions.isEmpty());
+            assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+
+            // Should be 0, as no real executor is attached
+            assertEquals(0, sp.getValue());
+
+            freg.clear();
+            sp.setValue((char) 1); // try with 1 as well (below required value)
+            mmu.execute(pop(reg()));
+            assertTrue(executor.receivedInstructions.isEmpty());
+            assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
+
+            freg.clear();
+            sp.setValue((char) 2); // 2 will succeed
+            mmu.execute(pop(reg()));
+            assertFalse(executor.receivedInstructions.isEmpty());
+            assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         });
     }
 }
