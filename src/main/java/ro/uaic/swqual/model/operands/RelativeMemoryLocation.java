@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 
 public class RelativeMemoryLocation extends MemoryLocation {
-    final List<Parameter> parameters;
-    final List<BinaryOperator<Character>> relations;
+    private final List<Parameter> parameters;
+    private final List<BinaryOperator<Character>> relations;
     public RelativeMemoryLocation(List<Parameter> parameters, List<BinaryOperator<Character>> relations) throws ValueException {
         this.parameters = parameters;
         this.relations = relations;

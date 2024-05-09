@@ -1,7 +1,7 @@
 package ro.uaic.swqual.model.operands;
 
 public class UnresolvedMemory extends Parameter {
-    final Runnable onAccess;
+    private final Runnable onAccess;
 
     public UnresolvedMemory(Runnable onAccess) {
         this.onAccess = onAccess;

@@ -7,9 +7,9 @@ import ro.uaic.swqual.util.Tuple2;
 import java.util.Objects;
 
 public class Instruction {
-    private InstructionType type = null;
-    private Parameter param1 = null;
-    private Parameter param2 = null;
+    private InstructionType type;
+    private Parameter param1;
+    private Parameter param2;
 
     public Instruction() {}
 
