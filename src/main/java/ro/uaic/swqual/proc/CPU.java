@@ -1,8 +1,5 @@
 package ro.uaic.swqual.proc;
 
-import ro.uaic.swqual.exception.InstructionException;
-import ro.uaic.swqual.exception.ParameterException;
-import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -10,17 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-public class CPU implements ProcessingUnit {
+public class CPU extends DelegatingUnit {
     private final List<Register> dataRegisters = new ArrayList<>();
+
+    // Special purpose registers
     private final FlagRegister flagRegister = new FlagRegister();
     private final Register programCounter = new Register();
+    private final Register stackPointer = new Register();
 
     public final Map<String, Register> registryReferenceMap = new HashMap<>();
-
-    private final Map<ProcessingUnit, Predicate<Instruction>> processingUnits = new HashMap<>();
 
     public CPU() {
         IntStream.range(0, 8).forEach(regIndex -> {
@@ -29,12 +26,8 @@ public class CPU implements ProcessingUnit {
         });
     }
 
-    public void registerUnit(ProcessingUnit unit, Predicate<Instruction> filter) {
-        processingUnits.put(unit, filter);
-    }
-
-    public void registerUnit(ProcessingUnit unit) {
-        registerUnit(unit, unit.getDefaultFilter());
+    @Override public void raiseFlag(char value) {
+        flagRegister.set(value);
     }
 
     public FlagRegister getFlagRegister() {
@@ -45,11 +38,8 @@ public class CPU implements ProcessingUnit {
         return programCounter;
     }
 
-    public void execute(Instruction instruction) throws InstructionException, ParameterException {
-        processingUnits.entrySet().stream()
-                .filter(entry -> entry.getValue().test(instruction))
-                .map(Map.Entry::getKey)
-                .forEach(unit -> unit.execute(instruction));
+    public Register getStackPointer() {
+        return stackPointer;
     }
 
     public List<Register> getDataRegisters() {

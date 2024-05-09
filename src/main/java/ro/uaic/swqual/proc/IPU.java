@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 
 /**
  * Instruction Processing Unit
- * It's purpose is to inform the units awaiting instructions of the next instruction, to advance the attached
+ * Its purpose is to inform the units awaiting instructions of the next instruction, to advance the attached
  *      program counter, and to modify it on demand.
  */
 public class IPU implements ProcessingUnit, ClockDependent {
@@ -28,6 +28,11 @@ public class IPU implements ProcessingUnit, ClockDependent {
         this.flagRegister = flagRegister;
         this.programCounter = programCounter;
         this.instructions = instructions;
+    }
+
+    @Override
+    public void raiseFlag(char value) {
+        flagRegister.set(value);
     }
 
     public void subscribe(ProcessingUnit processingUnit) {

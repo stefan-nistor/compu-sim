@@ -5,7 +5,6 @@ import ro.uaic.swqual.exception.ParameterException;
 public abstract class Parameter {
     /** As it happens, char = unsigned short. */
     protected char value;
-
     public char getValue() {
         return value;
     }
