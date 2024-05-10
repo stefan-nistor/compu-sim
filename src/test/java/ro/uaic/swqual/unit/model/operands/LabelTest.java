@@ -8,6 +8,7 @@ import ro.uaic.swqual.model.operands.Label;
 import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,5 +39,11 @@ class LabelTest implements TestUtility, RegisterTestUtility, ProcTestUtility {
                 new Label("diff"),
                 new Constant((char) 0xABCD)
         ));
+    }
+
+    @Test
+    void hashCodeTest() {
+        assertEquals(new Label("test").hashCode(), new Label("test").hashCode());
+        assertNotEquals(new Label("test").hashCode(), new Label("Test").hashCode());
     }
 }
