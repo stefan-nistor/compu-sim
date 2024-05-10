@@ -1,5 +1,5 @@
 // sim-test
-// expected: success
+// expected: failure
 
 mov r0 #10 // expect-true {r0==10}
 add r0 #5

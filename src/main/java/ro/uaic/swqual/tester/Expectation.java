@@ -72,7 +72,7 @@ public class Expectation {
     }
 
     public boolean evaluate() {
-        return expressions.stream().allMatch(predicate);
+        return expressions.stream().filter(predicate).count() == expressions.size();
     }
 
     public Expectation setLineHint(int line) {
