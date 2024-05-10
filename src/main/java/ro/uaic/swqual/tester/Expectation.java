@@ -21,6 +21,8 @@ public class Expectation {
 
     private final Predicate<Expression> predicate;
     private final List<Expression> expressions;
+    private int line;
+    private String code;
 
     private Expectation(Predicate<Expression> predicate, List<Expression> expressions) {
         this.predicate = predicate;
@@ -49,6 +51,7 @@ public class Expectation {
         return Optional.ofNullable(Optional.ofNullable(EXPECTATION_SUPPLIERS.get(matcher.group(1)))
                 .orElse(() -> null).get())
                 .orElseThrow(() -> new UndefinedExpectationException(matcher.group(1)))
+                .setCode(expectationString)
                 .addExpressions(
                         Arrays.stream(matcher.group(2).split(";"))
                                 .map(String::trim)
@@ -70,5 +73,31 @@ public class Expectation {
 
     public boolean evaluate() {
         return expressions.stream().allMatch(predicate);
+    }
+
+    public Expectation setLineHint(int line) {
+        this.line = line;
+        return this;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public Expectation setCode(String code) {
+        this.code = code;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String dump() {
+        var builder = new StringBuilder();
+        for (var expr : expressions) {
+            builder.append("\tExpression '").append(expr.getCode()).append("'. ").append(expr.dump()).append('\n');
+        }
+        return builder.toString();
     }
 }
