@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.Parser;
+import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
@@ -15,6 +16,8 @@ import ro.uaic.swqual.proc.CentralProcessingUnit;
 
 import java.util.Map;
 import java.util.function.Predicate;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
 
@@ -50,7 +53,7 @@ class ParserTest {
     @Test
     void testParseInputFileShouldThrowException() {
         var path = "src/test/resources/unit/test-parser-failure.txt";
-        Assertions.assertThrows(RuntimeException.class, () -> parser.parse(path));
+        assertThrows(RuntimeException.class, () -> parser.parse(path));
     }
 
     @Test
@@ -66,13 +69,13 @@ class ParserTest {
     void testLinkJumpsShouldThrowNotFoundException() {
         var path = "src/test/resources/unit/test-jmp-failure.txt";
         parser.parse(path);
-        Assertions.assertThrows(JumpLabelNotFoundException.class, () -> parser.link());
+        assertThrows(JumpLabelNotFoundException.class, () -> parser.link());
     }
 
     @Test
     void testParseShouldThrowDuplicateException() {
         var path = "src/test/resources/unit/test-jmp-failure-dup.txt";
-        Assertions.assertThrows(DuplicateJumpTargetException.class ,() -> parser.parse(path));
+        assertThrows(DuplicateJumpTargetException.class ,() -> parser.parse(path));
     }
 
     @Test
@@ -118,7 +121,7 @@ class ParserTest {
         code.forEach(parser::parseInstruction);
         var cpu = new CentralProcessingUnit();
 
-        Assertions.assertThrows(
+        assertThrows(
                 UndefinedReferenceException.class,
                 () -> parser.resolveReferences(cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r11'"
@@ -138,10 +141,17 @@ class ParserTest {
         code.forEach(parser::parseInstruction);
         var cpu = new CentralProcessingUnit();
 
-        Assertions.assertThrows(
+        assertThrows(
                 UndefinedReferenceException.class,
                 () -> parser.resolveReferences(cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r16'"
         );
+    }
+
+    @Test
+    void parseLineWithoutTerminationShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r0 r1"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "@l0"));
     }
 }
