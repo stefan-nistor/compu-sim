@@ -2,6 +2,7 @@ package ro.uaic.swqual.unit.tester;
 
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.Parser;
+import ro.uaic.swqual.exception.tester.InvalidHeaderItemException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.proc.CPU;
@@ -16,6 +17,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TesterParserTest {
@@ -75,5 +78,41 @@ class TesterParserTest {
             regs.get(2).setValue((char) 10);
             assertTrue(expectations.values().stream().allMatch(Expectation::evaluate));
         });
+    }
+
+    @Test
+    void testerParserShouldIdentifySuccessExpectationCorrectly() {
+        var resource0 = "src/test/resources/unit/tester-parser-success-expectation.txt";
+        parseResource(new TesterParser(), resource0, null,
+                (parser, instructions) -> assertTrue(parser.isExpectedToSucceed())
+        );
+    }
+
+    @Test
+    void testerParserShouldIdentifyFailureExpectationCorrectly() {
+        var resource0 = "src/test/resources/unit/tester-parser-failure-expectation.txt";
+        parseResource(new TesterParser(), resource0, null,
+                (parser, instructions) -> assertFalse(parser.isExpectedToSucceed())
+        );
+    }
+
+    @Test
+    void testerParserShouldIdentifyInvalidExpectationAndThrow() {
+        var resource0 = "src/test/resources/unit/tester-parser-invalid-expectation.txt";
+        assertThrows(
+                InvalidHeaderItemException.class,
+                () -> parseResource(new TesterParser(), resource0, null, (parser, instructions) -> {}),
+                "Invalid expectation: unknown"
+        );
+    }
+
+    @Test
+    void testerParserShouldIdentifyInvalidHeaderItemAndThrow() {
+        var resource0 = "src/test/resources/unit/tester-parser-invalid-header.txt";
+        assertThrows(
+                InvalidHeaderItemException.class,
+                () -> parseResource(new TesterParser(), resource0, null, (parser, instructions) -> {}),
+                "Invalid header item: something: success"
+        );
     }
 }

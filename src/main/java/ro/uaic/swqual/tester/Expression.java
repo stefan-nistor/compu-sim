@@ -7,6 +7,7 @@ import ro.uaic.swqual.model.operands.RegisterReference;
 import ro.uaic.swqual.util.Tuple;
 import ro.uaic.swqual.util.Tuple2;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
@@ -15,6 +16,8 @@ public class Expression {
     private final BiPredicate<Parameter, Parameter> predicate;
     private Parameter firstParam;
     private Parameter secondParam;
+    private String code;
+    private final Map<String, Register> namedReferences = new HashMap<>();
 
     private <T extends Parameter> Expression(BiPredicate<Parameter, Parameter> predicate, Tuple2<T, T> parameters) {
         this.predicate = predicate;
@@ -75,23 +78,36 @@ public class Expression {
 
         var params = Tuple.of(p0, p1);
         return switch (matcher.group(2)) {
-            case "==" -> eq(params);
-            case "!=" -> ne(params);
-            case "<" -> lt(params);
-            case "<=" -> le(params);
-            case ">" -> gt(params);
-            case ">=" -> ge(params);
+            case "==" -> eq(params).setCode(string);
+            case "!=" -> ne(params).setCode(string);
+            case "<" -> lt(params).setCode(string);
+            case "<=" -> le(params).setCode(string);
+            case ">" -> gt(params).setCode(string);
+            case ">=" -> ge(params).setCode(string);
             default -> null;
         };
     }
 
-    private static Parameter resolve(Map<String, Register> registerMap, Parameter hint) {
+    public Expression setCode(String code) {
+        this.code = code;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    private Parameter resolve(Map<String, Register> registerMap, Parameter hint) {
         if (!(hint instanceof RegisterReference ref)) {
             return hint;
         }
 
         var ident = registerMap.get(ref.getName());
-        return ident == null ? hint : ident;
+        if (ident != null) {
+            namedReferences.put(ref.getName(), ident);
+            return ident;
+        }
+        return hint;
     }
 
     public void resolveReferences(Map<String, Register> registerMap) {
@@ -101,5 +117,13 @@ public class Expression {
 
     public boolean evaluate() {
         return predicate.test(firstParam, secondParam);
+    }
+
+    public String dump() {
+        var sb = new StringBuilder().append("Current state -> ");
+        for (var refValue : namedReferences.entrySet()) {
+            sb.append(refValue.getKey()).append(": ").append((int) refValue.getValue().getValue()).append("; ");
+        }
+        return sb.substring(0, sb.length() - 2);
     }
 }
