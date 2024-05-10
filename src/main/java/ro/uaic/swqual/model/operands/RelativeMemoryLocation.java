@@ -3,6 +3,7 @@ package ro.uaic.swqual.model.operands;
 import ro.uaic.swqual.exception.ValueException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BinaryOperator;
 
 public class RelativeMemoryLocation extends MemoryLocation {
@@ -29,5 +30,19 @@ public class RelativeMemoryLocation extends MemoryLocation {
             resolved = relations.get(index).apply(resolved, parameters.get(index + 1).getValue());
         }
         return resolved;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RelativeMemoryLocation that = (RelativeMemoryLocation) o;
+        return Objects.equals(parameters, that.parameters) && Objects.equals(relations, that.relations);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), parameters, relations);
     }
 }

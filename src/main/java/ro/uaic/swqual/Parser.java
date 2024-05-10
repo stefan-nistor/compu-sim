@@ -29,6 +29,8 @@ public class Parser {
     private final Map<String, Constant> jumpMap = new HashMap<>();
 
     public List<Instruction> parse(String path) {
+        instructions.clear();
+        jumpMap.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             var lineIndex = 0;
             String line;
