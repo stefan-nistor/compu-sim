@@ -27,18 +27,13 @@ public class ResolvedMemory extends Parameter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         ResolvedMemory that = (ResolvedMemory) o;
         return Objects.equals(getProxy, that.getProxy) && Objects.equals(setProxy, that.setProxy);
     }
 
     @Override
-    public String toString() {
-        return "mem(" + (int) getValue() + ")";
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getProxy, setProxy);
     }
-
-    // HashCode is intentionally NOT overridden here.
-    // Reason: take a memory location for example:
-    //  [r0] -> AbsMemLoc over Register
-    //  If Register value changes, hashCode would change if overridden
-    //  We do not want this.
 }

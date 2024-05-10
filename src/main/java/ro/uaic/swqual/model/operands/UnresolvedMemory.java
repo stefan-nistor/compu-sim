@@ -22,18 +22,13 @@ public class UnresolvedMemory extends Parameter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         UnresolvedMemory that = (UnresolvedMemory) o;
         return Objects.equals(onAccess, that.onAccess);
     }
 
     @Override
-    public String toString() {
-        return "<Invalid Location>";
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), onAccess);
     }
-
-    // HashCode is intentionally NOT overridden here.
-    // Reason: take a memory location for example:
-    //  [r0] -> AbsMemLoc over Register
-    //  If Register value changes, hashCode would change if overridden
-    //  We do not want this.
 }
