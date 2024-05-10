@@ -30,7 +30,6 @@ public class RegisterReference extends Parameter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         RegisterReference that = (RegisterReference) o;
         return referencedAtLine == that.referencedAtLine && Objects.equals(asmName, that.asmName);
     }

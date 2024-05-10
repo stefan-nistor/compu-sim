@@ -22,7 +22,6 @@ public class UnresolvedMemory extends Parameter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         UnresolvedMemory that = (UnresolvedMemory) o;
         return Objects.equals(onAccess, that.onAccess);
     }
