@@ -5,7 +5,7 @@ import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.exception.tester.InvalidHeaderItemException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
 import ro.uaic.swqual.tester.Expectation;
 import ro.uaic.swqual.tester.TesterParser;
 import ro.uaic.swqual.util.Function3;
@@ -46,7 +46,7 @@ class TesterParserTest {
         var resource1 = "src/test/resources/unit/test-jmp.txt";
         var p0 = new Parser();
         var p1 = new TesterParser();
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var m0 = cpu.getRegistryReferenceMap();
 
         Function3<Parser, String, Map<String, Register>, List<Instruction>> getOut = (p, r, m) -> {
@@ -66,7 +66,7 @@ class TesterParserTest {
     void testerParserShouldGatherValidExpectationsCorrectly() {
         var resource0 = "src/test/resources/unit/tester-parser-gather-test.txt";
         parseResource(new TesterParser(), resource0, null, (parser, instructions) -> {
-            var cpu = new CPU();
+            var cpu = new CentralProcessingUnit();
             var regs = cpu.getDataRegisters();
             var refs = cpu.getRegistryReferenceMap();
             var expectations = parser.getExpectationMap();
