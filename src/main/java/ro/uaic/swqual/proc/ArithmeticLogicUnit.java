@@ -33,7 +33,7 @@ import static ro.uaic.swqual.model.operands.FlagRegister.LESS_FLAG;
  *          - ALU_*DIV uses the extra register to store the remainder of the operation. <br/>
  *            p0 = 0x000B / p1 = 0x0003 will result in p0 = 0x0003, additional = 0x0002  <br/>
  */
-public class ArithmeticLogicUnit implements ProcessingUnit {
+public class ArithmeticLogicUnit extends DelegatingUnit {
     private final FlagRegister flagRegister;
 
     private final Consumer<Character> ignoreOverflow;
