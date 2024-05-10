@@ -37,25 +37,28 @@ public class Parser {
         return instructions;
     }
 
+    protected void parseLine(String line, int lineIdx) {
+        if (line.trim().isEmpty() || line.trim().startsWith("//")) {
+            return;
+        }
+        if (!line.trim().startsWith("@")) {
+            parseInstruction(lineIdx, line);
+        } else {
+            var labelKey = line.trim().substring(0, line.length() - 1);
+            if (jumpMap.containsKey(labelKey)) {
+                throw new DuplicateJumpTargetException(line);
+            }
+            jumpMap.put(labelKey, new Constant((char) instructions.size()));
+        }
+    }
+
     public Parser parse(String path) {
         clear();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             var lineIndex = 0;
             String line;
             while ((line = br.readLine()) != null) {
-                ++lineIndex;
-                if (line.trim().isEmpty() || line.trim().startsWith("//")) {
-                    continue;
-                }
-                if (!line.trim().startsWith("@")) {
-                    parseInstruction(lineIndex, line);
-                } else {
-                    var labelKey = line.trim().substring(0, line.length() - 1);
-                    if (jumpMap.containsKey(labelKey)) {
-                        throw new DuplicateJumpTargetException(line);
-                    }
-                    jumpMap.put(labelKey, new Constant((char) instructions.size()));
-                }
+                parseLine(line, ++lineIndex);
             }
             return this;
         } catch (IOException e) {

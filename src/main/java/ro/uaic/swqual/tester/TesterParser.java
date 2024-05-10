@@ -2,6 +2,7 @@ package ro.uaic.swqual.tester;
 
 import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
+import ro.uaic.swqual.exception.tester.InvalidHeaderItemException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -9,7 +10,54 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TesterParser extends Parser {
+    private enum State {
+        NO_HEADER_DETECTED,
+        IN_HEADER,
+        PASSED_HEADER
+    }
+
     private final Map<Instruction, Expectation> expectationMap = new HashMap<>();
+    private State state = State.NO_HEADER_DETECTED;
+    private boolean expectedToSucceed = false;
+
+    private void parseHeaderItem(String itemText) {
+        if (itemText.startsWith("expected: ")) {
+            var expectation = itemText.substring("expected: ".length());
+            if (expectation.equals("success")) {
+                expectedToSucceed = true;
+            } else if (expectation.equals("failure")) {
+                expectedToSucceed = false;
+            } else {
+                throw new InvalidHeaderItemException("Invalid expectation: " + expectation);
+            }
+
+            return;
+        }
+
+        throw new InvalidHeaderItemException("Invalid header item: " + itemText);
+    }
+
+    public boolean isExpectedToSucceed() {
+        return expectedToSucceed;
+    }
+
+    @Override
+    protected void parseLine(String line, int lineIdx) {
+        line = line.trim();
+        if (line.isEmpty()) {
+            return;
+        }
+
+        if (!line.startsWith("//")) {
+            state = State.PASSED_HEADER;
+        }
+
+        switch (state) {
+            case PASSED_HEADER -> super.parseLine(line, lineIdx);
+            case NO_HEADER_DETECTED -> state = line.equals("// sim-test") ? State.IN_HEADER : State.NO_HEADER_DETECTED;
+            case IN_HEADER -> parseHeaderItem(line.substring("// ".length()));
+        }
+    }
 
     @Override
     public TesterParser parseInstruction(int lineIndex, String line) {
@@ -23,6 +71,7 @@ public class TesterParser extends Parser {
         if (expectation == null) {
             return this;
         }
+        expectation.setLineHint(lineIndex);
 
         var instruction = super.getInstructions().getLast();
         expectationMap.put(instruction, expectation);
