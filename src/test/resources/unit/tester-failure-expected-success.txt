@@ -1,0 +1,7 @@
+// sim-test
+// expected: success
+
+mov r0 #10 // expect-true {r0==9}
+add r0 #5 // expect-true {r0==15}
+mov r3 #15 // expected-true {r3==15; r1==10; r0==14}
+mov r1 #20 // expect-true {r0==14; r1==20; r3==14}
