@@ -36,9 +36,10 @@ public class RelativeMemoryLocation extends MemoryLocation {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         RelativeMemoryLocation that = (RelativeMemoryLocation) o;
-        return Objects.equals(parameters, that.parameters) && Objects.equals(relations, that.relations);
+        var paramEqual = Objects.equals(parameters, that.parameters);
+        var relEqual = Objects.equals(relations, that.relations);
+        return paramEqual && relEqual;
     }
 
     @Override

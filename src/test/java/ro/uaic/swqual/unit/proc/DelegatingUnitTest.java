@@ -43,7 +43,7 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
     void locateOfNonMappedMemoryLocationShouldReturnUnresolvedMemoryAndNotRaiseSegFlag() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
-        var loc = dloc((char) 0x100);
+        var loc = cloc((char) 0x100);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
@@ -53,7 +53,7 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
     void locateOfNonMappedMemoryLocationShouldReturnUnresolvedMemoryThatRaisesSegOnAccess() {
         var freg = freg();
         var unit = mockDelegatingUnit(freg);
-        var loc = dloc((char) 0x100);
+        var loc = cloc((char) 0x100);
         var mem = unit.locate(loc);
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
         discard(mem.getValue());
@@ -71,7 +71,7 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(subLoc0, (char) 0x50, (char) 0x100);
         unit.registerLocator(subLoc1, (char) 0x80, (char) 0x200);
 
-        var loc = dloc((char) 0x90);
+        var loc = cloc((char) 0x90);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
@@ -89,7 +89,7 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         unit.registerLocator(subLoc0, (char) 0x50, (char) 0x100);
         unit.registerLocator(subLoc1, (char) 0x80, (char) 0x200);
 
-        var loc = dloc((char) 0x90);
+        var loc = cloc((char) 0x90);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
@@ -104,7 +104,7 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         var resolvingSubUnit = singleLocationUnit(freg);
 
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0x100);
-        var loc = dloc((char) 0x75);
+        var loc = cloc((char) 0x75);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
     }
@@ -116,7 +116,7 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         var resolvingSubUnit = singleLocationUnit(freg);
 
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0x100);
-        var loc = dloc((char) 0x75);
+        var loc = cloc((char) 0x75);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         discard(mem.getValue());
@@ -130,12 +130,12 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         var resolvingSubUnit = singleLocationUnit(freg);
 
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0x100);
-        var loc = dloc((char) 0x75);
+        var loc = cloc((char) 0x75);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
         mem.setValue((char) 0x256);
 
-        var anotherMem = unit.locate(dloc((char) 0x75));
+        var anotherMem = unit.locate(cloc((char) 0x75));
         Assertions.assertEquals(0x256, anotherMem.getValue());
     }
 
@@ -146,19 +146,19 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         var resolvingSubUnit = singleLocationUnit(freg);
 
         unit.registerLocator(resolvingSubUnit, (char) 0x50, (char) 0xB0);
-        var loc = dloc((char) 0x49);
+        var loc = cloc((char) 0x49);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
-        loc = dloc((char) 0x50);
+        loc = cloc((char) 0x50);
         mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
-        loc = dloc((char) 0xFE);
+        loc = cloc((char) 0xFE);
         mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
-        loc = dloc((char) 0xFF);
+        loc = cloc((char) 0xFF);
         mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }
@@ -170,19 +170,19 @@ class DelegatingUnitTest implements ProcTestUtility, MemTestUtility {
         var resolvingSubUnit = singleLocationUnit(freg);
 
         unit.registerLocator(resolvingSubUnit, (char) 0x50, addr -> addr >= 0x50 && addr + 1 < 0x100);
-        var loc = dloc((char) 0x49);
+        var loc = cloc((char) 0x49);
         var mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
 
-        loc = dloc((char) 0x50);
+        loc = cloc((char) 0x50);
         mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
-        loc = dloc((char) 0xFE);
+        loc = cloc((char) 0xFE);
         mem = unit.locate(loc);
         Assertions.assertInstanceOf(ResolvedMemory.class, mem);
 
-        loc = dloc((char) 0xFF);
+        loc = cloc((char) 0xFF);
         mem = unit.locate(loc);
         Assertions.assertInstanceOf(UnresolvedMemory.class, mem);
     }

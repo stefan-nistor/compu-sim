@@ -28,6 +28,6 @@ public class Register extends Parameter {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getValue());
+        return Objects.hashCode(getValue());
     }
 }

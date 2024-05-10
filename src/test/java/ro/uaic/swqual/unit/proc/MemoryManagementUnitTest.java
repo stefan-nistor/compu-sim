@@ -169,7 +169,7 @@ class MemoryManagementUnitTest implements ProcTestUtility, MemTestUtility {
         mmu0.registerHardwareUnit(ramProxy, (char) 0, (char) 0x100);
 
         var r0 = reg((char) 0xAB);
-        var loc = dloc((char) 0x80); // in "range"
+        var loc = cloc((char) 0x80); // in "range"
 
         mmu0.execute(mov(loc, r0));
         assertEquals(0xAB, storage.get());
@@ -191,8 +191,8 @@ class MemoryManagementUnitTest implements ProcTestUtility, MemTestUtility {
         mmu0.registerHardwareUnit(ramProxy1, (char) 0x100, (char) 0x100);
 
         var r0 = reg((char) 0xAB);
-        var loc0 = dloc((char) 0x80); // in "range" of ramProxy0
-        var loc1 = dloc((char) 0x180); // in "range" of ramProxy1
+        var loc0 = cloc((char) 0x80); // in "range" of ramProxy0
+        var loc1 = cloc((char) 0x180); // in "range" of ramProxy1
 
         mmu0.execute(mov(loc0, r0));
         assertEquals(0xAB, storage0.get());

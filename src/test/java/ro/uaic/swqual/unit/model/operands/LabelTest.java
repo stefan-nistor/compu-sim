@@ -1,27 +1,49 @@
 package ro.uaic.swqual.unit.model.operands;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
+import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.operands.Label;
+import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
-class LabelTest implements TestUtility {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class LabelTest implements TestUtility, RegisterTestUtility, ProcTestUtility {
     @Test
     void labelShouldKeepLabel() {
         var label = new Label("test");
-        Assertions.assertEquals("test", label.getName());
+        assertEquals("test", label.getName());
     }
 
     @Test
     void labelShouldThrowOnWrite() {
         var label = new Label("");
-        Assertions.assertThrows(ParameterException.class, () -> label.setValue((char) 0));
+        assertThrows(ParameterException.class, () -> label.setValue((char) 0));
     }
 
     @Test
     void labelShouldThrowOnReadChar() {
         var label = new Label("");
-        Assertions.assertThrows(ParameterException.class, () -> discard(label.getValue()));
+        assertThrows(ParameterException.class, () -> discard(label.getValue()));
+    }
+
+    @Test
+    void labelEqualsTest() {
+        assertTrue(equalsCoverageTest(
+                new Label("test"),
+                new Label("test"),
+                new Label("diff"),
+                new Constant((char) 0xABCD)
+        ));
+    }
+
+    @Test
+    void hashCodeTest() {
+        assertEquals(new Label("test").hashCode(), new Label("test").hashCode());
+        assertNotEquals(new Label("test").hashCode(), new Label("Test").hashCode());
     }
 }
