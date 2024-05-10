@@ -28,9 +28,17 @@ public class Parser {
     private final List<Instruction> instructions = new ArrayList<>();
     private final Map<String, Constant> jumpMap = new HashMap<>();
 
-    public List<Instruction> parse(String path) {
+    public void clear() {
         instructions.clear();
         jumpMap.clear();
+    }
+
+    public List<Instruction> getInstructions() {
+        return instructions;
+    }
+
+    public Parser parse(String path) {
+        clear();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             var lineIndex = 0;
             String line;
@@ -40,7 +48,7 @@ public class Parser {
                     continue;
                 }
                 if (!line.trim().startsWith("@")) {
-                    instructions.add(parseInstruction(lineIndex, line));
+                    parseInstruction(lineIndex, line);
                 } else {
                     var labelKey = line.trim().substring(0, line.length() - 1);
                     if (jumpMap.containsKey(labelKey)) {
@@ -49,13 +57,13 @@ public class Parser {
                     jumpMap.put(labelKey, new Constant((char) instructions.size()));
                 }
             }
-            return instructions;
+            return this;
         } catch (IOException e) {
             throw new ParserException(e.getMessage());
         }
     }
 
-    public Instruction parseInstruction(int lineIndex, String line) {
+    public Parser parseInstruction(int lineIndex, String line) {
         var parsed = line.trim().split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
@@ -81,10 +89,12 @@ public class Parser {
                 parameterList.isEmpty() ? null : parameterList.get(0),
                 parameterList.size() == 1 ? null : parameterList.get(1)
         ));
-        return instruction;
+
+        instructions.add(instruction);
+        return this;
     }
 
-    public void link() {
+    public Parser link() {
         instructions.stream()
                 .filter(instruction -> instruction.getParam1() instanceof Label)
                 .forEach(instruction -> {
@@ -95,13 +105,13 @@ public class Parser {
                     }
                     instruction.setParam1(jmpTarget);
                 });
+        return this;
     }
 
-    public static List<Instruction> resolveReferences(
-            List<Instruction> instructions,
+    public Parser resolveReferences(
             Map<String, Register> registerMap
     ) throws UndefinedReferenceException {
-        return instructions.stream().map(instruction -> {
+        instructions.forEach(instruction -> {
             BiConsumer<Supplier<Parameter>, Consumer<Parameter>> referenceResolver = (supplier, consumer) -> {
                 var param = supplier.get();
                 if (param instanceof RegisterReference ref) {
@@ -114,7 +124,7 @@ public class Parser {
             };
             referenceResolver.accept(instruction::getParam1, instruction::setParam1);
             referenceResolver.accept(instruction::getParam2, instruction::setParam2);
-            return instruction;
-        }).toList();
+        });
+        return this;
     }
 }

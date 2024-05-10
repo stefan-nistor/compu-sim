@@ -7,6 +7,7 @@ import ro.uaic.swqual.tester.Expectation;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,8 +36,22 @@ class ExpectationTest {
 
         var expectation = Expectation.from("expect-true {r0==50}");
         assertNotNull(expectation);
+        assertFalse(expectation.referencing(map).evaluate());
         regs.getFirst().setValue((char) 50);
         assertTrue(expectation.referencing(map).evaluate());
+    }
+
+    @Test
+    void falseExpectationShouldEvaluateExpectedly() {
+        var cpu = new CPU();
+        var regs = cpu.getDataRegisters();
+        var map = cpu.getRegistryReferenceMap();
+
+        var expectation = Expectation.from("expect-false {r0==50}");
+        assertNotNull(expectation);
+        assertTrue(expectation.referencing(map).evaluate());
+        regs.getFirst().setValue((char) 50);
+        assertFalse(expectation.referencing(map).evaluate());
     }
 
     @Test

@@ -1,11 +1,11 @@
 @Label2:
-add r0 r1; // expect-true {r0 == r1}
-cmp #4 #5;
-jne @Label1;
-add r1 r2; // expect-false {r1 != r2}
-add #4 #5;
+add r0 r1 // expect-true {r0 == r1}
+cmp #4 #5
+jne @Label1
+add r1 r2 // expect-false {r1 != r2}
+add #4 #5
 
 @Label1:
-sub r3 #2; // expect-unknown {r0 != r2}
-add #2 #1;
-jmp @Label2;
+sub r3 #2 // expect-unknown {r0 != r2}
+add #2 #1
+jmp @Label2
