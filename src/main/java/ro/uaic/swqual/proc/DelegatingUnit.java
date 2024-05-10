@@ -78,6 +78,11 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
         locatingUnits.add(Tuple.of(unit, offset, location -> location >= offset && location + 1 < offset + size));
     }
 
+    public void registerLocator(LocatingUnit unit) {
+        registerPotentialClockListener(unit);
+        locatingUnits.add(Tuple.of(unit, (char) 0, location -> true));
+    }
+
     protected void registerPotentialClockListener(Object potentialListener) {
         if (potentialListener instanceof ClockListener listener) {
             registerClockListener(listener);
