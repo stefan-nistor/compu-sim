@@ -29,10 +29,10 @@ class TesterParserTest {
             Map<String, Register> registerMap,
             ParseConsumer<T> consumer
     ) {
-        var output = parser.parse(resource);
+        var output = parser.parse(resource).getInstructions();
         parser.link();
         if (registerMap != null) {
-            output = Parser.resolveReferences(output, registerMap);
+            parser.resolveReferences(registerMap);
         }
         consumer.accept(parser, output);
     }
@@ -61,7 +61,7 @@ class TesterParserTest {
 
     @Test
     void testerParserShouldGatherValidExpectationsCorrectly() {
-        var resource0 = "src/test/resources/unit/tester-parser-test.txt";
+        var resource0 = "src/test/resources/unit/tester-parser-gather-test.txt";
         parseResource(new TesterParser(), resource0, null, (parser, instructions) -> {
             var cpu = new CPU();
             var regs = cpu.getDataRegisters();

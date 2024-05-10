@@ -17,7 +17,7 @@ import java.util.function.Predicate;
  * Its purpose is to inform the units awaiting instructions of the next instruction, to advance the attached
  *      program counter, and to modify it on demand.
  */
-public class InstructionProcessingUnit extends DelegatingUnit implements ClockListener {
+public class InstructionProcessingUnit extends DelegatingUnit {
     private final FlagRegister flagRegister;
     private final Register programCounter;
     private final List<Instruction> instructions;
@@ -36,7 +36,6 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
     }
 
     public void subscribe(ProcessingUnit processingUnit) {
-        registerPotentialClockListener(processingUnit);
         instructionSubscribers.add(processingUnit);
     }
 
@@ -79,7 +78,6 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
         }
         instructionSubscribers.forEach(s -> s.execute(next()));
         programCounter.setValue((char)(programCounter.getValue() + 1));
-        super.onTick();
     }
 
     public Instruction next() {
