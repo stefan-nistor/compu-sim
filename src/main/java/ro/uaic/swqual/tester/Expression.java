@@ -18,6 +18,8 @@ public class Expression {
     private Parameter secondParam;
     private String code;
     private final Map<String, Register> namedReferences = new HashMap<>();
+    private final Map<Register, Constant> evaluatedValues = new HashMap<>();
+    private Boolean evaluatedAs = null;
 
     private <T extends Parameter> Expression(BiPredicate<Parameter, Parameter> predicate, Tuple2<T, T> parameters) {
         this.predicate = predicate;
@@ -115,14 +117,35 @@ public class Expression {
         secondParam = resolve(registerMap, secondParam);
     }
 
+    private void recordState(Parameter param) {
+        if (!(param instanceof Register reg)) {
+            return;
+        }
+
+        evaluatedValues.put(reg, new Constant(reg.getValue()));
+    }
+
     public boolean evaluate() {
-        return predicate.test(firstParam, secondParam);
+        recordState(firstParam);
+        recordState(secondParam);
+        evaluatedAs = predicate.test(firstParam, secondParam);
+        return evaluatedAs;
     }
 
     public String dump() {
+        if (Boolean.TRUE.equals(evaluatedAs)) {
+            return "Correctly evaluated";
+        }
+
         var sb = new StringBuilder().append("Current state -> ");
         for (var refValue : namedReferences.entrySet()) {
-            sb.append(refValue.getKey()).append(": ").append((int) refValue.getValue().getValue()).append("; ");
+            var ref = refValue.getValue();
+            var evaluated = evaluatedValues.entrySet().stream().filter(e -> e.getKey() == ref).findFirst().orElse(null);
+            sb
+                    .append(refValue.getKey())
+                    .append(": ")
+                    .append(evaluated == null ? "<unknown>" : (int) evaluated.getValue().getValue())
+                    .append("; ");
         }
         return sb.substring(0, sb.length() - 2);
     }
