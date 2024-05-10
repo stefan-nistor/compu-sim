@@ -62,11 +62,12 @@ public class TesterParser extends Parser {
     @Override
     public TesterParser parseInstruction(int lineIndex, String line) {
         var commentIndex = line.indexOf("//");
-        super.parseInstruction(lineIndex, line);
         if (commentIndex == -1) {
+            super.parseInstruction(lineIndex, line);
             return this;
         }
 
+        super.parseInstruction(lineIndex, line.substring(0, commentIndex));
         var expectation = Expectation.from(line.substring(commentIndex + 2).trim());
         if (expectation == null) {
             return this;
