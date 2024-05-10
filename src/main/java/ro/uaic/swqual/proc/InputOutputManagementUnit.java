@@ -6,7 +6,7 @@ import ro.uaic.swqual.model.peripheral.Peripheral;
 /**
  * I/O unit
  */
-public class InputOutputManagementUnit extends ProxyUnit<Peripheral> implements ClockDependent {
+public class InputOutputManagementUnit extends ProxyUnit<Peripheral> implements ClockListener {
     private final FlagRegister flagRegister;
 
     public InputOutputManagementUnit(FlagRegister flagRegister) {

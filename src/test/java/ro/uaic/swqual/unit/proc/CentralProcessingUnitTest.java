@@ -6,11 +6,11 @@ import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
-import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.RegisterReference;
 import ro.uaic.swqual.proc.ArithmeticLogicUnit;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
-import ro.uaic.swqual.proc.ClockDependent;
+import ro.uaic.swqual.proc.ClockListener;
 import ro.uaic.swqual.proc.InstructionProcessingUnit;
 
 import java.util.Arrays;
@@ -144,19 +144,7 @@ class CentralProcessingUnitTest implements ProcTestUtility {
     }
 
     private interface CpuAluIpuConsumer {
-        void apply(CentralProcessingUnit cpu, ClockDependent stepper) throws Throwable;
-    }
-
-    private static class RegisterReference extends Parameter {
-        private final String name;
-
-        public RegisterReference(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
+        void apply(CentralProcessingUnit cpu, ClockListener stepper) throws Throwable;
     }
 
     private void cpuAluIpuTest(
@@ -181,10 +169,6 @@ class CentralProcessingUnitTest implements ProcTestUtility {
         cpu.registerExecutor(ipu);
         ipu.subscribe(cpu);
         consumer.apply(cpu, ipu);
-    }
-
-    RegisterReference ref(String name) {
-        return new RegisterReference(name);
     }
 
     @Test

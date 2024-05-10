@@ -5,8 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.peripheral.Keyboard;
+import ro.uaic.swqual.model.peripheral.Peripheral;
 import ro.uaic.swqual.proc.InputOutputManagementUnit;
 import ro.uaic.swqual.unit.mem.MemTestUtility;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InputOutputManagementUnitTest implements ProcTestUtility, MemTestUtility {
 
@@ -31,7 +36,7 @@ class InputOutputManagementUnitTest implements ProcTestUtility, MemTestUtility {
         var keyValue = io.locate(loc);
 
         kb.press('c');
-        Assertions.assertEquals('c',keyValue.getValue() );
+        assertEquals('c',keyValue.getValue() );
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
@@ -41,7 +46,7 @@ class InputOutputManagementUnitTest implements ProcTestUtility, MemTestUtility {
         var loc = aloc(addr);
         var keyValue = io.locate(loc);
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
-        var value = keyValue.getValue();
+        discard(keyValue.getValue());
         Assertions.assertTrue(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
@@ -55,19 +60,19 @@ class InputOutputManagementUnitTest implements ProcTestUtility, MemTestUtility {
         kb.press((char) 108);
         kb.press((char) 97);
 
-        Assertions.assertEquals(112, keyValue.getValue());
+        assertEquals(112, keyValue.getValue());
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
 
         kb.onTick();
-        Assertions.assertEquals(117, keyValue.getValue());
+        assertEquals(117, keyValue.getValue());
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
 
         kb.onTick();
-        Assertions.assertEquals(108, keyValue.getValue());
+        assertEquals(108, keyValue.getValue());
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
 
         kb.onTick();
-        Assertions.assertEquals(97, keyValue.getValue());
+        assertEquals(97, keyValue.getValue());
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
@@ -76,7 +81,7 @@ class InputOutputManagementUnitTest implements ProcTestUtility, MemTestUtility {
         var addr = reg(KB_ADDR);
         var loc = aloc(addr);
         var keyValue = io.locate(loc);
-        Assertions.assertEquals(0x0, keyValue.getValue());
+        assertEquals(0x0, keyValue.getValue());
     }
 
     @Test
@@ -87,8 +92,18 @@ class InputOutputManagementUnitTest implements ProcTestUtility, MemTestUtility {
 
         kb.onTick();
         kb.onTick();
-        Assertions.assertEquals(0x0, keyValue.getValue());
+        assertEquals(0x0, keyValue.getValue());
         Assertions.assertFalse(freg.isSet(FlagRegister.SEG_FLAG));
     }
 
+    @Test
+    void tickPassedToIOMUShouldPassToHwUnit() {
+        var ticks = new AtomicInteger(0);
+        var io = new InputOutputManagementUnit(freg);
+        io.registerHardwareUnit(ticks::incrementAndGet, (char)0, location -> location == KB_ADDR);
+        io.onTick();
+        io.onTick();
+        io.onTick();
+        assertEquals(3, ticks.get());
+    }
 }

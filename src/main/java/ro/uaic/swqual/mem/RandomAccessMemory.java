@@ -42,6 +42,11 @@ public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
         this.flagRegister = flagRegister;
     }
 
+    public RandomAccessMemory(char size, FlagRegister flagRegister) {
+        this.bytes = new byte[size];
+        this.flagRegister = flagRegister;
+    }
+
     @Override
     public char read(MemoryLocation location) {
         var address = location.getValue();
