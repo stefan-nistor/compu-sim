@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public class Parser {
     private final List<Instruction> instructions = new ArrayList<>();
@@ -67,6 +68,35 @@ public class Parser {
         }
     }
 
+    private Constant identifyConstant(String constantStr) {
+        var base2Pattern = Pattern.compile("#?0[bB]([0-1]+)");
+        var base8Pattern = Pattern.compile("#?0([0-7]+)");
+        var base10Pattern = Pattern.compile("#?(0|[1-9]\\d*)");
+        var base16Pattern = Pattern.compile("#?0[xX]([0-9a-fA-F]+)");
+        var b2Match = base2Pattern.matcher(constantStr);
+        var b8Match = base8Pattern.matcher(constantStr);
+        var b10Match = base10Pattern.matcher(constantStr);
+        var b16Match = base16Pattern.matcher(constantStr);
+
+        if (b2Match.matches()) {
+            return new Constant((char) Integer.parseInt(b2Match.group(1), 2));
+        }
+
+        if (b8Match.matches()) {
+            return new Constant((char) Integer.parseInt(b8Match.group(1), 8));
+        }
+
+        if (b10Match.matches()) {
+            return new Constant((char) Integer.parseInt(b10Match.group(1), 10));
+        }
+
+        if (b16Match.matches()) {
+            return new Constant((char) Integer.parseInt(b16Match.group(1), 16));
+        }
+
+        return null;
+    }
+
     private Parameter identifyParameter(int lineIndex, String string) {
         if (string.startsWith("@")) {
             return new Label(string);
@@ -76,8 +106,9 @@ public class Parser {
             return new RegisterReference(lineIndex, string);
         }
 
-        if (string.startsWith("#")) {
-            return new Constant((char) Integer.parseInt(string.substring(1)));
+        var asConstant = identifyConstant(string);
+        if (asConstant != null) {
+            return asConstant;
         }
 
         throw new ParserException("Unknown parameter: " + string);
