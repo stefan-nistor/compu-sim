@@ -2,7 +2,7 @@ package ro.uaic.swqual.unit.tester;
 
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.CentralProcessingUnit;
+import ro.uaic.swqual.proc.CPU;
 import ro.uaic.swqual.tester.Expression;
 
 import java.util.List;
@@ -19,7 +19,7 @@ class ExpressionTest {
     }
 
     void expressionTest(String exprStr, ExpressionConsumer consumer) {
-        var cpu = new CentralProcessingUnit();
+        var cpu = new CPU();
         var regs = cpu.getDataRegisters();
         var refMap = cpu.getRegistryReferenceMap();
         var expr = Expression.from(exprStr);
@@ -105,7 +105,7 @@ class ExpressionTest {
 
     @Test
     void partialResolveDoesNotOverrideOldResolves() {
-        var cpu = new CentralProcessingUnit();
+        var cpu = new CPU();
         var regs = cpu.getDataRegisters();
         var expr = Expression.from("r0==50");
         assertNotNull(expr);

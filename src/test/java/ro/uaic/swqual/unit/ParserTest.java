@@ -28,8 +28,7 @@ class ParserTest {
     @Test
     void testParseInstructionLineShouldSucceed() {
         var line = "add r0 #7";
-        parser.parseInstruction(1, line);
-        var instruction = parser.getInstructions().getFirst();
+        var instruction = parser.parseInstruction(1, line);
 
         Assertions.assertEquals(InstructionType.ALU_ADD, instruction.getType());
         Assertions.assertNotNull(instruction.getParameters().getFirst());
@@ -42,7 +41,7 @@ class ParserTest {
     @Test
     void testParseInputFileShouldSucceed() {
         var path = "src/test/resources/unit/test-parser.txt";
-        var instructionList = parser.parse(path).getInstructions();
+        var instructionList = parser.parse(path);
 
         Assertions.assertEquals( 4, instructionList.size());
     }
@@ -56,7 +55,7 @@ class ParserTest {
     @Test
     void testLinkJumpsShouldSucceed() {
         var path = "src/test/resources/unit/test-jmp.txt";
-        var instructionList = parser.parse(path).getInstructions();
+        var instructionList = parser.parse(path);
         parser.link();
         Assertions.assertEquals(5, instructionList.get(2).getParam1().getValue());
         Assertions.assertEquals(0, instructionList.get(7).getParam1().getValue());
@@ -84,8 +83,7 @@ class ParserTest {
         );
 
         var parser = new Parser();
-        code.forEach(parser::parseInstruction);
-        var instructions = parser.getInstructions();
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
         var cpu = new CentralProcessingUnit();
 
         Predicate<Instruction> containsUnresolvedReferences =
@@ -98,8 +96,8 @@ class ParserTest {
         Assertions.assertTrue(instructions.stream().allMatch(containsUnresolvedReferences));
         Assertions.assertTrue(instructions.stream().noneMatch(containsResolvedReferences));
 
-        parser.resolveReferences(cpu.getRegistryReferenceMap());
-        Assertions.assertEquals(3, instructions.size());
+        var resolved = Parser.resolveReferences(instructions, cpu.getRegistryReferenceMap());
+        Assertions.assertEquals(3, resolved.size());
 
         Assertions.assertTrue(instructions.stream().noneMatch(containsUnresolvedReferences));
         Assertions.assertTrue(instructions.stream().allMatch(containsResolvedReferences));
@@ -115,12 +113,12 @@ class ParserTest {
         );
 
         var parser = new Parser();
-        code.forEach(parser::parseInstruction);
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
         var cpu = new CentralProcessingUnit();
 
         Assertions.assertThrows(
                 UndefinedReferenceException.class,
-                () -> parser.resolveReferences(cpu.getRegistryReferenceMap()),
+                () -> Parser.resolveReferences(instructions, cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r11'"
         );
     }
@@ -135,12 +133,12 @@ class ParserTest {
         );
 
         var parser = new Parser();
-        code.forEach(parser::parseInstruction);
+        var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
         var cpu = new CentralProcessingUnit();
 
         Assertions.assertThrows(
                 UndefinedReferenceException.class,
-                () -> parser.resolveReferences(cpu.getRegistryReferenceMap()),
+                () -> Parser.resolveReferences(instructions, cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r16'"
         );
     }

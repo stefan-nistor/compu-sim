@@ -61,14 +61,18 @@ public class Expression {
     }
 
     public static Expression from(String string) {
-        var pattern = Pattern.compile("(.*)(==|!=|>|>=|<|<=)(.*)");
+        var pattern = Pattern.compile("(.*)(==|!=|>=|<=|<|>)(.*)");
         var matcher = pattern.matcher(string);
         if (!matcher.find()) {
             return null;
         }
 
-        var p0 = asParameter(matcher.group(1));
-        var p1 = asParameter(matcher.group(3));
+        var p0 = asParameter(matcher.group(1).trim());
+        var p1 = asParameter(matcher.group(3).trim());
+        if (p0 == null || p1 == null) {
+            return null;
+        }
+
         var params = Tuple.of(p0, p1);
         return switch (matcher.group(2)) {
             case "==" -> eq(params);
