@@ -9,7 +9,7 @@ import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.ALU;
+import ro.uaic.swqual.proc.ArithmeticLogicUnit;
 
 import java.util.stream.Stream;
 
@@ -17,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
 
-class ALUTest implements ProcTestUtility {
+class ArithmeticLogicUnitTest implements ProcTestUtility {
     private interface ALUTestConsumer {
-        void apply(ALU alu, FlagTestPredicate test, Register s) throws Throwable;
+        void apply(ArithmeticLogicUnit alu, FlagTestPredicate test, Register s) throws Throwable;
     }
 
     void aluTest(ALUTestConsumer r) throws Throwable {
@@ -27,7 +27,7 @@ class ALUTest implements ProcTestUtility {
         var specOutReg = new Register();
         flagReg.setValue((char)0);
         specOutReg.setValue((char)0);
-        var alu = new ALU(flagReg, specOutReg);
+        var alu = new ArithmeticLogicUnit(flagReg, specOutReg);
         FlagTestPredicate test = (flags) -> {
             /// From my knowledge, impossible to resolve as stream with varargs, even with a safe <T> T[] toArray(T...) 
             char allFlags = 0;
@@ -1186,7 +1186,7 @@ class ALUTest implements ProcTestUtility {
 
     @Test
     void aluDefaultFilterShouldOnlyAcceptAluOps() {
-        var alu = new ALU(freg(), reg());
+        var alu = new ArithmeticLogicUnit(freg(), reg());
         var pred = alu.getDefaultFilter();
         assertEquals(
                 InstructionType.ALU_ADD,
@@ -1204,7 +1204,7 @@ class ALUTest implements ProcTestUtility {
     @Test
     void aluRaiseFlagShouldRaiseFlag() {
         var freg = freg();
-        var alu = new ALU(freg, reg());
+        var alu = new ArithmeticLogicUnit(freg, reg());
         alu.raiseFlag(SEG_FLAG);
         assertTrue(freg.isSet(SEG_FLAG));
     }

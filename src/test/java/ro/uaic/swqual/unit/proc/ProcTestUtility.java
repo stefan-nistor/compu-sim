@@ -1,5 +1,6 @@
 package ro.uaic.swqual.unit.proc;
 
+import ro.uaic.swqual.model.operands.RegisterReference;
 import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.Instruction;
@@ -71,6 +72,10 @@ public interface ProcTestUtility extends TestUtility {
 
     default Register reg() {
         return new Register();
+    }
+
+    default RegisterReference ref(String name) {
+        return new RegisterReference(-1, name);
     }
 
     default FlagRegister freg() {

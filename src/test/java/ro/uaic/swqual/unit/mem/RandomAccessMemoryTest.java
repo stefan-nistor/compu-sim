@@ -3,16 +3,16 @@ package ro.uaic.swqual.unit.mem;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.exception.ValueException;
-import ro.uaic.swqual.mem.RAM;
+import ro.uaic.swqual.mem.RandomAccessMemory;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
-class RAMTest implements MemTestUtility, ProcTestUtility {
+class RandomAccessMemoryTest implements MemTestUtility, ProcTestUtility {
     @Test
     void readWriteCompleteTest() {
         exceptionLess(() -> {
             var flags = freg();
-            var ram = new RAM(65536, flags);
+            var ram = new RandomAccessMemory(65536, flags);
             var value = 0;
             var addr = reg();
             var loc = aloc(addr);
@@ -39,7 +39,7 @@ class RAMTest implements MemTestUtility, ProcTestUtility {
             // Little endian, keep in mind.
 
             var flags = freg();
-            var ram = new RAM(1024, flags);
+            var ram = new RandomAccessMemory(1024, flags);
             var addr = reg();
             var loc = aloc(addr);
 
@@ -61,7 +61,7 @@ class RAMTest implements MemTestUtility, ProcTestUtility {
     void partialOverwriteTest() {
         exceptionLess(() -> {
             var flags = freg();
-            var ram = new RAM(1024, flags);
+            var ram = new RandomAccessMemory(1024, flags);
             var addr = reg();
             var loc = aloc(addr);
 
@@ -86,7 +86,7 @@ class RAMTest implements MemTestUtility, ProcTestUtility {
     void segmentationTest() {
         exceptionLess(() -> {
             var flags = freg();
-            var ram = new RAM(1024, flags);
+            var ram = new RandomAccessMemory(1024, flags);
             var addr = reg();
             var loc = aloc(addr);
 
@@ -106,7 +106,7 @@ class RAMTest implements MemTestUtility, ProcTestUtility {
 
     @Test
     void memorySizeTooLargeCreateTest() {
-        Assertions.assertThrows(ValueException.class, () -> new RAM(65537, freg()));
-        Assertions.assertThrows(ValueException.class, () -> new RAM(1, freg()));
+        Assertions.assertThrows(ValueException.class, () -> new RandomAccessMemory(65537, freg()));
+        Assertions.assertThrows(ValueException.class, () -> new RandomAccessMemory(1, freg()));
     }
 }

@@ -13,12 +13,15 @@ import ro.uaic.swqual.util.Tuple2;
 import ro.uaic.swqual.util.Tuple3;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
-public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
+public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, ClockListener {
     protected final List<Tuple2<ProcessingUnit, Predicate<Instruction>>> executorUnits = new ArrayList<>();
     protected final List<Tuple3<LocatingUnit, Character, Predicate<Character>>> locatingUnits = new ArrayList<>();
+    protected final Set<ClockListener> clockListeners = new HashSet<>();
     protected final UnresolvedMemory unresolvedSink;
 
     protected DelegatingUnit() {
@@ -48,10 +51,12 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
     }
 
     public void registerExecutor(ProcessingUnit unit, Predicate<Instruction> filter) {
+        registerPotentialClockListener(unit);
         executorUnits.add(Tuple.of(unit, filter));
     }
 
     public void registerExecutor(ProcessingUnit unit) {
+        registerPotentialClockListener(unit);
         executorUnits.add(Tuple.of(unit, unit.getDefaultFilter()));
     }
 
@@ -60,6 +65,7 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
             Character offset,
             Predicate<Character> addressSpaceValidator
     ) {
+        registerPotentialClockListener(unit);
         locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
     }
 
@@ -68,7 +74,18 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
             Character offset,
             Character size
     ) {
-        locatingUnits.add(Tuple.of(unit, offset, (location) -> location >= offset && location + 1 < offset + size));
+        registerPotentialClockListener(unit);
+        locatingUnits.add(Tuple.of(unit, offset, location -> location >= offset && location + 1 < offset + size));
+    }
+
+    protected void registerPotentialClockListener(Object potentialListener) {
+        if (potentialListener instanceof ClockListener listener) {
+            registerClockListener(listener);
+        }
+    }
+
+    public void registerClockListener(ClockListener listener) {
+        clockListeners.add(listener);
     }
 
     @Override
@@ -99,5 +116,10 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit {
     @Override
     public Predicate<Instruction> getDefaultFilter() {
         return executorUnits.stream().map(Tuple2::getSecond).reduce(i -> false, Predicate::or);
+    }
+
+    @Override
+    public void onTick() {
+        clockListeners.forEach(ClockListener::onTick);
     }
 }

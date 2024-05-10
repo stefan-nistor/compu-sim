@@ -6,12 +6,12 @@ import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
-import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.ALU;
-import ro.uaic.swqual.proc.CPU;
-import ro.uaic.swqual.proc.ClockDependent;
-import ro.uaic.swqual.proc.IPU;
+import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.proc.ArithmeticLogicUnit;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
+import ro.uaic.swqual.proc.ClockListener;
+import ro.uaic.swqual.proc.InstructionProcessingUnit;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
 
-class CPUTest implements ProcTestUtility {
+class CentralProcessingUnitTest implements ProcTestUtility {
     @Test
     void processorDataRegSize() {
-        var processor = new CPU();
+        var processor = new CentralProcessingUnit();
         var dataRegs = processor.getDataRegisters();
         Assertions.assertEquals(8, dataRegs.size());
     }
@@ -33,7 +33,7 @@ class CPUTest implements ProcTestUtility {
     @Test
     void processorDataRegStore() {
         try {
-            var processor = new CPU();
+            var processor = new CentralProcessingUnit();
             var dataRegs = processor.getDataRegisters();
             var reg1 = dataRegs.get(3);
             var reg2 = dataRegs.get(5);
@@ -55,7 +55,7 @@ class CPUTest implements ProcTestUtility {
         // This check inside functions is already done in S5961
         //      so this can be backported, unless it is SE and not AST.
         exceptionLess(() -> {
-            var processor = new CPU();
+            var processor = new CentralProcessingUnit();
             var dataRegs = processor.getDataRegisters();
             var reg0 = dataRegs.get(0);
             var reg1 = dataRegs.get(1);
@@ -67,10 +67,10 @@ class CPUTest implements ProcTestUtility {
     @Test
     void handleInstructionPassing() {
         exceptionLess(() -> {
-            var processor = new CPU();
+            var processor = new CentralProcessingUnit();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
-            var alu0 = new ALU(freg, dregs.get(7));
+            var alu0 = new ArithmeticLogicUnit(freg, dregs.get(7));
             processor.registerExecutor(alu0);
             dregs.get(0).setValue((char)0x1002);
             dregs.get(1).setValue((char)0x5000);
@@ -84,10 +84,10 @@ class CPUTest implements ProcTestUtility {
     @Test
     void handleInstructionPassingDoNotPassUnregistered() {
         exceptionLess(() -> {
-            var processor = new CPU();
+            var processor = new CentralProcessingUnit();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
-            var alu = new ALU(freg, dregs.get(7));
+            var alu = new ArithmeticLogicUnit(freg, dregs.get(7));
             dregs.get(0).setValue((char)0x1002);
             dregs.get(1).setValue((char)0x5000);
             processor.execute(new Instruction(InstructionType.ALU_UMUL, dregs.get(0), dregs.get(1)));
@@ -100,11 +100,11 @@ class CPUTest implements ProcTestUtility {
     @Test
     void handleInstructionFiltering() {
         exceptionLess(() -> {
-            var processor = new CPU();
+            var processor = new CentralProcessingUnit();
             var dregs = processor.getDataRegisters();
             var freg = processor.getFlagRegister();
-            var alu0 = new ALU(freg, dregs.get(6));
-            var alu1 = new ALU(freg, dregs.get(7));
+            var alu0 = new ArithmeticLogicUnit(freg, dregs.get(6));
+            var alu1 = new ArithmeticLogicUnit(freg, dregs.get(7));
             processor.registerExecutor(alu0, i -> i.getType().ordinal() >= InstructionType.ALU_ADD.ordinal()
                                                && i.getType().ordinal() <= InstructionType.ALU_SUB.ordinal());
             processor.registerExecutor(alu1, i -> i.getType().ordinal() >= InstructionType.ALU_UMUL.ordinal()
@@ -144,32 +144,20 @@ class CPUTest implements ProcTestUtility {
     }
 
     private interface CpuAluIpuConsumer {
-        void apply(CPU cpu, ClockDependent stepper) throws Throwable;
-    }
-
-    private static class RegisterReference extends Parameter {
-        private final String name;
-
-        public RegisterReference(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
+        void apply(CentralProcessingUnit cpu, ClockListener stepper) throws Throwable;
     }
 
     private void cpuAluIpuTest(
             List<Instruction> instructions,
             int aluOutIdx,
-            BiFunction<CPU, RegisterReference, Register> registerMapping,
+            BiFunction<CentralProcessingUnit, RegisterReference, Register> registerMapping,
             CpuAluIpuConsumer consumer
     ) throws Throwable {
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var dregs = cpu.getDataRegisters();
         var flags = cpu.getFlagRegister();
         var pc = cpu.getProgramCounter();
-        var ipu = new IPU(instructions.stream().peek(instruction -> {
+        var ipu = new InstructionProcessingUnit(instructions.stream().peek(instruction -> {
             if (instruction.getParam1() instanceof RegisterReference) {
                 instruction.setParam1(registerMapping.apply(cpu, (RegisterReference) instruction.getParam1()));
             }
@@ -177,14 +165,10 @@ class CPUTest implements ProcTestUtility {
                 instruction.setParam2(registerMapping.apply(cpu, (RegisterReference) instruction.getParam2()));
             }
         }).toList(), flags, pc);
-        cpu.registerExecutor(new ALU(flags, dregs.get(aluOutIdx)));
+        cpu.registerExecutor(new ArithmeticLogicUnit(flags, dregs.get(aluOutIdx)));
         cpu.registerExecutor(ipu);
         ipu.subscribe(cpu);
         consumer.apply(cpu, ipu);
-    }
-
-    RegisterReference ref(String name) {
-        return new RegisterReference(name);
     }
 
     @Test
@@ -219,7 +203,7 @@ class CPUTest implements ProcTestUtility {
 
     @Test
     void cpuRaiseFlagShouldRaiseFlag() {
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var freg = cpu.getFlagRegister();
         cpu.raiseFlag(SEG_FLAG);
         assertTrue(freg.isSet(SEG_FLAG));
@@ -227,7 +211,7 @@ class CPUTest implements ProcTestUtility {
 
     @Test
     void cpuShouldHaveValidStackPointer() {
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var sp = cpu.getStackPointer();
         assertInstanceOf(Register.class, sp);
     }

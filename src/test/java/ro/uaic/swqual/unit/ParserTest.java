@@ -11,7 +11,7 @@ import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.RegisterReference;
-import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -84,7 +84,7 @@ class ParserTest {
 
         var parser = new Parser();
         var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
 
         Predicate<Instruction> containsUnresolvedReferences =
                 (i) -> i.getParam1() instanceof RegisterReference || i.getParam2() instanceof RegisterReference;
@@ -114,7 +114,7 @@ class ParserTest {
 
         var parser = new Parser();
         var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
 
         Assertions.assertThrows(
                 UndefinedReferenceException.class,
@@ -134,7 +134,7 @@ class ParserTest {
 
         var parser = new Parser();
         var instructions = code.entrySet().stream().map(e -> parser.parseInstruction(e.getKey(), e.getValue())).toList();
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
 
         Assertions.assertThrows(
                 UndefinedReferenceException.class,

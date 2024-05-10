@@ -17,14 +17,14 @@ import java.util.function.Predicate;
  * Its purpose is to inform the units awaiting instructions of the next instruction, to advance the attached
  *      program counter, and to modify it on demand.
  */
-public class IPU implements ProcessingUnit, ClockDependent {
+public class InstructionProcessingUnit implements ProcessingUnit, ClockListener {
     private final FlagRegister flagRegister;
     private final Register programCounter;
     private final List<Instruction> instructions;
     private final List<ProcessingUnit> instructionSubscribers = new ArrayList<>();
     public static final Instruction defaultInstruction = new Instruction(InstructionType.IPU_JMP, new Constant((char)0));
 
-    public IPU(List<Instruction> instructions, FlagRegister flagRegister, Register programCounter) {
+    public InstructionProcessingUnit(List<Instruction> instructions, FlagRegister flagRegister, Register programCounter) {
         this.flagRegister = flagRegister;
         this.programCounter = programCounter;
         this.instructions = instructions;

@@ -8,7 +8,7 @@ import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.IPU;
+import ro.uaic.swqual.proc.InstructionProcessingUnit;
 import ro.uaic.swqual.proc.ProcessingUnit;
 
 import java.util.List;
@@ -18,19 +18,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
 
-class IPUTest implements ProcTestUtility {
-    private interface IPUTestConsumer {
-        void apply(IPU ipu, FlagTestPredicate test, Register pc, List<Instruction> instructions) throws Throwable;
+class InstructionProcessingUnitTest implements ProcTestUtility {
+    private interface InstructionProcessingUnitTestConsumer {
+        void apply(InstructionProcessingUnit ipu, FlagTestPredicate test, Register pc, List<Instruction> instructions) throws Throwable;
     }
 
-    private interface IPUTestWithFlagConsumer {
-        void apply(IPU ipu, FlagRegister flag, Register pc, List<Instruction> instructions) throws Throwable;
+    private interface InstructionProcessingUnitTestWithFlagConsumer {
+        void apply(InstructionProcessingUnit ipu, FlagRegister flag, Register pc, List<Instruction> instructions) throws Throwable;
     }
 
-    void ipuTest(List<Instruction> instructions, IPUTestConsumer consumer) throws Throwable {
+    void ipuTest(List<Instruction> instructions, InstructionProcessingUnitTestConsumer consumer) throws Throwable {
         var flagReg = new FlagRegister();
         var pc = new Register();
-        var ipu = new IPU(instructions, flagReg, pc);
+        var ipu = new InstructionProcessingUnit(instructions, flagReg, pc);
 
         pc.setValue((char)0);
         FlagTestPredicate test = (flags) -> {
@@ -43,10 +43,10 @@ class IPUTest implements ProcTestUtility {
         consumer.apply(ipu, test, pc, instructions);
     }
 
-    void ipuTestWithFlagEdit(List<Instruction> instructions, IPUTestWithFlagConsumer consumer) throws Throwable {
+    void ipuTestWithFlagEdit(List<Instruction> instructions, InstructionProcessingUnitTestWithFlagConsumer consumer) throws Throwable {
         var flagReg = new FlagRegister();
         var pc = new Register();
-        var ipu = new IPU(instructions, flagReg, pc);
+        var ipu = new InstructionProcessingUnit(instructions, flagReg, pc);
 
         pc.setValue((char)0);
         consumer.apply(ipu, flagReg, pc, instructions);
@@ -150,16 +150,16 @@ class IPUTest implements ProcTestUtility {
                 assertTrue(test.test());
                 ipu.onTick();
 
-                Assertions.assertEquals(IPU.defaultInstruction, ipu.next());
+                Assertions.assertEquals(InstructionProcessingUnit.defaultInstruction, ipu.next());
                 Assertions.assertEquals(instructions.getFirst(), cpu.lastExecuted);
                 assertTrue(test.test());
                 ipu.onTick();
                 assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
                 Assertions.assertEquals(instructions.getFirst(), ipu.next());
-                Assertions.assertEquals(IPU.defaultInstruction, cpu.lastExecuted);
+                Assertions.assertEquals(InstructionProcessingUnit.defaultInstruction, cpu.lastExecuted);
                 ipu.onTick();
                 assertTrue(test.test(FlagRegister.ILLEGAL_FLAG));
-                Assertions.assertEquals(IPU.defaultInstruction, ipu.next());
+                Assertions.assertEquals(InstructionProcessingUnit.defaultInstruction, ipu.next());
                 Assertions.assertEquals(instructions.getFirst(), cpu.lastExecuted);
             });
         });
@@ -440,7 +440,7 @@ class IPUTest implements ProcTestUtility {
     }
 
     @Test
-    void illegalIPUInstruction() {
+    void illegalInstructionProcessingUnitInstruction() {
         final List<Instruction> emptyList = List.of();
         Assertions.assertThrows(InstructionException.class, () -> ipuTest(
                 emptyList, (ipu, flags, pc, instructions) -> ipu.execute(
@@ -452,14 +452,14 @@ class IPUTest implements ProcTestUtility {
     @Test
     void ipuRaiseFlagShouldRaiseFlag() {
         var freg = freg();
-        var ipu = new IPU(List.of(), freg, reg());
+        var ipu = new InstructionProcessingUnit(List.of(), freg, reg());
         ipu.raiseFlag(SEG_FLAG);
         assertTrue(freg.isSet(SEG_FLAG));
     }
 
     @Test
     void ipuDefaultFilterShouldAcceptOnlyIpuInstructions() {
-        var ipu = new IPU(List.of(), freg(), reg());
+        var ipu = new InstructionProcessingUnit(List.of(), freg(), reg());
         var pred = ipu.getDefaultFilter();
         assertEquals(
                 InstructionType.IPU_JMP,

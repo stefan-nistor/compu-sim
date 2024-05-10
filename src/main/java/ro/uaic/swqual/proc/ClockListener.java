@@ -1,5 +1,5 @@
 package ro.uaic.swqual.proc;
 
-public interface ClockDependent {
+public interface ClockListener {
     void onTick();
 }

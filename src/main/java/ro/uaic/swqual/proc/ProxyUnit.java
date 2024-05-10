@@ -29,6 +29,7 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
             Character offset,
             Predicate<Character> addressSpaceValidator
     ) {
+        registerPotentialClockListener(hardwareUnit);
         hardwareUnits.add(Tuple.of(hardwareUnit, offset, addressSpaceValidator));
     }
 
@@ -37,6 +38,7 @@ public abstract class ProxyUnit<HardwareUnit extends MemoryUnit> extends Delegat
             Character offset,
             Character size
     ) {
+        registerPotentialClockListener(hardwareUnit);
         hardwareUnits.add(Tuple.of(hardwareUnit, offset, location -> location >= offset && location + 1 < offset + size));
     }
 
