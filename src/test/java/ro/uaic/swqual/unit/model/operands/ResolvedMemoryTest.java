@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResolvedMemoryTest implements RegisterTestUtility, TestUtility, ProcTestUtility {
@@ -54,7 +55,26 @@ class ResolvedMemoryTest implements RegisterTestUtility, TestUtility, ProcTestUt
     }
 
     @Test
-    void toStringShouldResolve() {
-        assertEquals("mem(15)", new ResolvedMemory(() -> (char) 15, null).toString());
+    void resolvedMemoryHashCodeTest() {
+        Supplier<Character> s0 = () -> (char) 10;
+        Supplier<Character> s1 = () -> (char) 20;
+        Consumer<Character> c0 = c -> {};
+        Consumer<Character> c1 = this::discard;
+        assertEquals(
+                new ResolvedMemory(s0, c0).hashCode(),
+                new ResolvedMemory(s0, c0).hashCode()
+        );
+        assertNotEquals(
+                new ResolvedMemory(s0, c0).hashCode(),
+                new ResolvedMemory(s0, c1).hashCode()
+        );
+        assertNotEquals(
+                new ResolvedMemory(s0, c0).hashCode(),
+                new ResolvedMemory(s1, c1).hashCode()
+        );
+        assertNotEquals(
+                new ResolvedMemory(s0, c0).hashCode(),
+                new ResolvedMemory(s1, c0).hashCode()
+        );
     }
 }

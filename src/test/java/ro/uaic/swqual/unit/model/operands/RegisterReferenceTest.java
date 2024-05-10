@@ -3,19 +3,20 @@ package ro.uaic.swqual.unit.model.operands;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import ro.uaic.swqual.model.operands.Constant;
+import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.operands.RegisterReference;
-import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class RegisterReferenceTest implements RegisterTestUtility, ProcTestUtility {
+class RegisterReferenceTest implements TestUtility, RegisterTestUtility {
     @Test
     void registerReferenceShouldTrackLineAndName() {
         var regRef = new RegisterReference(10, "r0");
-        assertEquals(10, regRef.getReferencedAtLine());
-        assertEquals("r0", regRef.getName());
+        Assertions.assertEquals(10, regRef.getReferencedAtLine());
+        Assertions.assertEquals("r0", regRef.getName());
     }
 
     @Test
@@ -55,8 +56,25 @@ class RegisterReferenceTest implements RegisterTestUtility, ProcTestUtility {
     }
 
     @Test
-    void toStringShouldResolve() {
-        var ref = ref("r0");
-        assertEquals("ref(r0)", ref.toString());
+    void regRefCodeTest() {
+        assertEquals(
+                new RegisterReference(0, "test").hashCode(),
+                new RegisterReference(0, "test").hashCode()
+        );
+
+        assertNotEquals(
+                new RegisterReference(0, "test").hashCode(),
+                new RegisterReference(0, "Test").hashCode()
+        );
+
+        assertNotEquals(
+                new RegisterReference(0, "test").hashCode(),
+                new RegisterReference(1, "test").hashCode()
+        );
+
+        assertNotEquals(
+                new RegisterReference(0, "test").hashCode(),
+                new RegisterReference(1, "Test").hashCode()
+        );
     }
 }

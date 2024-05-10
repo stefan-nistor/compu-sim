@@ -19,7 +19,7 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbsoluteMemoryLocation that = (AbsoluteMemoryLocation) o;
-        return Objects.equals(location, that.location);
+        return location.getValue() == that.location.getValue();
     }
 
     @Override

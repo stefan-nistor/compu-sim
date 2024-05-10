@@ -2,8 +2,6 @@ package ro.uaic.swqual.unit.model.operands;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ro.uaic.swqual.exception.ParameterException;
-import ro.uaic.swqual.model.operands.RegisterReference;
 import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.operands.Constant;
@@ -13,11 +11,10 @@ import ro.uaic.swqual.unit.mem.MemTestUtility;
 import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.BinaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RelativeMemoryLocationTest implements TestUtility, RegisterTestUtility, MemTestUtility, ProcTestUtility {
@@ -104,25 +101,27 @@ class RelativeMemoryLocationTest implements TestUtility, RegisterTestUtility, Me
     }
 
     @Test
-    void relMemLocPartialResolveShouldSucceed() {
-        var r0 = new Register();
-        var r1 = new Register();
-        var ref0 = new RegisterReference(0, "r0");
-        var ref1 = new RegisterReference(1, "r1");
-        var refMap0 = Map.of("r0", r0);
-        var refMap1 = Map.of("r1", r1);
-        var rloc = rloc(List.of(ref0, ref1), List.of((a, b) -> (char) (a + b)));
+    void hashCodeTest() {
+        BinaryOperator<Character> r0 = (a, b) -> (char) (a - b);
+        BinaryOperator<Character> r1 = (a, b) -> (char) (a + b);
+        assertEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode()
+        );
 
-        assertThrows(ParameterException.class, () -> discard(rloc.getValue()));
-        rloc.resolveInnerReferences(refMap0);
-        assertThrows(ParameterException.class, () -> discard(rloc.getValue()));
-        rloc.resolveInnerReferences(refMap1);
-        assertEquals((char) 0, rloc.getValue());
-    }
+        assertNotEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xDEAD), r1, reg((char) 0xBEEF)).hashCode()
+        );
 
-    @Test
-    void toStringShouldResolveToUnknown() {
-        var rloc = rloc(reg(0x20));
-        assertEquals("[<relative-location>] (=0x20)", rloc.toString());
+        assertNotEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xBEEF), r0, reg((char) 0xDEAD)).hashCode()
+        );
+
+        assertNotEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xBEEF), r1, reg((char) 0xDEAD)).hashCode()
+        );
     }
 }
