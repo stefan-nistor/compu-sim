@@ -10,11 +10,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class Expectation {
-    private static final String EXPECT_TRUE_ID = "expect-true";
-    private static final String EXPECT_FALSE_ID = "expect-false";
+    private static final Map<String, Supplier<Expectation>> EXPECTATION_SUPPLIERS = Map.of(
+        "expect-true", Expectation::expectTrue,
+        "expect-false", Expectation::expectFalse
+    );
 
     private final Predicate<Expression> predicate;
     private final List<Expression> expressions;
@@ -34,7 +37,7 @@ public class Expectation {
 
     public static Expectation from(String expectationString) {
         var pattern = Pattern.compile(
-                "(" + EXPECT_TRUE_ID + "|" + EXPECT_FALSE_ID + ")"
+                "(" + EXPECTATION_SUPPLIERS.keySet().stream().reduce((a, b) -> a + "|" + b).orElse("") + ")"
                 + " \\{([^}]*)}"
         );
 
@@ -43,13 +46,12 @@ public class Expectation {
             return null;
         }
 
-        return Optional.ofNullable(Map.of(
-                EXPECT_TRUE_ID, expectTrue(),
-                EXPECT_FALSE_ID, expectFalse()
-        ).get(matcher.group(1)))
+        return Optional.ofNullable(Optional.ofNullable(EXPECTATION_SUPPLIERS.get(matcher.group(1)))
+                .orElse(() -> null).get())
                 .orElseThrow(() -> new UndefinedExpectationException(matcher.group(1)))
                 .addExpressions(
                         Arrays.stream(matcher.group(2).split(";"))
+                                .map(String::trim)
                                 .map(Expression::from)
                                 .filter(Objects::nonNull)
                                 .toList()
