@@ -5,6 +5,7 @@ import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.tester.Expectation;
 import ro.uaic.swqual.tester.TesterParser;
 import ro.uaic.swqual.util.Function3;
 import ro.uaic.swqual.util.Tuple;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TesterParserTest {
@@ -37,12 +39,12 @@ class TesterParserTest {
 
     @Test
     void testerParserOutputShouldBeEquivalentToNormalParserOutput() {
-        var resource0 = "src/test/resources/test-parser.txt";
-        var resource1 = "src/test/resources/test-jmp.txt";
+        var resource0 = "src/test/resources/unit/test-parser.txt";
+        var resource1 = "src/test/resources/unit/test-jmp.txt";
         var p0 = new Parser();
         var p1 = new TesterParser();
         var cpu = new CPU();
-        var m0 = cpu.registryReferenceMap;
+        var m0 = cpu.getRegistryReferenceMap();
 
         Function3<Parser, String, Map<String, Register>, List<Instruction>> getOut = (p, r, m) -> {
             List<Instruction> outs = new ArrayList<>();
@@ -55,5 +57,23 @@ class TesterParserTest {
                         .map(r -> Tuple.of(getOut.apply(p0, r, m0), getOut.apply(p1, r, m0)))
                         .allMatch(t -> t.map(List::equals))
         );
+    }
+
+    @Test
+    void testerParserShouldGatherValidExpectationsCorrectly() {
+        var resource0 = "src/test/resources/unit/tester-parser-test.txt";
+        parseResource(new TesterParser(), resource0, null, (parser, instructions) -> {
+            var cpu = new CPU();
+            var regs = cpu.getDataRegisters();
+            var refs = cpu.getRegistryReferenceMap();
+            var expectations = parser.getExpectationMap();
+            assertEquals(2, expectations.size());
+
+            expectations.values().forEach(e -> e.referencing(refs));
+            regs.get(0).setValue((char) 10);
+            regs.get(1).setValue((char) 10);
+            regs.get(2).setValue((char) 10);
+            assertTrue(expectations.values().stream().allMatch(Expectation::evaluate));
+        });
     }
 }
