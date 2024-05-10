@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import static ro.uaic.swqual.model.operands.FlagRegister.ILLEGAL_FLAG;
 
 public class Tester implements Runnable {
-    private static final String CHECKS_PATH = "src/test/resources/checks/";
+    public static final String CHECKS_PATH = "src/test/resources/checks/";
     private final String path;
     private final Map<Expectation, Boolean> outcomes = new HashMap<>();
     private boolean globalOutcome;
