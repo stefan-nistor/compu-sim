@@ -40,7 +40,7 @@ class ParserTest {
 
     @Test
     void testParseInputFileShouldSucceed() {
-        var path = "src/test/resources/test-parser.txt";
+        var path = "src/test/resources/unit/test-parser.txt";
         var instructionList = parser.parse(path);
 
         Assertions.assertEquals( 4, instructionList.size());
@@ -48,13 +48,13 @@ class ParserTest {
 
     @Test
     void testParseInputFileShouldThrowException() {
-        var path = "src/test/resources/test-parser-failure.txt";
+        var path = "src/test/resources/unit/test-parser-failure.txt";
         Assertions.assertThrows(RuntimeException.class, () -> parser.parse(path));
     }
 
     @Test
     void testLinkJumpsShouldSucceed() {
-        var path = "src/test/resources/test-jmp.txt";
+        var path = "src/test/resources/unit/test-jmp.txt";
         var instructionList = parser.parse(path);
         parser.link();
         Assertions.assertEquals(5, instructionList.get(2).getParam1().getValue());
@@ -63,14 +63,14 @@ class ParserTest {
 
     @Test
     void testLinkJumpsShouldThrowNotFoundException() {
-        var path = "src/test/resources/test-jmp-failure.txt";
+        var path = "src/test/resources/unit/test-jmp-failure.txt";
         parser.parse(path);
         Assertions.assertThrows(JumpLabelNotFoundException.class, () -> parser.link());
     }
 
     @Test
     void testParseShouldThrowDuplicateException() {
-        var path = "src/test/resources/test-jmp-failure-dup.txt";
+        var path = "src/test/resources/unit/test-jmp-failure-dup.txt";
         Assertions.assertThrows(DuplicateJumpTargetException.class ,() -> parser.parse(path));
     }
 
@@ -96,7 +96,7 @@ class ParserTest {
         Assertions.assertTrue(instructions.stream().allMatch(containsUnresolvedReferences));
         Assertions.assertTrue(instructions.stream().noneMatch(containsResolvedReferences));
 
-        var resolved = Parser.resolveReferences(instructions, cpu.registryReferenceMap);
+        var resolved = Parser.resolveReferences(instructions, cpu.getRegistryReferenceMap());
         Assertions.assertEquals(3, resolved.size());
 
         Assertions.assertTrue(instructions.stream().noneMatch(containsUnresolvedReferences));
@@ -118,7 +118,7 @@ class ParserTest {
 
         Assertions.assertThrows(
                 UndefinedReferenceException.class,
-                () -> Parser.resolveReferences(instructions, cpu.registryReferenceMap),
+                () -> Parser.resolveReferences(instructions, cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r11'"
         );
     }
@@ -138,7 +138,7 @@ class ParserTest {
 
         Assertions.assertThrows(
                 UndefinedReferenceException.class,
-                () -> Parser.resolveReferences(instructions, cpu.registryReferenceMap),
+                () -> Parser.resolveReferences(instructions, cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r16'"
         );
     }

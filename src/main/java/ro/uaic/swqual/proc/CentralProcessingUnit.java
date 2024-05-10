@@ -17,7 +17,7 @@ public class CentralProcessingUnit extends DelegatingUnit {
     private final Register programCounter = new Register();
     private final Register stackPointer = new Register();
 
-    public final Map<String, Register> registryReferenceMap = new HashMap<>();
+    private final Map<String, Register> registryReferenceMap = new HashMap<>();
 
     public CentralProcessingUnit() {
         IntStream.range(0, 8).forEach(regIndex -> {
@@ -44,5 +44,9 @@ public class CentralProcessingUnit extends DelegatingUnit {
 
     public List<Register> getDataRegisters() {
         return dataRegisters;
+    }
+
+    public Map<String, Register> getRegistryReferenceMap() {
+        return registryReferenceMap;
     }
 }

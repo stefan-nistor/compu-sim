@@ -3,10 +3,11 @@ package ro.uaic.swqual.tester;
 import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.model.Instruction;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class TesterParser extends Parser {
-    private Map<Instruction, Expectation> expectationMap;
+    private final Map<Instruction, Expectation> expectationMap = new HashMap<>();
 
     @Override
     public Instruction parseInstruction(int lineIndex, String line) {
@@ -23,5 +24,9 @@ public class TesterParser extends Parser {
 
         expectationMap.put(instruction, expectation);
         return instruction;
+    }
+
+    public Map<Instruction, Expectation> getExpectationMap() {
+        return expectationMap;
     }
 }
