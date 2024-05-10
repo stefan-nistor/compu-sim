@@ -30,13 +30,13 @@ public class RegisterReference extends Parameter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         RegisterReference that = (RegisterReference) o;
         return referencedAtLine == that.referencedAtLine && Objects.equals(asmName, that.asmName);
     }
 
-    // HashCode is intentionally NOT overridden here.
-    // Reason: take a memory location for example:
-    //  [r0] -> AbsMemLoc over Register
-    //  If Register value changes, hashCode would change if overridden
-    //  We do not want this.
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), asmName, referencedAtLine);
+    }
 }

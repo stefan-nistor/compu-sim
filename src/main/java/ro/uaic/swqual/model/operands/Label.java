@@ -27,9 +27,8 @@ public class Label extends Parameter {
         return Objects.equals(name, label.name);
     }
 
-    // HashCode is intentionally NOT overridden here.
-    // Reason: take a memory location for example:
-    //  [r0] -> AbsMemLoc over Register
-    //  If Register value changes, hashCode would change if overridden
-    //  We do not want this.
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
+    }
 }
