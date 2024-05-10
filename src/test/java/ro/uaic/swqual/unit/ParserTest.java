@@ -27,7 +27,7 @@ class ParserTest {
 
     @Test
     void testParseInstructionLineShouldSucceed() {
-        var line = "add r0 #7";
+        var line = "add r0 #7;";
         parser.parseInstruction(1, line);
         var instruction = parser.getInstructions().getFirst();
 
@@ -78,9 +78,9 @@ class ParserTest {
     @Test
     void testParseResolveReferencesShouldSucceed() {
         var code = Map.of(
-                1, "add r0 r1",
-                2, "sub r3 r4",
-                3, "cmp r7 #1"
+                1, "add r0 r1;",
+                2, "sub r3 r4;",
+                3, "cmp r7 #1;"
         );
 
         var parser = new Parser();
@@ -109,9 +109,9 @@ class ParserTest {
     void testParseResolveFirstReferenceShouldFail() {
         var code = Map.of(
                 1, "@Label:",
-                2, "add r0 r1",
-                3, "jmp @Label",
-                4, "sub r11 r4"
+                2, "add r0 r1;",
+                3, "jmp @Label;",
+                4, "sub r11 r4;"
         );
 
         var parser = new Parser();
@@ -129,9 +129,9 @@ class ParserTest {
     void testParseResolveSecondReferenceShouldFail() {
         var code = Map.of(
                 1, "@Label:",
-                2, "add r0 r1",
-                3, "jmp @Label",
-                4, "sub r4 r16"
+                2, "add r0 r1;",
+                3, "jmp @Label;",
+                4, "sub r4 r16;"
         );
 
         var parser = new Parser();

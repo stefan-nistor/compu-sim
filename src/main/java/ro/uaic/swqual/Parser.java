@@ -67,7 +67,13 @@ public class Parser {
     }
 
     public Parser parseInstruction(int lineIndex, String line) {
-        var parsed = line.trim().split("\\s+");
+        line = line.trim();
+        if (!line.endsWith(";") && !line.endsWith(":")) {
+            throw new ParserException("Error at line " + line + ": expected ';' or ':'");
+        }
+
+        line = line.substring(0, line.length() - 1);
+        var parsed = line.split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
 

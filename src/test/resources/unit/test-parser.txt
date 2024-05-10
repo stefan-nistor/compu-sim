@@ -1,6 +1,6 @@
-add r0 r1
-add r1 r2
-add #4 #5
+add r0 r1;
+add r1 r2;
+add #4 #5;
 
 @Label:
-sub r3 #2
+sub r3 #2;
