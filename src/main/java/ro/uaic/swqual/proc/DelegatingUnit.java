@@ -51,12 +51,10 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
     }
 
     public void registerExecutor(ProcessingUnit unit, Predicate<Instruction> filter) {
-        registerPotentialClockListener(unit);
         executorUnits.add(Tuple.of(unit, filter));
     }
 
     public void registerExecutor(ProcessingUnit unit) {
-        registerPotentialClockListener(unit);
         executorUnits.add(Tuple.of(unit, unit.getDefaultFilter()));
     }
 
@@ -65,7 +63,6 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
             Character offset,
             Predicate<Character> addressSpaceValidator
     ) {
-        registerPotentialClockListener(unit);
         locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
     }
 
@@ -74,12 +71,10 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
             Character offset,
             Character size
     ) {
-        registerPotentialClockListener(unit);
         locatingUnits.add(Tuple.of(unit, offset, location -> location >= offset && location + 1 < offset + size));
     }
 
     public void registerLocator(LocatingUnit unit) {
-        registerPotentialClockListener(unit);
         locatingUnits.add(Tuple.of(unit, (char) 0, location -> true));
     }
 
