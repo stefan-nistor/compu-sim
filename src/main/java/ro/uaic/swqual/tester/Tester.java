@@ -8,8 +8,10 @@ import ro.uaic.swqual.proc.ClockDependent;
 import ro.uaic.swqual.proc.IPU;
 import ro.uaic.swqual.proc.MMU;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static ro.uaic.swqual.model.operands.FlagRegister.ILLEGAL_FLAG;
@@ -19,6 +21,12 @@ public class Tester implements Runnable {
     private final String path;
     private final Map<Expectation, Boolean> outcomes = new HashMap<>();
     private boolean globalOutcome;
+    private final Consumer<String> out;
+    private final Consumer<String> err;
+
+    public boolean getOutcome() {
+        return globalOutcome;
+    }
 
     @Override
     public void run() {
@@ -52,7 +60,7 @@ public class Tester implements Runnable {
         }
 
         if (parser.getExpectationMap().isEmpty()) {
-            System.err.println("Error: no expectations found in '" + path + "'");
+            err.accept("Error: no expectations found in '" + path + "'");
             globalOutcome = false;
             return;
         }
@@ -65,25 +73,26 @@ public class Tester implements Runnable {
         globalOutcome = true;
         if (!successExpected) {
             if (outcomes.values().stream().allMatch(v -> v)) {
-                System.err.println("Outcome of test '" + path + "' invalid. Expected failure, but all expectations succeeded");
+                err.accept("Outcome of test '" + path + "' invalid. Expected failure, but all expectations succeeded");
                 globalOutcome = false;
             }
-            return;
         } else {
-            for (var expectationAndResult : outcomes.entrySet()) {
-                if (Boolean.FALSE.equals(expectationAndResult.getValue())) {
-                    System.out.println(
-                            "Expectation '" + expectationAndResult.getKey().getCode() + "' at line "
-                            + expectationAndResult.getKey().getLine() + " did not succeed. \n"
-                            + expectationAndResult.getKey().dump()
-                    );
-                    globalOutcome = false;
-                }
-            }
+            outcomes.entrySet().stream().sorted(Comparator.comparingInt(l -> l.getKey().getLine())).forEach(
+                    expectationAndResult -> {
+                        if (Boolean.FALSE.equals(expectationAndResult.getValue())) {
+                            err.accept(
+                                    "Expectation '" + expectationAndResult.getKey().getCode() + "' at line "
+                                            + expectationAndResult.getKey().getLine() + " did not succeed. \n"
+                                            + expectationAndResult.getKey().dump()
+                            );
+                            globalOutcome = false;
+                        }
+                    }
+            );
         }
 
         if (globalOutcome) {
-            System.out.println("Test '" + path + "' was successful");
+            out.accept("Test '" + path + "' was successful");
         }
     }
 
@@ -105,8 +114,10 @@ public class Tester implements Runnable {
         }
     }
 
-    public Tester(String path) {
+    public Tester(String path, Consumer<String> out, Consumer<String> err) {
         this.path = path;
+        this.out = out;
+        this.err = err;
     }
 
     /**
@@ -120,6 +131,6 @@ public class Tester implements Runnable {
             System.exit(1);
         }
 
-        new Tester(CHECKS_PATH + args[0]).run();
+        new Tester(CHECKS_PATH + args[0], System.out::println, System.err::println).run();
     }
 }
