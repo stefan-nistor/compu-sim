@@ -28,45 +28,34 @@ public class Parser {
     private final List<Instruction> instructions = new ArrayList<>();
     private final Map<String, Constant> jumpMap = new HashMap<>();
 
-    public void clear() {
+    public List<Instruction> parse(String path) {
         instructions.clear();
         jumpMap.clear();
-    }
-
-    public List<Instruction> getInstructions() {
-        return instructions;
-    }
-
-    protected void parseLine(String line, int lineIdx) {
-        if (line.trim().isEmpty() || line.trim().startsWith("//")) {
-            return;
-        }
-        if (!line.trim().startsWith("@")) {
-            parseInstruction(lineIdx, line);
-        } else {
-            var labelKey = line.trim().substring(0, line.length() - 1);
-            if (jumpMap.containsKey(labelKey)) {
-                throw new DuplicateJumpTargetException(line);
-            }
-            jumpMap.put(labelKey, new Constant((char) instructions.size()));
-        }
-    }
-
-    public Parser parse(String path) {
-        clear();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             var lineIndex = 0;
             String line;
             while ((line = br.readLine()) != null) {
-                parseLine(line, ++lineIndex);
+                ++lineIndex;
+                if (line.trim().isEmpty() || line.trim().startsWith("//")) {
+                    continue;
+                }
+                if (!line.trim().startsWith("@")) {
+                    instructions.add(parseInstruction(lineIndex, line));
+                } else {
+                    var labelKey = line.trim().substring(0, line.length() - 1);
+                    if (jumpMap.containsKey(labelKey)) {
+                        throw new DuplicateJumpTargetException(line);
+                    }
+                    jumpMap.put(labelKey, new Constant((char) instructions.size()));
+                }
             }
-            return this;
+            return instructions;
         } catch (IOException e) {
             throw new ParserException(e.getMessage());
         }
     }
 
-    public Parser parseInstruction(int lineIndex, String line) {
+    public Instruction parseInstruction(int lineIndex, String line) {
         var parsed = line.trim().split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
@@ -92,12 +81,10 @@ public class Parser {
                 parameterList.isEmpty() ? null : parameterList.get(0),
                 parameterList.size() == 1 ? null : parameterList.get(1)
         ));
-
-        instructions.add(instruction);
-        return this;
+        return instruction;
     }
 
-    public Parser link() {
+    public void link() {
         instructions.stream()
                 .filter(instruction -> instruction.getParam1() instanceof Label)
                 .forEach(instruction -> {
@@ -108,13 +95,13 @@ public class Parser {
                     }
                     instruction.setParam1(jmpTarget);
                 });
-        return this;
     }
 
-    public Parser resolveReferences(
+    public static List<Instruction> resolveReferences(
+            List<Instruction> instructions,
             Map<String, Register> registerMap
     ) throws UndefinedReferenceException {
-        instructions.forEach(instruction -> {
+        return instructions.stream().map(instruction -> {
             BiConsumer<Supplier<Parameter>, Consumer<Parameter>> referenceResolver = (supplier, consumer) -> {
                 var param = supplier.get();
                 if (param instanceof RegisterReference ref) {
@@ -127,7 +114,7 @@ public class Parser {
             };
             referenceResolver.accept(instruction::getParam1, instruction::setParam1);
             referenceResolver.accept(instruction::getParam2, instruction::setParam2);
-        });
-        return this;
+            return instruction;
+        }).toList();
     }
 }

@@ -27,6 +27,7 @@ public class ResolvedMemory extends Parameter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         ResolvedMemory that = (ResolvedMemory) o;
         return Objects.equals(getProxy, that.getProxy) && Objects.equals(setProxy, that.setProxy);
     }
