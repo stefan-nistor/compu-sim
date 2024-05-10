@@ -1,9 +1,8 @@
 package ro.uaic.swqual.unit.tester;
 
 import org.junit.jupiter.api.Test;
-import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.CentralProcessingUnit;
+import ro.uaic.swqual.proc.CPU;
 import ro.uaic.swqual.tester.Expression;
 
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExpressionTest {
@@ -21,7 +19,7 @@ class ExpressionTest {
     }
 
     void expressionTest(String exprStr, ExpressionConsumer consumer) {
-        var cpu = new CentralProcessingUnit();
+        var cpu = new CPU();
         var regs = cpu.getDataRegisters();
         var refMap = cpu.getRegistryReferenceMap();
         var expr = Expression.from(exprStr);
@@ -101,17 +99,13 @@ class ExpressionTest {
     @Test
     void parseInvalidExpressionShouldResultInNullExpression() {
         expressionTest("", (expr, regs) -> assertNull(expr));
-    }
-
-    @Test
-    void parseInvalidExpressionShouldThrow() {
-        assertThrows(ParameterException.class, () -> expressionTest("r0 === r1", (expr, regs) -> {}));
-        assertThrows(ParameterException.class, () -> expressionTest("r0 == r1+", (expr, regs) -> {}));
+        expressionTest("r0 === r1", (expr, regs) -> assertNull(expr));
+        expressionTest("r0 == r1+", (expr, regs) -> assertNull(expr));
     }
 
     @Test
     void partialResolveDoesNotOverrideOldResolves() {
-        var cpu = new CentralProcessingUnit();
+        var cpu = new CPU();
         var regs = cpu.getDataRegisters();
         var expr = Expression.from("r0==50");
         assertNotNull(expr);
