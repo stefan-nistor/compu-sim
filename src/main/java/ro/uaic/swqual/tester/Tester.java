@@ -1,12 +1,12 @@
 package ro.uaic.swqual.tester;
 
-import ro.uaic.swqual.mem.RAM;
+import ro.uaic.swqual.mem.RandomAccessMemory;
 import ro.uaic.swqual.model.Instruction;
-import ro.uaic.swqual.proc.ALU;
-import ro.uaic.swqual.proc.CPU;
-import ro.uaic.swqual.proc.ClockDependent;
-import ro.uaic.swqual.proc.IPU;
-import ro.uaic.swqual.proc.MMU;
+import ro.uaic.swqual.proc.ArithmeticLogicUnit;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
+import ro.uaic.swqual.proc.ClockListener;
+import ro.uaic.swqual.proc.InstructionProcessingUnit;
+import ro.uaic.swqual.proc.MemoryManagementUnit;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,15 +32,15 @@ public class Tester implements Runnable {
     public void run() {
         var parser = new TesterParser();
         var instr = parser.parse(path).link().getInstructions();
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var freg = cpu.getFlagRegister();
         var dregs = cpu.getDataRegisters();
         var pc = cpu.getProgramCounter();
         var sp = cpu.getStackPointer();
         parser.resolveReferences(cpu.getRegistryReferenceMap());
-        var ipu = new IPU(instr, freg, pc);
-        var mmu = new MMU(freg, sp);
-        var alu = new ALU(freg, dregs.get(7));
+        var ipu = new InstructionProcessingUnit(instr, freg, pc);
+        var mmu = new MemoryManagementUnit(freg, sp);
+        var alu = new ArithmeticLogicUnit(freg, dregs.get(7));
         cpu.registerExecutor(alu);
         cpu.registerExecutor(ipu);
         cpu.registerExecutor(mmu);
@@ -52,8 +52,13 @@ public class Tester implements Runnable {
 
         ipu.subscribe(cpu);
 
+        ipu.registerClockListener(cpu);
+        cpu.registerClockListener(mmu);
+        cpu.registerClockListener(alu);
+        // Never link cpu back to ipu with ClockListener
+
         try {
-            var ram = new RAM(0x10000, freg); // 65536
+            var ram = new RandomAccessMemory(0x10000, freg); // 65536
             mmu.registerHardwareUnit(ram, (char) 0, addr -> true); // any values pass since it is max size
         } catch (Exception e) {
             // do nothing
@@ -98,8 +103,8 @@ public class Tester implements Runnable {
 
     private void simulate(
             TesterParser parser,
-            CPU cpu,
-            ClockDependent stepper,
+            CentralProcessingUnit cpu,
+            ClockListener stepper,
             Supplier<Instruction> currentInstruction
     ) {
         var freg = cpu.getFlagRegister();

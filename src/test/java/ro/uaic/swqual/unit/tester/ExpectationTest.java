@@ -2,7 +2,7 @@ package ro.uaic.swqual.unit.tester;
 
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.model.operands.Register;
-import ro.uaic.swqual.proc.CPU;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
 import ro.uaic.swqual.tester.Expectation;
 
 import java.util.List;
@@ -18,7 +18,7 @@ class ExpectationTest {
     }
 
     void expectationTest(String expectation, ExpectationConsumer expectationConsumer) {
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var refMap = cpu.getRegistryReferenceMap();
         var regs = cpu.getDataRegisters();
         var exp = Expectation.from(expectation);
@@ -30,7 +30,7 @@ class ExpectationTest {
 
     @Test
     void trueExpectationShouldEvaluateExpectedly() {
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var regs = cpu.getDataRegisters();
         var map = cpu.getRegistryReferenceMap();
 
@@ -43,7 +43,7 @@ class ExpectationTest {
 
     @Test
     void falseExpectationShouldEvaluateExpectedly() {
-        var cpu = new CPU();
+        var cpu = new CentralProcessingUnit();
         var regs = cpu.getDataRegisters();
         var map = cpu.getRegistryReferenceMap();
 
