@@ -17,6 +17,7 @@ import ro.uaic.swqual.proc.CentralProcessingUnit;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
@@ -153,5 +154,117 @@ class ParserTest {
         var parser = new Parser();
         assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r0 r1"));
         assertThrows(ParserException.class, () -> parser.parseInstruction(0, "@l0"));
+    }
+
+    @Test
+    void parseValidBase2ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add 0b011 0B10001;").getInstructions();
+        assertEquals((char)0b011, instr.getFirst().getParam1().getValue());
+        assertEquals((char)0b10001, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parseInvalidBase2ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add 0b 0B;"));
+    }
+
+    @Test
+    void parsePrefixedValidBase2ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add #0b011 #0B10001;").getInstructions();
+        assertEquals((char)0b011, instr.getFirst().getParam1().getValue());
+        assertEquals((char)0b10001, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parsePrefixedInvalidBase2ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add #0b #0B;"));
+    }
+
+    @Test
+    void parseValidBase8ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add 071 052;").getInstructions();
+        assertEquals((char) 57, instr.getFirst().getParam1().getValue());
+        assertEquals((char) 42, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parseInvalidBase8ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add 08 09;"));
+    }
+
+    @Test
+    void parsePrefixedValidBase8ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add #071 #052;").getInstructions();
+        assertEquals((char) 57, instr.getFirst().getParam1().getValue());
+        assertEquals((char) 42, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parsePrefixedInvalidBase8ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add #08 #09;"));
+    }
+
+    @Test
+    void parseValidBase10ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add 71 52;").getInstructions();
+        assertEquals((char) 71, instr.getFirst().getParam1().getValue());
+        assertEquals((char) 52, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parseInvalidBase10ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add 1a 1b;"));
+    }
+
+    @Test
+    void parsePrefixedValidBase10ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add #71 #52;").getInstructions();
+        assertEquals((char) 71, instr.getFirst().getParam1().getValue());
+        assertEquals((char) 52, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parsePrefixedInvalidBase10ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add #1a #1b;"));
+    }
+
+    @Test
+    void parseValidBase16ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add 0x71af 0X52EF;").getInstructions();
+        assertEquals((char) 0x71af, instr.getFirst().getParam1().getValue());
+        assertEquals((char) 0x52ef, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parseInvalidBase16ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add 0xay 0xaz;"));
+    }
+
+    @Test
+    void parsePrefixedValidBase16ConstantsShouldSucceed() {
+        var parser = new Parser();
+        var instr = parser.parseInstruction(0, "add #0x71af #0X52EF;").getInstructions();
+        assertEquals((char) 0x71af, instr.getFirst().getParam1().getValue());
+        assertEquals((char) 0x52ef, instr.getFirst().getParam2().getValue());
+    }
+
+    @Test
+    void parsePrefixedInvalidBase16ConstantsShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add #0xay #0xaz;"));
     }
 }
