@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,22 @@ public class Parser {
         }
     }
 
+    private Parameter identifyParameter(int lineIndex, String string) {
+        if (string.startsWith("@")) {
+            return new Label(string);
+        }
+
+        if (string.startsWith("r")) {
+            return new RegisterReference(lineIndex, string);
+        }
+
+        if (string.startsWith("#")) {
+            return new Constant((char) Integer.parseInt(string.substring(1)));
+        }
+
+        throw new ParserException("Unknown parameter: " + string);
+    }
+
     public Parser parseInstruction(int lineIndex, String line) {
         line = line.trim();
         if (!line.endsWith(";") && !line.endsWith(":")) {
@@ -78,21 +95,9 @@ public class Parser {
         var parameterList = new ArrayList<Parameter>();
 
         instruction.setType(InstructionType.fromLabel(parsed[0]));
-
-        for (String param : parsed) {
-            if (param.startsWith("r")) {
-                parameterList.add(new RegisterReference(lineIndex, param));
-            }
-
-            if (param.startsWith("#")) {
-                var value = (char) Integer.parseInt(param.substring(1));
-                parameterList.add(new Constant(value));
-            }
-
-            if (param.startsWith("@")) {
-                parameterList.add(new Label(param));
-            }
-        }
+        Arrays.stream(parsed).dropWhile(str -> InstructionType.fromLabel(str) != null).forEach(
+                param -> parameterList.add(identifyParameter(lineIndex, param))
+        );
 
         instruction.setParameters(Tuple.of(
                 parameterList.isEmpty() ? null : parameterList.get(0),
