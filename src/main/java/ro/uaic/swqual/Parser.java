@@ -1,16 +1,21 @@
 package ro.uaic.swqual;
 
+import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
+import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.Constant;
+import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.Label;
+import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.model.operands.RelativeMemoryLocation;
 import ro.uaic.swqual.util.Tuple;
 
 import java.io.BufferedReader;
@@ -22,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -97,13 +103,46 @@ public class Parser {
         return null;
     }
 
+    private Parameter parseAddress(int lineIndex, String text) {
+        // TODO: come up with a better way. This only covers +-
+        var paramList = new ArrayList<Parameter>();
+        var relList = new ArrayList<BinaryOperator<Character>>();
+        for (var token : text.splitWithDelimiters("[+-]", Integer.MAX_VALUE)) {
+            if (token.equals("+")) {
+                relList.add((a, b) -> (char)(a + b));
+            } else if (token.equals("-")) {
+                relList.add((a, b) -> (char)(a - b));
+            } else {
+                paramList.add(identifyParameter(lineIndex, token));
+            }
+        }
+
+        if (paramList.size() == 1) {
+            var param = paramList.getFirst();
+            if (param instanceof Constant con) {
+                return new ConstantMemoryLocation(con.getValue());
+            }
+            return new AbsoluteMemoryLocation(param);
+        }
+
+        try {
+            return new RelativeMemoryLocation(paramList, relList);
+        } catch (ValueException exception) {
+            throw new ParserException(exception);
+        }
+    }
+
     private Parameter identifyParameter(int lineIndex, String string) {
-        if (string.startsWith("@")) {
-            return new Label(string);
+        if (string.startsWith("[") && string.endsWith("]")) {
+            return parseAddress(lineIndex, string.substring(1, string.length() - 1));
         }
 
         if (string.startsWith("r")) {
             return new RegisterReference(lineIndex, string);
+        }
+
+        if (string.startsWith("@")) {
+            return new Label(string);
         }
 
         var asConstant = identifyConstant(string);
@@ -112,6 +151,46 @@ public class Parser {
         }
 
         throw new ParserException("Unknown parameter: " + string);
+    }
+
+    private List<String> mergeAddressParameters(List<String> tokens) {
+        var newList = new ArrayList<String>();
+        boolean inAddress = false;
+        StringBuilder addressCompound = new StringBuilder();
+        for (var token : tokens) {
+            if (token.startsWith("[") && token.endsWith("]")) {
+                if (inAddress) {
+                    throw new ParserException("In address identifier, unexpected '[");
+                }
+                newList.add(token);
+            } else if (token.startsWith("[")) {
+                if (inAddress) {
+                    throw new ParserException("In address identifier, unexpected '['");
+                }
+
+                inAddress = true;
+                addressCompound = new StringBuilder(token);
+            } else if (token.endsWith("]")) {
+                if (!inAddress) {
+                    throw new ParserException("Not in address identifier, unexpected ']'");
+                }
+
+                inAddress = false;
+                addressCompound.append(token);
+                newList.add(addressCompound.toString());
+                addressCompound = new StringBuilder();
+            } else if (inAddress) {
+                addressCompound.append(token);
+            } else {
+                newList.add(token);
+            }
+        }
+
+        if (inAddress) {
+            throw new ParserException("In address identifier that was never terminated");
+        }
+
+        return newList;
     }
 
     public Parser parseInstruction(int lineIndex, String line) {
@@ -126,13 +205,15 @@ public class Parser {
         var parameterList = new ArrayList<Parameter>();
 
         instruction.setType(InstructionType.fromLabel(parsed[0]));
-        Arrays.stream(parsed).dropWhile(str -> InstructionType.fromLabel(str) != null).forEach(
+        mergeAddressParameters(
+                Arrays.stream(parsed).dropWhile(str -> InstructionType.fromLabel(str) != null).toList()
+        ).forEach(
                 param -> parameterList.add(identifyParameter(lineIndex, param))
         );
 
         instruction.setParameters(Tuple.of(
                 parameterList.isEmpty() ? null : parameterList.get(0),
-                parameterList.size() == 1 ? null : parameterList.get(1)
+                parameterList.size() <= 1 ? null : parameterList.get(1)
         ));
 
         instructions.add(instruction);
@@ -165,6 +246,10 @@ public class Parser {
                         throw new UndefinedReferenceException(ref);
                     }
                     consumer.accept(resolved);
+                }
+
+                if (param instanceof MemoryLocation memLoc) {
+                    memLoc.resolveInnerReferences(registerMap);
                 }
             };
             referenceResolver.accept(instruction::getParam1, instruction::setParam1);
