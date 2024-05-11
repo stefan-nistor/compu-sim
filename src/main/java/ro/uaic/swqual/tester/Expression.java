@@ -1,13 +1,19 @@
 package ro.uaic.swqual.tester;
 
+import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.model.operands.Constant;
+import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.model.operands.ResolvedMemory;
 import ro.uaic.swqual.util.Tuple;
 import ro.uaic.swqual.util.Tuple2;
+import ro.uaic.swqual.util.Tuple3;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
@@ -19,7 +25,13 @@ public class Expression {
     private String code;
     private final Map<String, Register> namedReferences = new HashMap<>();
     private final Map<Register, Constant> evaluatedValues = new HashMap<>();
+    private final Map<Character, Constant> memoryValues = new HashMap<>();
     private Boolean evaluatedAs = null;
+    private final List<Tuple3<ReadableMemoryUnit, Character, Character>> locationsToReadAddressesFrom = new ArrayList<>();
+
+    public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
+        locationsToReadAddressesFrom.add(Tuple.of(unit, begin, end));
+    }
 
     private <T extends Parameter> Expression(BiPredicate<Parameter, Parameter> predicate, Tuple2<T, T> parameters) {
         this.predicate = predicate;
@@ -104,17 +116,36 @@ public class Expression {
     }
 
     private void recordState(Parameter param) {
-        if (!(param instanceof Register reg)) {
-            return;
+        if (param instanceof Register reg) {
+            evaluatedValues.put(reg, new Constant(reg.getValue()));
+        } else if (param instanceof MemoryLocation loc) {
+            memoryValues.put(loc.getValue(), new Constant(locate(loc).getValue()));
+        }
+    }
+
+    private Parameter locate(Parameter param) {
+        if (!(param instanceof MemoryLocation loc)) {
+            return param;
         }
 
-        evaluatedValues.put(reg, new Constant(reg.getValue()));
+        var addr = loc.getValue();
+        var unit = locationsToReadAddressesFrom.stream().filter(t -> t.getSecond() <= addr && addr < t.getThird()).findAny();
+        if (unit.isEmpty()) {
+            // TODO: fail evaluation because it is out of range
+            throw new UnsupportedOperationException("Failed to locate memory location: " + addr);
+        }
+
+        return new ResolvedMemory(
+                () -> unit.get().getFirst().read(loc),
+                null
+        );
     }
 
     public boolean evaluate() {
         recordState(firstParam);
         recordState(secondParam);
-        evaluatedAs = predicate.test(firstParam, secondParam);
+
+        evaluatedAs = predicate.test(locate(firstParam), locate(secondParam));
         return evaluatedAs;
     }
 
@@ -123,16 +154,34 @@ public class Expression {
             return "Correctly evaluated";
         }
 
-        var sb = new StringBuilder().append("Current state -> ");
+        var sb = new StringBuilder();
+        var rsb = new StringBuilder();
         for (var refValue : namedReferences.entrySet()) {
             var ref = refValue.getValue();
             var evaluated = evaluatedValues.entrySet().stream().filter(e -> e.getKey() == ref).findFirst().orElse(null);
-            sb
+            rsb
                     .append(refValue.getKey())
                     .append(": ")
                     .append(evaluated == null ? "<unknown>" : (int) evaluated.getValue().getValue())
                     .append("; ");
         }
+        if (!rsb.isEmpty()) {
+            sb.append("Used Registry State -> ").append(rsb);
+        }
+
+        var msb = new StringBuilder();
+        for (var memVal : memoryValues.entrySet()) {
+            msb
+                    .append("[0x")
+                    .append(Integer.toString(memVal.getKey(), 16))
+                    .append("]: ")
+                    .append((int) memVal.getValue().getValue())
+                    .append("; ");
+        }
+        if (!msb.isEmpty()) {
+            sb.append("Used Memory State -> ").append(msb);
+        }
+
         return sb.substring(0, sb.length() - 2);
     }
 }

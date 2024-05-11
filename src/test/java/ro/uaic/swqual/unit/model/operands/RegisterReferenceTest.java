@@ -7,8 +7,6 @@ import ro.uaic.swqual.unit.TestUtility;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.operands.RegisterReference;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegisterReferenceTest implements TestUtility, RegisterTestUtility {
@@ -53,28 +51,5 @@ class RegisterReferenceTest implements TestUtility, RegisterTestUtility {
                 new RegisterReference(1, "diff"),
                 new Constant((char) 0xABCD)
         ));
-    }
-
-    @Test
-    void regRefCodeTest() {
-        assertEquals(
-                new RegisterReference(0, "test").hashCode(),
-                new RegisterReference(0, "test").hashCode()
-        );
-
-        assertNotEquals(
-                new RegisterReference(0, "test").hashCode(),
-                new RegisterReference(0, "Test").hashCode()
-        );
-
-        assertNotEquals(
-                new RegisterReference(0, "test").hashCode(),
-                new RegisterReference(1, "test").hashCode()
-        );
-
-        assertNotEquals(
-                new RegisterReference(0, "test").hashCode(),
-                new RegisterReference(1, "Test").hashCode()
-        );
     }
 }
