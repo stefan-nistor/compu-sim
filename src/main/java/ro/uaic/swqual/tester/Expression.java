@@ -51,20 +51,6 @@ public class Expression {
         return new Expression((p0, p1) -> p0.getValue() >= p1.getValue(), parameters);
     }
 
-    private static Parameter asParameter(String string) {
-        var numMatch = Pattern.compile("(\\d*)");
-        var refMatch = Pattern.compile("([_a-zA-Z]\\w*)");
-        if (numMatch.matcher(string).matches()) {
-            return new Constant((char) Integer.parseInt(string));
-        }
-
-        if (refMatch.matcher(string).matches()) {
-            return new RegisterReference(-1, string);
-        }
-
-        return null;
-    }
-
     public static Expression from(String string) {
         var pattern = Pattern.compile("(.*)(==|!=|>=|<=|<|>)(.*)");
         var matcher = pattern.matcher(string);
@@ -72,8 +58,8 @@ public class Expression {
             return null;
         }
 
-        var p0 = asParameter(matcher.group(1).trim());
-        var p1 = asParameter(matcher.group(3).trim());
+        var p0 = Parameter.parse(matcher.group(1).trim());
+        var p1 = Parameter.parse(matcher.group(3).trim());
         if (p0 == null || p1 == null) {
             return null;
         }
