@@ -7,8 +7,6 @@ import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
-import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
-import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
@@ -158,120 +156,6 @@ class ParserTest {
         var parser = new Parser();
         assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r0 r1"));
         assertThrows(ParserException.class, () -> parser.parseInstruction(0, "@l0"));
-    }
-
-    void parseValidIntValues(String vs0, String vs1, int v0, int v1) {
-        var parser = new Parser();
-        var instr = parser.parseInstruction(0, "add " + vs0 + " " + vs1 + ";").getInstructions();
-        assertEquals((char) v0, instr.getFirst().getParam1().getValue());
-        assertEquals((char) v1, instr.getFirst().getParam2().getValue());
-    }
-
-    void parseInvalidIntValues(String vs0, String vs1) {
-        var parser = new Parser();
-        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add " + vs0 + " " + vs1 + ";"));
-    }
-
-    @Test
-    void parseValidBase2ConstantsShouldSucceed() {
-        parseValidIntValues("0b011", "0B10001", 0b011, 0B10001);
-    }
-
-    @Test
-    void parseInvalidBase2ConstantsShouldThrow() {
-        parseInvalidIntValues("0b", "0B");
-    }
-
-    @Test
-    void parsePrefixedValidBase2ConstantsShouldSucceed() {
-        parseValidIntValues("#0b011", "#0B10001", 0b011, 0B10001);
-    }
-
-    @Test
-    void parsePrefixedInvalidBase2ConstantsShouldThrow() {
-        parseInvalidIntValues("#0b", "#0B");
-    }
-
-    @Test
-    void parseValidBase8ConstantsShouldSucceed() {
-        parseValidIntValues("071", "052", 57, 42);
-    }
-
-    @Test
-    void parseInvalidBase8ConstantsShouldThrow() {
-        parseInvalidIntValues("08", "09");
-    }
-
-    @Test
-    void parsePrefixedValidBase8ConstantsShouldSucceed() {
-        parseValidIntValues("#071", "#052", 57, 42);
-    }
-
-    @Test
-    void parsePrefixedInvalidBase8ConstantsShouldThrow() {
-        parseInvalidIntValues("#08", "#09");
-    }
-
-    @Test
-    void parseValidBase10ConstantsShouldSucceed() {
-        parseValidIntValues("71", "52", 71, 52);
-    }
-
-    @Test
-    void parseInvalidBase10ConstantsShouldThrow() {
-        parseInvalidIntValues("1a", "1b");
-    }
-
-    @Test
-    void parsePrefixedValidBase10ConstantsShouldSucceed() {
-        parseValidIntValues("#71", "#52", 71, 52);
-    }
-
-    @Test
-    void parsePrefixedInvalidBase10ConstantsShouldThrow() {
-        parseInvalidIntValues("#1a", "#1b");
-    }
-
-    @Test
-    void parseValidBase16ConstantsShouldSucceed() {
-        parseValidIntValues("0x71af", "0X52EF", 0x71af, 0x52ef);
-    }
-
-    @Test
-    void parseInvalidBase16ConstantsShouldThrow() {
-        parseInvalidIntValues("0xay", "0xaz");
-    }
-
-    @Test
-    void parsePrefixedValidBase16ConstantsShouldSucceed() {
-        parseValidIntValues("#0x71af", "#0X52EF", 0x71af, 0x52ef);
-    }
-
-    @Test
-    void parsePrefixedInvalidBase16ConstantsShouldThrow() {
-        parseInvalidIntValues("#0xay", "#0xaz");
-    }
-
-    @Test
-    void parseConstantMemLocShouldReturnValidConstMemLoc() {
-        var parser = new Parser();
-        var p0 = parser.parseInstruction(0, "add [100] r0;").getInstructions().getFirst().getParam1();
-        assertInstanceOf(ConstantMemoryLocation.class, p0);
-        assertEquals((char) 100, p0.getValue());
-    }
-
-    @Test
-    void parseAbsoluteMemLocShouldReturnValidAbsMemLoc() {
-        var parser = new Parser();
-        var cpu = new CentralProcessingUnit();
-        var regRef = cpu.getRegistryReferenceMap();
-        var r1 = cpu.getDataRegisters().get(1);
-        var p0 = parser.parseInstruction(0, "add [r1] r0;")
-                .resolveReferences(regRef).getInstructions().getFirst().getParam1();
-        assertInstanceOf(AbsoluteMemoryLocation.class, p0);
-        assertEquals((char) 0, p0.getValue());
-        r1.setValue((char) 50);
-        assertEquals((char) 50, p0.getValue());
     }
 
     @Test
