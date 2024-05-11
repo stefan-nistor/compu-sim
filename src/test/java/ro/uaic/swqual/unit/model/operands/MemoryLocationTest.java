@@ -4,12 +4,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.operands.MemoryLocation;
+import ro.uaic.swqual.model.operands.Register;
+
+import java.util.Map;
 
 class MemoryLocationTest {
     MemoryLocation mockMemoryLocation(char givenValue) {
-        return new MemoryLocation() {{
-            value = givenValue;
-        }};
+        return new MemoryLocation() {
+            @Override
+            public void resolveInnerReferences(Map<String, Register> registerMap) {
+                // do nothing
+            }
+
+            {
+                value = givenValue;
+            }
+        };
     }
 
     @Test

@@ -1,3 +1,7 @@
 package ro.uaic.swqual.model.operands;
 
-public abstract class MemoryLocation extends Parameter {}
+import java.util.Map;
+
+public abstract class MemoryLocation extends Parameter {
+    public abstract void resolveInnerReferences(Map<String, Register> registerMap);
+}

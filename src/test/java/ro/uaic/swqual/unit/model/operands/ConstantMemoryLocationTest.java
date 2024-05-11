@@ -6,6 +6,10 @@ import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.MemoryLocation;
 
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class ConstantMemoryLocationTest {
     @Test
     void directMemoryLocationShouldBeMemoryLocation() {
@@ -17,12 +21,19 @@ class ConstantMemoryLocationTest {
     void directMemoryLocationShouldResolveToConstructedValue() {
         var value = (char) 0x50;
         var dml = new ConstantMemoryLocation(value);
-        Assertions.assertEquals(value, dml.getValue());
+        assertEquals(value, dml.getValue());
     }
 
     @Test
     void directMemoryLocationShouldNotBeWriteable() {
         var dml = new ConstantMemoryLocation((char) 0x100);
         Assertions.assertThrows(ParameterException.class, () -> dml.setValue((char) 0x50));
+    }
+
+    @Test
+    void resolveInnerRefsDoesNothing() {
+        var cloc = new ConstantMemoryLocation((char) 0x100);
+        cloc.resolveInnerReferences(Map.of());
+        assertEquals((char) 0x100, cloc.getValue());
     }
 }

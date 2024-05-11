@@ -7,17 +7,21 @@ import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
+import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.model.operands.RelativeMemoryLocation;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
 
 import java.util.Map;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
@@ -266,5 +270,65 @@ class ParserTest {
     void parsePrefixedInvalidBase16ConstantsShouldThrow() {
         var parser = new Parser();
         assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add #0xay #0xaz;"));
+    }
+
+    @Test
+    void parseConstantMemLocShouldReturnValidConstMemLoc() {
+        var parser = new Parser();
+        var p0 = parser.parseInstruction(0, "add [100] r0;").getInstructions().getFirst().getParam1();
+        assertInstanceOf(ConstantMemoryLocation.class, p0);
+        assertEquals((char) 100, p0.getValue());
+    }
+
+    @Test
+    void parseAbsoluteMemLocShouldReturnValidAbsMemLoc() {
+        var parser = new Parser();
+        var cpu = new CentralProcessingUnit();
+        var regRef = cpu.getRegistryReferenceMap();
+        var r1 = cpu.getDataRegisters().get(1);
+        var p0 = parser.parseInstruction(0, "add [r1] r0;")
+                .resolveReferences(regRef).getInstructions().getFirst().getParam1();
+        assertInstanceOf(AbsoluteMemoryLocation.class, p0);
+        assertEquals((char) 0, p0.getValue());
+        r1.setValue((char) 50);
+        assertEquals((char) 50, p0.getValue());
+    }
+
+    @Test
+    void parseRelativeMemLocShouldReturnValidAbsMemLoc() {
+        var parser = new Parser();
+        var cpu = new CentralProcessingUnit();
+        var regRef = cpu.getRegistryReferenceMap();
+        var r1 = cpu.getDataRegisters().get(1);
+        var r3 = cpu.getDataRegisters().get(3);
+        var p0 = parser.parseInstruction(0, "add [r1 + 50 - r3] r0;")
+                .resolveReferences(regRef).getInstructions().getFirst().getParam1();
+        assertInstanceOf(RelativeMemoryLocation.class, p0);
+        assertEquals((char) 50, p0.getValue());
+        r3.setValue((char) 25);
+        assertEquals((char) 25, p0.getValue());
+        r1.setValue((char) 100);
+        assertEquals((char) 125, p0.getValue());
+    }
+
+    @Test
+    void parseMemLocUnterminatedLocShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [r1 r0;"));
+    }
+
+    @Test
+    void parseMemLocDuplicateLocShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [[r1] r0;"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [ [r1] r0;"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [ [r1 ] r0;"));
+    }
+
+    @Test
+    void parseMemLocTermWithoutOpenLocShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r1] r0;"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r1 ] r0;"));
     }
 }
