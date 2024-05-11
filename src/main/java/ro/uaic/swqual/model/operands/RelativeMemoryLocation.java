@@ -44,11 +44,6 @@ public class RelativeMemoryLocation extends MemoryLocation {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), parameters, relations);
-    }
-
-    @Override
     public void resolveInnerReferences(Map<String, Register> registerMap) {
         parameters = parameters.stream().map(location -> {
             if (location instanceof RegisterReference ref) {
@@ -60,4 +55,10 @@ public class RelativeMemoryLocation extends MemoryLocation {
             return location;
         }).toList();
     }
+
+    // HashCode is intentionally NOT overridden here.
+    // Reason: take a memory location for example:
+    //  [r0] -> AbsMemLoc over Register
+    //  If Register value changes, hashCode would change if overridden
+    //  We do not want this.
 }

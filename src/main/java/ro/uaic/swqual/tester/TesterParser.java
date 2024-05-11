@@ -3,6 +3,7 @@ package ro.uaic.swqual.tester;
 import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.exception.tester.InvalidHeaderItemException;
+import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
 
@@ -86,13 +87,17 @@ public class TesterParser extends Parser {
     @Override
     public Parser resolveReferences(Map<String, Register> registerMap) throws UndefinedReferenceException {
         super.resolveReferences(registerMap);
-
-        // Force a rehash since instructions hash codes have changed
+        expectationMap.values().forEach(v -> v.referencing(registerMap));
+        // Force a rehash since instructions hash codes may have changed
         var entries = expectationMap.entrySet().stream()
                 .map(e -> Map.entry(e.getKey(), e.getValue().referencing(registerMap)))
                 .toList();
         expectationMap.clear();
         entries.forEach(entry -> expectationMap.put(entry.getKey(), entry.getValue()));
         return this;
+    }
+
+    public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
+        expectationMap.values().forEach(expectation -> expectation.readAddressesFrom(unit, begin, end));
     }
 }
