@@ -205,20 +205,22 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
 
     @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        var p0 = locate(instruction.getParam1());
+        var p1 = locate(instruction.getParam2());
         switch (instruction.getType()) {
-            case ALU_ADD -> add(instruction.getParam1(), instruction.getParam2());
-            case ALU_SUB -> sub(instruction.getParam1(), instruction.getParam2());
-            case ALU_UMUL -> umul(instruction.getParam1(), instruction.getParam2());
-            case ALU_SMUL -> smul(instruction.getParam1(), instruction.getParam2());
-            case ALU_UDIV -> udiv(instruction.getParam1(), instruction.getParam2());
-            case ALU_SDIV -> sdiv(instruction.getParam1(), instruction.getParam2());
-            case ALU_OR -> or(instruction.getParam1(), instruction.getParam2());
-            case ALU_AND -> and(instruction.getParam1(), instruction.getParam2());
-            case ALU_XOR -> xor(instruction.getParam1(), instruction.getParam2());
-            case ALU_SHL -> shl(instruction.getParam1(), instruction.getParam2());
-            case ALU_SHR -> shr(instruction.getParam1(), instruction.getParam2());
-            case ALU_NOT -> not(instruction.getParam1(), instruction.getParam2());
-            case ALU_CMP -> compare(instruction.getParam1(), instruction.getParam2());
+            case ALU_ADD -> add(p0, p1);
+            case ALU_SUB -> sub(p0, p1);
+            case ALU_UMUL -> umul(p0, p1);
+            case ALU_SMUL -> smul(p0, p1);
+            case ALU_UDIV -> udiv(p0, p1);
+            case ALU_SDIV -> sdiv(p0, p1);
+            case ALU_OR -> or(p0, p1);
+            case ALU_AND -> and(p0, p1);
+            case ALU_XOR -> xor(p0, p1);
+            case ALU_SHL -> shl(p0, p1);
+            case ALU_SHR -> shr(p0, p1);
+            case ALU_NOT -> not(p0, p1);
+            case ALU_CMP -> compare(p0, p1);
             default -> throw new InstructionException("Invalid instruction type received in ALU: \"" + instruction + "\"");
         }
     }

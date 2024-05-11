@@ -6,8 +6,6 @@ import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
-import java.util.Objects;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegisterTest implements ProcTestUtility, RegisterTestUtility {
@@ -37,13 +35,6 @@ class RegisterTest implements ProcTestUtility, RegisterTestUtility {
         } catch (ValueException e) {
             // nothing, test successful
         }
-    }
-
-    @Test
-    void hashCodeTest() {
-        var register = new Register();
-        register.setValue((char) 1234);
-        Assertions.assertEquals(Objects.hashCode(register.getValue()), register.hashCode());
     }
 
     @Test

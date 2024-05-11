@@ -2,8 +2,6 @@ package ro.uaic.swqual.model.operands;
 
 import ro.uaic.swqual.exception.ValueException;
 
-import java.util.Objects;
-
 public class Register extends Parameter {
     @Override
     public void setValue(char value) {
@@ -26,8 +24,9 @@ public class Register extends Parameter {
         return value == register.value;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getValue());
-    }
+    // HashCode is intentionally NOT overridden here.
+    // Reason: take a memory location for example:
+    //  [r0] -> AbsMemLoc over Register
+    //  If Register value changes, hashCode would change if overridden
+    //  We do not want this.
 }

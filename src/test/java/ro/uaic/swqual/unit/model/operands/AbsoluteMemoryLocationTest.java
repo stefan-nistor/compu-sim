@@ -36,9 +36,4 @@ class AbsoluteMemoryLocationTest implements ProcTestUtility, MemTestUtility, Reg
                 _const((char) 0x1234)
         ));
     }
-
-    @Test
-    void hashCodeTest() {
-        assertEquals(aloc(reg((char) 0xBEEF)).hashCode(), aloc(_const((char) 0xBEEF)).hashCode());
-    }
 }
