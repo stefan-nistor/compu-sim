@@ -1,21 +1,18 @@
 package ro.uaic.swqual;
 
-import ro.uaic.swqual.exception.ValueException;
+import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
-import ro.uaic.swqual.model.operands.AbsoluteMemoryLocation;
 import ro.uaic.swqual.model.operands.Constant;
-import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.Label;
 import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.RegisterReference;
-import ro.uaic.swqual.model.operands.RelativeMemoryLocation;
 import ro.uaic.swqual.util.Tuple;
 
 import java.io.BufferedReader;
@@ -27,10 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 public class Parser {
     private final List<Instruction> instructions = new ArrayList<>();
@@ -72,85 +67,6 @@ public class Parser {
         } catch (IOException e) {
             throw new ParserException(e.getMessage());
         }
-    }
-
-    private Constant identifyConstant(String constantStr) {
-        var base2Pattern = Pattern.compile("#?0[bB]([0-1]+)");
-        var base8Pattern = Pattern.compile("#?0([0-7]+)");
-        var base10Pattern = Pattern.compile("#?(0|[1-9]\\d*)");
-        var base16Pattern = Pattern.compile("#?0[xX]([0-9a-fA-F]+)");
-        var b2Match = base2Pattern.matcher(constantStr);
-        var b8Match = base8Pattern.matcher(constantStr);
-        var b10Match = base10Pattern.matcher(constantStr);
-        var b16Match = base16Pattern.matcher(constantStr);
-
-        if (b2Match.matches()) {
-            return new Constant((char) Integer.parseInt(b2Match.group(1), 2));
-        }
-
-        if (b8Match.matches()) {
-            return new Constant((char) Integer.parseInt(b8Match.group(1), 8));
-        }
-
-        if (b10Match.matches()) {
-            return new Constant((char) Integer.parseInt(b10Match.group(1), 10));
-        }
-
-        if (b16Match.matches()) {
-            return new Constant((char) Integer.parseInt(b16Match.group(1), 16));
-        }
-
-        return null;
-    }
-
-    private Parameter parseAddress(int lineIndex, String text) {
-        // TODO: come up with a better way. This only covers +-
-        var paramList = new ArrayList<Parameter>();
-        var relList = new ArrayList<BinaryOperator<Character>>();
-        for (var token : text.splitWithDelimiters("[+-]", Integer.MAX_VALUE)) {
-            if (token.equals("+")) {
-                relList.add((a, b) -> (char)(a + b));
-            } else if (token.equals("-")) {
-                relList.add((a, b) -> (char)(a - b));
-            } else {
-                paramList.add(identifyParameter(lineIndex, token));
-            }
-        }
-
-        if (paramList.size() == 1) {
-            var param = paramList.getFirst();
-            if (param instanceof Constant con) {
-                return new ConstantMemoryLocation(con.getValue());
-            }
-            return new AbsoluteMemoryLocation(param);
-        }
-
-        try {
-            return new RelativeMemoryLocation(paramList, relList);
-        } catch (ValueException exception) {
-            throw new ParserException(exception);
-        }
-    }
-
-    private Parameter identifyParameter(int lineIndex, String string) {
-        if (string.startsWith("[") && string.endsWith("]")) {
-            return parseAddress(lineIndex, string.substring(1, string.length() - 1));
-        }
-
-        if (string.startsWith("r")) {
-            return new RegisterReference(lineIndex, string);
-        }
-
-        if (string.startsWith("@")) {
-            return new Label(string);
-        }
-
-        var asConstant = identifyConstant(string);
-        if (asConstant != null) {
-            return asConstant;
-        }
-
-        throw new ParserException("Unknown parameter: " + string);
     }
 
     private List<String> mergeAddressParameters(List<String> tokens) {
@@ -204,12 +120,16 @@ public class Parser {
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
 
-        instruction.setType(InstructionType.fromLabel(parsed[0]));
-        mergeAddressParameters(
-                Arrays.stream(parsed).dropWhile(str -> InstructionType.fromLabel(str) != null).toList()
-        ).forEach(
-                param -> parameterList.add(identifyParameter(lineIndex, param))
-        );
+        try {
+            instruction.setType(InstructionType.fromLabel(parsed[0]));
+            mergeAddressParameters(
+                    Arrays.stream(parsed).dropWhile(str -> InstructionType.fromLabel(str) != null).toList()
+            ).forEach(
+                    param -> parameterList.add(Parameter.parse(lineIndex, param))
+            );
+        } catch (ParameterException exception) {
+            throw new ParserException(exception);
+        }
 
         instruction.setParameters(Tuple.of(
                 parameterList.isEmpty() ? null : parameterList.get(0),
