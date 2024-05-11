@@ -1,6 +1,7 @@
 package ro.uaic.swqual.tester;
 
 import ro.uaic.swqual.exception.tester.UndefinedExpectationException;
+import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.model.operands.Register;
 
 import java.util.ArrayList;
@@ -99,5 +100,9 @@ public class Expectation {
             builder.append("\tExpression '").append(expr.getCode()).append("'. ").append(expr.dump()).append('\n');
         }
         return builder.toString();
+    }
+
+    public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
+        expressions.forEach(expr -> expr.readAddressesFrom(unit, begin, end));
     }
 }

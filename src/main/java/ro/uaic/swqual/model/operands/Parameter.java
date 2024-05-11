@@ -4,7 +4,6 @@ import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.exception.ValueException;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.regex.Pattern;
 
@@ -32,11 +31,6 @@ public abstract class Parameter {
         if (o == null || getClass() != o.getClass()) return false;
         Parameter parameter = (Parameter) o;
         return value == parameter.value;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(value);
     }
 
     public static Parameter parse(String string) {
@@ -118,5 +112,15 @@ public abstract class Parameter {
         }
 
         throw new ParameterException("Unknown parameter: " + string);
+    }
+
+    // HashCode is intentionally forced final here.
+    // Reason: take a memory location for example:
+    //  [r0] -> AbsMemLoc over Register
+    //  If Register value changes, hashCode would change if overridden
+    //  We do not want this.
+    @Override
+    public final int hashCode() {
+        return super.hashCode();
     }
 }

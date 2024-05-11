@@ -60,6 +60,7 @@ public class Tester implements Runnable {
         try {
             var ram = new RandomAccessMemory(0x10000, freg); // 65536
             mmu.registerHardwareUnit(ram, (char) 0, addr -> true); // any values pass since it is max size
+            parser.readAddressesFrom(ram, (char) 0, (char) 0xFFFF);
         } catch (Exception e) {
             // do nothing
         }

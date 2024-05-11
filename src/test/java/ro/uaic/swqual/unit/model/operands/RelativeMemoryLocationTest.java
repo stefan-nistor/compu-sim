@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.function.BinaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -102,31 +101,6 @@ class RelativeMemoryLocationTest implements TestUtility, RegisterTestUtility, Me
                 rloc(reg((char) 0xBEEF), r0, reg((char) 0xDEAD)),
                 _const((char) 0xABCD)
         ));
-    }
-
-    @Test
-    void hashCodeTest() {
-        BinaryOperator<Character> r0 = (a, b) -> (char) (a - b);
-        BinaryOperator<Character> r1 = (a, b) -> (char) (a + b);
-        assertEquals(
-                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
-                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode()
-        );
-
-        assertNotEquals(
-                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
-                rloc(reg((char) 0xDEAD), r1, reg((char) 0xBEEF)).hashCode()
-        );
-
-        assertNotEquals(
-                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
-                rloc(reg((char) 0xBEEF), r0, reg((char) 0xDEAD)).hashCode()
-        );
-
-        assertNotEquals(
-                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
-                rloc(reg((char) 0xBEEF), r1, reg((char) 0xDEAD)).hashCode()
-        );
     }
 
     @Test

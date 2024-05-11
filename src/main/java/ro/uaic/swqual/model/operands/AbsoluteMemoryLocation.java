@@ -1,7 +1,6 @@
 package ro.uaic.swqual.model.operands;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class AbsoluteMemoryLocation extends MemoryLocation {
     private Parameter location;
@@ -24,11 +23,6 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(location);
-    }
-
-    @Override
     public void resolveInnerReferences(Map<String, Register> registerMap) {
         if (location instanceof RegisterReference ref) {
             var referee = registerMap.get(ref.getName());
@@ -37,4 +31,10 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
             }
         }
     }
+
+    // HashCode is intentionally NOT overridden here.
+    // Reason: take a memory location for example:
+    //  [r0] -> AbsMemLoc over Register
+    //  If Register value changes, hashCode would change if overridden
+    //  We do not want this.
 }
