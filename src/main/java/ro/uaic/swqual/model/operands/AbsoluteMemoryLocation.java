@@ -1,9 +1,10 @@
 package ro.uaic.swqual.model.operands;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class AbsoluteMemoryLocation extends MemoryLocation {
-    final Parameter location;
+    private Parameter location;
 
     public AbsoluteMemoryLocation(Parameter parameter) {
         this.location = parameter;
@@ -25,5 +26,15 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
     @Override
     public int hashCode() {
         return Objects.hashCode(location);
+    }
+
+    @Override
+    public void resolveInnerReferences(Map<String, Register> registerMap) {
+        if (location instanceof RegisterReference ref) {
+            var referee = registerMap.get(ref.getName());
+            if (referee != null) {
+                location = referee;
+            }
+        }
     }
 }

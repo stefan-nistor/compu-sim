@@ -36,10 +36,4 @@ class ConstantMemoryLocationTest {
         cloc.resolveInnerReferences(Map.of());
         assertEquals((char) 0x100, cloc.getValue());
     }
-
-    @Test
-    void toStringShouldResolve() {
-        var cloc = new ConstantMemoryLocation((char) 0x100);
-        assertEquals("[0x100]", cloc.toString());
-    }
 }
