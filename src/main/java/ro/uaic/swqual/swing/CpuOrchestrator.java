@@ -154,6 +154,7 @@ public class CpuOrchestrator {
                 step();
             }
         });
+        cpuClock.start();
     }
 
     public void setInstructions(List<Instruction> instructions) {
