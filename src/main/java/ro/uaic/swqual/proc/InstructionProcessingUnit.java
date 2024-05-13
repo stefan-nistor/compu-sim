@@ -107,6 +107,11 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
         }
     }
 
+    public void setInstructions(List<Instruction> instructions) {
+        this.instructions.clear();
+        this.instructions.addAll(instructions);
+    }
+
     public void reset() {
         programCounter.setValue((char) 0);
     }
