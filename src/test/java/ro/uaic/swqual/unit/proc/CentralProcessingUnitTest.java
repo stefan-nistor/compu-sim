@@ -157,6 +157,7 @@ class CentralProcessingUnitTest implements ProcTestUtility {
         var dregs = cpu.getDataRegisters();
         var flags = cpu.getFlagRegister();
         var pc = cpu.getProgramCounter();
+        var sp = cpu.getStackPointer();
         var ipu = new InstructionProcessingUnit(instructions.stream().peek(instruction -> {
             if (instruction.getParam1() instanceof RegisterReference) {
                 instruction.setParam1(registerMapping.apply(cpu, (RegisterReference) instruction.getParam1()));
@@ -164,7 +165,7 @@ class CentralProcessingUnitTest implements ProcTestUtility {
             if (instruction.getParam2() instanceof RegisterReference) {
                 instruction.setParam2(registerMapping.apply(cpu, (RegisterReference) instruction.getParam2()));
             }
-        }).toList(), flags, pc);
+        }).toList(), flags, pc, sp);
         cpu.registerExecutor(new ArithmeticLogicUnit(flags, dregs.get(aluOutIdx)));
         cpu.registerExecutor(ipu);
         ipu.subscribe(cpu);

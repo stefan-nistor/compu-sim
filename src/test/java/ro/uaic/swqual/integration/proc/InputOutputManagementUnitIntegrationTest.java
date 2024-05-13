@@ -35,7 +35,7 @@ class InputOutputManagementUnitIntegrationTest implements MemTestUtility, ProcTe
         var parser = new Parser();
         parser.getInstructions().addAll(instructions);
         parser.resolveReferences(cpu.getRegistryReferenceMap());
-        var ipu = new InstructionProcessingUnit(instructions, freg, pc);
+        var ipu = new InstructionProcessingUnit(instructions, freg, pc, sp);
         var mmu = new MemoryManagementUnit(freg, sp);
         cpu.registerExecutor(ipu);
         cpu.registerExecutor(mmu);

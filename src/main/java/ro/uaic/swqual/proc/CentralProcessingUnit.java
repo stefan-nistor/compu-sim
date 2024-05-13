@@ -24,6 +24,9 @@ public class CentralProcessingUnit extends DelegatingUnit {
             dataRegisters.add(new Register());
             registryReferenceMap.put("r" + regIndex, dataRegisters.getLast());
         });
+
+        registryReferenceMap.put("sp", stackPointer);
+        registryReferenceMap.put("pc", programCounter);
     }
 
     @Override public void raiseFlag(char value) {

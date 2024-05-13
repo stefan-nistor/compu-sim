@@ -1,5 +1,7 @@
 package ro.uaic.swqual.model.operands;
 
+import java.util.Map;
+
 public class FlagRegister extends Register {
     /**
      * OVERFLOW_FLAG is set when:
@@ -70,5 +72,20 @@ public class FlagRegister extends Register {
 
     public boolean isSet(char flag) {
         return (getValue() & flag) != 0;
+    }
+
+    @Override
+    public String toString() {
+        return Map.of(
+                OVERFLOW_FLAG, "OVFL",
+                ZERO_FLAG, "ZERO",
+                DIV_ZERO_FLAG, "DZERO",
+                EQUAL_FLAG, "EQ",
+                LESS_FLAG, "LE",
+                ILLEGAL_FLAG, "ILL",
+                SEG_FLAG, "SEG",
+                MULTISTATE_FLAG, "MST"
+        ).entrySet().stream().filter(e -> isSet(e.getKey())).map(Map.Entry::getValue)
+                .reduce((l, r) -> l + ", " + r).orElse("");
     }
 }

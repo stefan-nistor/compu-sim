@@ -11,4 +11,9 @@ public class ConstantMemoryLocation extends MemoryLocation {
     public void resolveInnerReferences(Map<String, Register> registerMap) {
         // nothing to resolve
     }
+
+    @Override
+    public String toString() {
+        return "[" + Integer.toString(value, 16) + "]";
+    }
 }

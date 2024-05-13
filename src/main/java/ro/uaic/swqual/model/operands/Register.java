@@ -24,6 +24,11 @@ public class Register extends Parameter {
         return value == register.value;
     }
 
+    @Override
+    public String toString() {
+        return "reg(" + (int) value + ")";
+    }
+
     // HashCode is intentionally NOT overridden here.
     // Reason: take a memory location for example:
     //  [r0] -> AbsMemLoc over Register
