@@ -46,7 +46,7 @@ ret;
 
 // kb-preload {6, 11, 19, 25, 14, 97, 13}
 @expectResult:
-mov r0 [sp - 4];
+mov r0 [sp - 4]; // expect-true {r0==4}
 ret;
 
 

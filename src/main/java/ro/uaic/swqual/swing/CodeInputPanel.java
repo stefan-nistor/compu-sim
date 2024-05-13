@@ -153,14 +153,15 @@ public class CodeInputPanel extends JPanel {
 
 
         var orch = new CpuOrchestrator(Map.of());
-        codeInputPanel.add(new KeyboardPanel(orch.getKeyboard()));
         codeInputPanel.setCpuOrchestrator(orch);
 
         orch.addUpdateListener(codeInputPanel::update);
         codeInputPanel.update();
 
         codeInputPanel.kbPanel.setLayout(new BorderLayout());
-        codeInputPanel.kbPanel.add(new KeyboardPanel(orch.getKeyboard()));
+        var kp = new KeyboardPanel();
+        codeInputPanel.kbPanel.add(kp);
+        kp.addOnPressListener(c -> orch.getKeyboard().press(c));
 
         frame.addWindowListener(new WindowAdapter() {
             @Override

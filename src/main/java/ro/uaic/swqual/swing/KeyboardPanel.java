@@ -1,13 +1,19 @@
 package ro.uaic.swqual.swing;
 
-import ro.uaic.swqual.model.peripheral.Keyboard;
-
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class KeyboardPanel extends JPanel {
+    private List<Consumer<Character>> onPress = new ArrayList<>();
 
-    public KeyboardPanel(Keyboard kb) {
+    public void addOnPressListener(Consumer<Character> listener) {
+        onPress.add(listener);
+    }
+
+    public KeyboardPanel() {
         setLayout(new GridLayout(4, 3, 5, 5));
         var buttonLabels = new String[]{
                 "1", "2", "3",
@@ -21,7 +27,8 @@ public class KeyboardPanel extends JPanel {
             button.setFont(new Font("Monospaced", Font.PLAIN, 12));
             button.addActionListener(e -> {
                 var src = (JButton) e.getSource();
-                var val  = src.getText();
+                var val  = src.getText().charAt(0);
+                onPress.forEach(listener -> listener.accept(val));
             });
             add(button);
         }
