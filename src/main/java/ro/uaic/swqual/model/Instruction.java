@@ -73,4 +73,9 @@ public class Instruction {
     public int hashCode() {
         return Objects.hash(type, param1, param2);
     }
+
+    @Override
+    public String toString() {
+        return type.label + " " + param1 + " " + param2;
+    }
 }

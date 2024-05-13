@@ -66,15 +66,18 @@ public class MemoryManagementUnit extends ProxyUnit<MemoryUnit> {
         // If symbol is resolved in the SE call point,
         //      can determine that all CFG branches resolve to a non-null value.
         if (preDecrementStackPointer.get()) {
-            mov(dest, locate(stackHeadReference));
             super.execute(decrementStackPointer);
+            // pop may be invoked without a destination parameter, just to remove.
+            // In this case, just do not store value
+            if (dest != null) {
+                mov(dest, locate(stackHeadReference));
+            }
         }
     }
 
     @Override
     public Predicate<Instruction> getDefaultFilter() {
-        return instruction -> instruction.getType().ordinal() >= InstructionType.MMU_MOV.ordinal()
-                           && instruction.getType().ordinal() <= InstructionType.MMU_POP.ordinal();
+        return instruction -> InstructionType.isMmuInstruction(instruction.getType());
     }
 
     @Override

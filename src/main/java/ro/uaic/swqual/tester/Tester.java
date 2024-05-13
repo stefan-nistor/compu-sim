@@ -38,7 +38,7 @@ public class Tester implements Runnable {
         var pc = cpu.getProgramCounter();
         var sp = cpu.getStackPointer();
         parser.resolveReferences(cpu.getRegistryReferenceMap());
-        var ipu = new InstructionProcessingUnit(instr, freg, pc);
+        var ipu = new InstructionProcessingUnit(instr, freg, pc, sp);
         var mmu = new MemoryManagementUnit(freg, sp);
         var alu = new ArithmeticLogicUnit(freg, dregs.get(7));
         cpu.registerExecutor(alu);
@@ -49,6 +49,7 @@ public class Tester implements Runnable {
         mmu.registerExecutor(cpu);
         alu.registerLocator(cpu);
         ipu.registerLocator(cpu);
+        ipu.registerExecutor(cpu);
 
         ipu.subscribe(cpu);
 

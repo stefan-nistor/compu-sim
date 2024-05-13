@@ -26,6 +26,11 @@ public class UnresolvedMemory extends Parameter {
         return Objects.equals(onAccess, that.onAccess);
     }
 
+    @Override
+    public String toString() {
+        return "<Invalid Location>";
+    }
+
     // HashCode is intentionally NOT overridden here.
     // Reason: take a memory location for example:
     //  [r0] -> AbsMemLoc over Register

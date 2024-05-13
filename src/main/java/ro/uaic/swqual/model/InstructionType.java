@@ -32,23 +32,27 @@ public enum InstructionType {
     IPU_JLE("jle"),
     IPU_JGT("jgt"),
     IPU_JGE("jge"),
-
-    // Will be done in IPU since these require knowledge of the program counter
-    // Logic will be IPU:
-    //          call(addr):
-    //                   --push(pc)-------> MMU --mov(sref, pc)--> RAM
-    //                                          --add(sp, 2)-----> ALU
-    //                   --mov(pc, addr)--> MMU
-    //          ret:
-    //                   --pop(pc)--------> MMU --mov(pc, sref)--> RAM
-    //                                          --sub(sp, 2)-----> ALU
-    //
-    //
-    // IPU_CALL
-    // IPU_RET
+    IPU_CALL("call"),
+    IPU_RET("ret"),
 
     // Dummy Op
     LABEL("@");
+
+    static boolean isInRange(InstructionType inQuestion, InstructionType begin, InstructionType end) {
+        return begin.ordinal() <= inQuestion.ordinal() && inQuestion.ordinal() <= end.ordinal();
+    }
+
+    public static boolean isMmuInstruction(InstructionType instruction) {
+        return isInRange(instruction, MMU_MOV, MMU_POP);
+    }
+
+    public static boolean isAluInstruction(InstructionType instruction) {
+        return isInRange(instruction, ALU_ADD, ALU_CMP);
+    }
+
+    public static boolean isIpuInstruction(InstructionType instruction) {
+        return isInRange(instruction, IPU_JMP, IPU_RET);
+    }
 
     public final String label;
 

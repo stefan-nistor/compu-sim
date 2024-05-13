@@ -30,7 +30,7 @@ class TesterParserIntegrationTest {
         var pc = cpu.getProgramCounter();
         var sp = cpu.getStackPointer();
         parser.resolveReferences(cpu.getRegistryReferenceMap());
-        var ipu = new InstructionProcessingUnit(instr, freg, pc);
+        var ipu = new InstructionProcessingUnit(instr, freg, pc, sp);
         var mmu = new MemoryManagementUnit(freg, sp);
         var alu = new ArithmeticLogicUnit(freg, dregs.get(7));
         cpu.registerExecutor(alu);

@@ -34,6 +34,11 @@ public class RegisterReference extends Parameter {
         return referencedAtLine == that.referencedAtLine && Objects.equals(asmName, that.asmName);
     }
 
+    @Override
+    public String toString() {
+        return "ref(" + asmName + ")";
+    }
+
     // HashCode is intentionally NOT overridden here.
     // Reason: take a memory location for example:
     //  [r0] -> AbsMemLoc over Register

@@ -56,6 +56,11 @@ public class RelativeMemoryLocation extends MemoryLocation {
         }).toList();
     }
 
+    @Override
+    public String toString() {
+        return "[<relative-location>] (=" + Integer.toString(getValue(), 16) + ")";
+    }
+
     // HashCode is intentionally NOT overridden here.
     // Reason: take a memory location for example:
     //  [r0] -> AbsMemLoc over Register
