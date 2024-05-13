@@ -58,7 +58,7 @@ public class RelativeMemoryLocation extends MemoryLocation {
 
     @Override
     public String toString() {
-        return "[<relative-location>] (=" + Integer.toString(getValue(), 16) + ")";
+        return "[<relative-location>] (=0x" + Integer.toString(getValue(), 16) + ")";
     }
 
     // HashCode is intentionally NOT overridden here.

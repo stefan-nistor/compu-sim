@@ -34,7 +34,7 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
 
     @Override
     public String toString() {
-        return "[" + location + "] (=" + Integer.toString(location.getValue(), 16) + ")";
+        return "[" + location + "] (=0x" + Integer.toString(location.getValue(), 16) + ")";
     }
 
     // HashCode is intentionally NOT overridden here.
