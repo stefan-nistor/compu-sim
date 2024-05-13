@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CpuOrchestrator {
-    private enum State {
+    public enum State {
         RUNNING,
         STOPPED
     }
@@ -92,7 +92,7 @@ public class CpuOrchestrator {
         var stackPointer = centralProcessingUnit.getStackPointer();
 
         instructionProcessingUnit =
-                new InstructionProcessingUnit(List.of(), flagRegister, programCounter, stackPointer);
+                new InstructionProcessingUnit(new ArrayList<>(), flagRegister, programCounter, stackPointer);
         memoryManagementUnit = new MemoryManagementUnit(flagRegister, stackPointer);
         arithmeticLogicUnit = new ArithmeticLogicUnit(flagRegister, dataRegisters.getLast());
         inputOutputManagementUnit = new InputOutputManagementUnit(flagRegister);
@@ -167,14 +167,14 @@ public class CpuOrchestrator {
     }
 
     public void step() {
-        synchronized (lock) {
-            if (state == State.RUNNING) {
-                return;
-            }
-        }
-
         instructionProcessingUnit.onTick();
         onUpdateListeners.forEach(Runnable::run);
+    }
+
+    public State getState() {
+        synchronized (lock) {
+            return state;
+        }
     }
 
     public void run() {

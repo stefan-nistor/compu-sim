@@ -1,6 +1,8 @@
 package ro.uaic.swqual.swing;
 
 import ro.uaic.swqual.Parser;
+import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.proc.CentralProcessingUnit;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -10,6 +12,7 @@ import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class CodeInputPanel extends JPanel {
@@ -24,7 +27,35 @@ public class CodeInputPanel extends JPanel {
     private JTextArea textArea4;
 
     private static Parser parser = new Parser();
+    private CpuOrchestrator cpuOrchestrator;
 
+    public void setCpuOrchestrator(CpuOrchestrator orchestrator) {
+        cpuOrchestrator = orchestrator;
+    }
+
+    public void run() {
+        if (cpuOrchestrator == null) {
+            return;
+        }
+
+        cpuOrchestrator.run();
+    }
+
+    public void stop() {
+        if (cpuOrchestrator == null) {
+            return;
+        }
+
+        if (cpuOrchestrator.getState() == CpuOrchestrator.State.STOPPED) {
+            cpuOrchestrator.step();
+        } else {
+            cpuOrchestrator._break();
+        }
+    }
+
+    public void load(List<Instruction> instructions) {
+        cpuOrchestrator.setInstructions(instructions);
+    }
 
     public void reset() {
         parser = new Parser();
@@ -34,19 +65,19 @@ public class CodeInputPanel extends JPanel {
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                run();
             }
         });
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                stop();
             }
         });
         chooseFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
+                JFileChooser fileChooser = new JFileChooser("/home/loghin/IdeaProjects/compu-sim/src/test/resources/checks");
                 int option = fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(chooseFileButton));
                 if (option == JFileChooser.APPROVE_OPTION) {
                     String selectedFilePath = fileChooser.getSelectedFile().getAbsolutePath();
@@ -54,7 +85,9 @@ public class CodeInputPanel extends JPanel {
                     readFileContent(selectedFilePath);
 
                     reset();
-                    parser.parse(selectedFilePath);
+                    load(parser.parse(selectedFilePath)
+                            .resolveReferences(cpuOrchestrator.getCentralProcessingUnit().getRegistryReferenceMap())
+                            .link().getInstructions());
 
                     System.out.println("Selected file: " + selectedFilePath);
                     System.out.println("Read code: " + parser.getInstructions().toString());
@@ -85,14 +118,21 @@ public class CodeInputPanel extends JPanel {
         parser = p;
     }
 
+    public void update() {
+
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("CodeInputPanel");
-        frame.setContentPane(new CodeInputPanel().panel1);
+        var codeInputPanel = new CodeInputPanel();
+        frame.setContentPane(codeInputPanel.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
 
         var orch = new CpuOrchestrator(Map.of());
+        codeInputPanel.setCpuOrchestrator(orch);
+        orch.addUpdateListener(codeInputPanel::update);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
