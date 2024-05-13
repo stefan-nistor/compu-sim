@@ -2,6 +2,7 @@ package ro.uaic.swqual.tester;
 
 import ro.uaic.swqual.mem.RandomAccessMemory;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.peripheral.Display;
 import ro.uaic.swqual.model.peripheral.Keyboard;
 import ro.uaic.swqual.proc.ArithmeticLogicUnit;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
@@ -34,6 +35,9 @@ public class Tester implements Runnable {
 
     private static final char IOMU_KB_OFFSET = 0x10;
     private static final char IOMU_KB_SIZE = 0x2;
+
+    private static final char IOMU_DISP_OFFSET = 0x20;
+    private static final char IOMU_DISP_SIZE = 0x30;
 
     public boolean getOutcome() {
         return globalOutcome;
@@ -77,7 +81,9 @@ public class Tester implements Runnable {
         // Never link cpu back to ipu with ClockListener
 
         var iomu = new InputOutputManagementUnit(freg);
+        var disp = new Display(IOMU_DISP_SIZE, freg);
         iomu.registerHardwareUnit(kb, IOMU_KB_OFFSET, IOMU_KB_SIZE);
+        iomu.registerHardwareUnit(disp, IOMU_DISP_OFFSET, IOMU_DISP_SIZE);
 
         mmu.registerLocator(iomu, MMU_IOMU_OFFSET, MMU_ADDRESS_RANGE);
         mmu.registerClockListener(iomu);

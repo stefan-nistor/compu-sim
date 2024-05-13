@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
 import ro.uaic.swqual.tester.Expectation;
+import ro.uaic.swqual.tester.ExpressionExpectation;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,7 +25,8 @@ class ExpectationTest {
         var regs = cpu.getDataRegisters();
         var exp = Expectation.from(expectation);
         if (exp != null) {
-            exp.referencing(refMap);
+            assertInstanceOf(ExpressionExpectation.class, exp);
+            ((ExpressionExpectation)exp).referencing(refMap);
         }
         expectationConsumer.accept(exp, regs);
     }
@@ -36,9 +39,11 @@ class ExpectationTest {
 
         var expectation = Expectation.from("expect-true {r0==50}");
         assertNotNull(expectation);
-        assertFalse(expectation.referencing(map).evaluate());
+        assertInstanceOf(ExpressionExpectation.class, expectation);
+        var exprExp = (ExpressionExpectation) expectation;
+        assertFalse(exprExp.referencing(map).evaluate());
         regs.getFirst().setValue((char) 50);
-        assertTrue(expectation.referencing(map).evaluate());
+        assertTrue(exprExp.referencing(map).evaluate());
     }
 
     @Test
@@ -49,9 +54,11 @@ class ExpectationTest {
 
         var expectation = Expectation.from("expect-false {r0==50}");
         assertNotNull(expectation);
-        assertTrue(expectation.referencing(map).evaluate());
+        assertInstanceOf(ExpressionExpectation.class, expectation);
+        var exprExp = (ExpressionExpectation) expectation;
+        assertTrue(exprExp.referencing(map).evaluate());
         regs.getFirst().setValue((char) 50);
-        assertFalse(expectation.referencing(map).evaluate());
+        assertFalse(exprExp.referencing(map).evaluate());
     }
 
     @Test

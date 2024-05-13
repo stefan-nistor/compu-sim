@@ -114,17 +114,23 @@ public class TesterParser extends Parser {
     @Override
     public Parser resolveReferences(Map<String, Register> registerMap) throws UndefinedReferenceException {
         super.resolveReferences(registerMap);
-        expectationMap.values().forEach(v -> v.referencing(registerMap));
+        expectationMap.values().forEach(v -> {
+            if (v instanceof ExpressionExpectation ee) {
+                ee.referencing(registerMap);
+            }
+        });
         // Force a rehash since instructions hash codes may have changed
-        var entries = expectationMap.entrySet().stream()
-                .map(e -> Map.entry(e.getKey(), e.getValue().referencing(registerMap)))
-                .toList();
+        var entries = expectationMap.entrySet().stream().toList();
         expectationMap.clear();
         entries.forEach(entry -> expectationMap.put(entry.getKey(), entry.getValue()));
         return this;
     }
 
     public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
-        expectationMap.values().forEach(expectation -> expectation.readAddressesFrom(unit, begin, end));
+        expectationMap.values().forEach(expectation -> {
+            if (expectation instanceof ExpressionExpectation ee) {
+                ee.readAddressesFrom(unit, begin, end);
+            }
+        });
     }
 }
