@@ -14,6 +14,7 @@ import ro.uaic.swqual.proc.MemoryManagementUnit;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -102,6 +103,13 @@ public class Tester implements Runnable {
             return;
         }
 
+        for (var expectation : parser.getExpectationMap().values()) {
+            if (expectation instanceof PredicateExpectation predicateExpectation
+                    && predicateExpectation.getTag().equals("expect-display")) {
+                predicateExpectation.setCallback(expectedOutput -> Objects.equals(expectedOutput, disp.getText()));
+                predicateExpectation.setDumpHintSupplier(disp::getText);
+            }
+        }
 
         simulate(parser, cpu, ipu, () -> pc.getValue() < instr.size() ? instr.get(pc.getValue()) : null);
         drawConclusions(parser.isExpectedToSucceed());

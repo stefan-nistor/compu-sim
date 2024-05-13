@@ -1,5 +1,5 @@
 // sim-test
-// expected: success
+// expected: failure
 
 // tester display will be at 0x20.
 // tester display will have a length of 48 bytes (0x30) -> 48 chars (operating in char = byte).
@@ -20,5 +20,5 @@ cmp r1 20;
 jlt @disp-write-loop;
 
 // dummy hook for expect
-mov r3 0; // expect-display {abcdefghijklmnopqrst}
+mov r3 0; // expect-display {abcdefghijklmnopqrs}
 mov [0x20 + 2] 97; // expect-display {abadefghijklmnopqrst}
