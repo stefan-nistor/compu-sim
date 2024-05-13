@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ro.uaic.swqual.Parser;
+import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
@@ -11,10 +12,15 @@ import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.RegisterReference;
+import ro.uaic.swqual.model.operands.RelativeMemoryLocation;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
 
 import java.util.Map;
 import java.util.function.Predicate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
 
@@ -27,7 +33,7 @@ class ParserTest {
 
     @Test
     void testParseInstructionLineShouldSucceed() {
-        var line = "add r0 #7";
+        var line = "add r0 #7;";
         parser.parseInstruction(1, line);
         var instruction = parser.getInstructions().getFirst();
 
@@ -50,7 +56,7 @@ class ParserTest {
     @Test
     void testParseInputFileShouldThrowException() {
         var path = "src/test/resources/unit/test-parser-failure.txt";
-        Assertions.assertThrows(RuntimeException.class, () -> parser.parse(path));
+        assertThrows(RuntimeException.class, () -> parser.parse(path));
     }
 
     @Test
@@ -66,21 +72,21 @@ class ParserTest {
     void testLinkJumpsShouldThrowNotFoundException() {
         var path = "src/test/resources/unit/test-jmp-failure.txt";
         parser.parse(path);
-        Assertions.assertThrows(JumpLabelNotFoundException.class, () -> parser.link());
+        assertThrows(JumpLabelNotFoundException.class, () -> parser.link());
     }
 
     @Test
     void testParseShouldThrowDuplicateException() {
         var path = "src/test/resources/unit/test-jmp-failure-dup.txt";
-        Assertions.assertThrows(DuplicateJumpTargetException.class ,() -> parser.parse(path));
+        assertThrows(DuplicateJumpTargetException.class ,() -> parser.parse(path));
     }
 
     @Test
     void testParseResolveReferencesShouldSucceed() {
         var code = Map.of(
-                1, "add r0 r1",
-                2, "sub r3 r4",
-                3, "cmp r7 #1"
+                1, "add r0 r1;",
+                2, "sub r3 r4;",
+                3, "cmp r7 #1;"
         );
 
         var parser = new Parser();
@@ -109,16 +115,16 @@ class ParserTest {
     void testParseResolveFirstReferenceShouldFail() {
         var code = Map.of(
                 1, "@Label:",
-                2, "add r0 r1",
-                3, "jmp @Label",
-                4, "sub r11 r4"
+                2, "add r0 r1;",
+                3, "jmp @Label;",
+                4, "sub r11 r4;"
         );
 
         var parser = new Parser();
         code.forEach(parser::parseInstruction);
         var cpu = new CentralProcessingUnit();
 
-        Assertions.assertThrows(
+        assertThrows(
                 UndefinedReferenceException.class,
                 () -> parser.resolveReferences(cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r11'"
@@ -129,19 +135,64 @@ class ParserTest {
     void testParseResolveSecondReferenceShouldFail() {
         var code = Map.of(
                 1, "@Label:",
-                2, "add r0 r1",
-                3, "jmp @Label",
-                4, "sub r4 r16"
+                2, "add r0 r1;",
+                3, "jmp @Label;",
+                4, "sub r4 r16;"
         );
 
         var parser = new Parser();
         code.forEach(parser::parseInstruction);
         var cpu = new CentralProcessingUnit();
 
-        Assertions.assertThrows(
+        assertThrows(
                 UndefinedReferenceException.class,
                 () -> parser.resolveReferences(cpu.getRegistryReferenceMap()),
                 "Error at line 4: Undefined Reference to symbol 'r16'"
         );
+    }
+
+    @Test
+    void parseLineWithoutTerminationShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r0 r1"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "@l0"));
+    }
+
+    @Test
+    void parseRelativeMemLocShouldReturnValidAbsMemLoc() {
+        var parser = new Parser();
+        var cpu = new CentralProcessingUnit();
+        var regRef = cpu.getRegistryReferenceMap();
+        var r1 = cpu.getDataRegisters().get(1);
+        var r3 = cpu.getDataRegisters().get(3);
+        var p0 = parser.parseInstruction(0, "add [r1 + 50 - r3] r0;")
+                .resolveReferences(regRef).getInstructions().getFirst().getParam1();
+        assertInstanceOf(RelativeMemoryLocation.class, p0);
+        assertEquals((char) 50, p0.getValue());
+        r3.setValue((char) 25);
+        assertEquals((char) 25, p0.getValue());
+        r1.setValue((char) 100);
+        assertEquals((char) 125, p0.getValue());
+    }
+
+    @Test
+    void parseMemLocUnterminatedLocShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [r1 r0;"));
+    }
+
+    @Test
+    void parseMemLocDuplicateLocShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [[r1] r0;"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [ [r1] r0;"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add [ [r1 ] r0;"));
+    }
+
+    @Test
+    void parseMemLocTermWithoutOpenLocShouldThrow() {
+        var parser = new Parser();
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r1] r0;"));
+        assertThrows(ParserException.class, () -> parser.parseInstruction(0, "add r1 ] r0;"));
     }
 }

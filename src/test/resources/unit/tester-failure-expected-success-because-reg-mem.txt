@@ -1,0 +1,11 @@
+// sim-test
+// expected: success
+
+mov r0 0x100;
+mov r1 5;
+mov [r0] r1; // expect-true {r1==4; [0x100]==99; r0==[0x100]}
+mov r3 [r0]; // expect-true {[0x100]==r1}
+mov [0x100] #10; // expect-true {[0x100]==9}
+add [0x100] #5; // expect-true {[0x100]==15}
+mov [0x300] #15; // expect-true {[0x300]==15; [0x200]==10; [0x100]==14}
+mov [0x200] #20; // expect-true {[0x100]==14; [0x200]==20; [0x300]==14}

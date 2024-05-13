@@ -1,11 +1,11 @@
 @Label2:
-add r0 r1
-cmp #4 #5
-jne @Label1
-add r1 r2
-add #4 #5
+add r0 r1;
+cmp #4 #5;
+jne @Label1;
+add r1 r2;
+add #4 #5;
 
 @Label1:
-sub r3 #2
-add #2 #1
-jmp @Label3
+sub r3 #2;
+add #2 #1;
+jmp @Label3;

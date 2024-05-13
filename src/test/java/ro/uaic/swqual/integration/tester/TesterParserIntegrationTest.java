@@ -69,7 +69,8 @@ class TesterParserIntegrationTest {
                 var expectation = expMap.get(nextInstr);
                 stepper.onTick();
                 if (expectation != null) {
-                    assertTrue(expectation.evaluate());
+                    var resolved = expectation.evaluate();
+                    assertTrue(resolved);
                 }
             }
         });

@@ -1,5 +1,6 @@
 package ro.uaic.swqual;
 
+import ro.uaic.swqual.exception.ParameterException;
 import ro.uaic.swqual.exception.parser.DuplicateJumpTargetException;
 import ro.uaic.swqual.exception.parser.JumpLabelNotFoundException;
 import ro.uaic.swqual.exception.parser.ParserException;
@@ -8,6 +9,7 @@ import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.InstructionType;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.Label;
+import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.RegisterReference;
@@ -17,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,31 +69,71 @@ public class Parser {
         }
     }
 
+    private List<String> mergeAddressParameters(List<String> tokens) {
+        var newList = new ArrayList<String>();
+        boolean inAddress = false;
+        StringBuilder addressCompound = new StringBuilder();
+        for (var token : tokens) {
+            if (token.startsWith("[") && token.endsWith("]")) {
+                if (inAddress) {
+                    throw new ParserException("In address identifier, unexpected '[");
+                }
+                newList.add(token);
+            } else if (token.startsWith("[")) {
+                if (inAddress) {
+                    throw new ParserException("In address identifier, unexpected '['");
+                }
+
+                inAddress = true;
+                addressCompound = new StringBuilder(token);
+            } else if (token.endsWith("]")) {
+                if (!inAddress) {
+                    throw new ParserException("Not in address identifier, unexpected ']'");
+                }
+
+                inAddress = false;
+                addressCompound.append(token);
+                newList.add(addressCompound.toString());
+                addressCompound = new StringBuilder();
+            } else if (inAddress) {
+                addressCompound.append(token);
+            } else {
+                newList.add(token);
+            }
+        }
+
+        if (inAddress) {
+            throw new ParserException("In address identifier that was never terminated");
+        }
+
+        return newList;
+    }
+
     public Parser parseInstruction(int lineIndex, String line) {
-        var parsed = line.trim().split("\\s+");
+        line = line.trim();
+        if (!line.endsWith(";") && !line.endsWith(":")) {
+            throw new ParserException("Error at line " + line + ": expected ';' or ':'");
+        }
+
+        line = line.substring(0, line.length() - 1);
+        var parsed = line.split("\\s+");
         var instruction = new Instruction();
         var parameterList = new ArrayList<Parameter>();
 
-        instruction.setType(InstructionType.fromLabel(parsed[0]));
-
-        for (String param : parsed) {
-            if (param.startsWith("r")) {
-                parameterList.add(new RegisterReference(lineIndex, param));
-            }
-
-            if (param.startsWith("#")) {
-                var value = (char) Integer.parseInt(param.substring(1));
-                parameterList.add(new Constant(value));
-            }
-
-            if (param.startsWith("@")) {
-                parameterList.add(new Label(param));
-            }
+        try {
+            instruction.setType(InstructionType.fromLabel(parsed[0]));
+            mergeAddressParameters(
+                    Arrays.stream(parsed).dropWhile(str -> InstructionType.fromLabel(str) != null).toList()
+            ).forEach(
+                    param -> parameterList.add(Parameter.parse(lineIndex, param))
+            );
+        } catch (ParameterException exception) {
+            throw new ParserException(exception);
         }
 
         instruction.setParameters(Tuple.of(
                 parameterList.isEmpty() ? null : parameterList.get(0),
-                parameterList.size() == 1 ? null : parameterList.get(1)
+                parameterList.size() <= 1 ? null : parameterList.get(1)
         ));
 
         instructions.add(instruction);
@@ -123,6 +166,10 @@ public class Parser {
                         throw new UndefinedReferenceException(ref);
                     }
                     consumer.accept(resolved);
+                }
+
+                if (param instanceof MemoryLocation memLoc) {
+                    memLoc.resolveInnerReferences(registerMap);
                 }
             };
             referenceResolver.accept(instruction::getParam1, instruction::setParam1);
