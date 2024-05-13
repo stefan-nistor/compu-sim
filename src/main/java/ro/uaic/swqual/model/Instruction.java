@@ -98,4 +98,9 @@ public class Instruction {
     public String toString() {
         return type.label + " " + param1 + " " + param2;
     }
+
+    @Override
+    public String toString() {
+        return type.label + " " + param1 + " " + param2;
+    }
 }

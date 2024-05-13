@@ -1,9 +1,6 @@
 package ro.uaic.swqual.model.operands;
 
-import ro.uaic.swqual.util.Tuple;
-import ro.uaic.swqual.util.Tuple2;
-
-import java.util.stream.Stream;
+import java.util.Map;
 
 public class FlagRegister extends Register {
     /**
@@ -79,16 +76,16 @@ public class FlagRegister extends Register {
 
     @Override
     public String toString() {
-        return Stream.of(
-                Tuple.of(OVERFLOW_FLAG, "OVFL"),
-                Tuple.of(ZERO_FLAG, "ZERO"),
-                Tuple.of(DIV_ZERO_FLAG, "DZERO"),
-                Tuple.of(EQUAL_FLAG, "EQ"),
-                Tuple.of(LESS_FLAG, "LE"),
-                Tuple.of(ILLEGAL_FLAG, "ILL"),
-                Tuple.of(SEG_FLAG, "SEG"),
-                Tuple.of(MULTISTATE_FLAG, "MST")
-        ).filter(e -> isSet(e.getFirst())).map(Tuple2::getSecond)
+        return Map.of(
+                OVERFLOW_FLAG, "OVFL",
+                ZERO_FLAG, "ZERO",
+                DIV_ZERO_FLAG, "DZERO",
+                EQUAL_FLAG, "EQ",
+                LESS_FLAG, "LE",
+                ILLEGAL_FLAG, "ILL",
+                SEG_FLAG, "SEG",
+                MULTISTATE_FLAG, "MST"
+        ).entrySet().stream().filter(e -> isSet(e.getKey())).map(Map.Entry::getValue)
                 .reduce((l, r) -> l + ", " + r).orElse("");
     }
 }
