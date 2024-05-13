@@ -10,8 +10,9 @@ import static ro.uaic.swqual.tester.Expression.EvaluationType.TRUE;
 
 public abstract class Expectation {
     private static final Map<String, Supplier<Expectation>> EXPECTATION_SUPPLIERS = Map.of(
-        "expect-true", Expectation::expectTrue,
-        "expect-false", Expectation::expectFalse
+            "expect-true", Expectation::expectTrue,
+            "expect-false", Expectation::expectFalse,
+            "expect-display", Expectation::predicateExpectation
     );
 
     public static Expectation expectTrue() {
@@ -22,8 +23,21 @@ public abstract class Expectation {
         return new ExpressionExpectation(expression -> expression.evaluate() == FALSE, new ArrayList<>());
     }
 
+    public static Expectation predicateExpectation() {
+        return new PredicateExpectation();
+    }
+
     private int line;
     private String code;
+    protected String tag;
+
+    protected void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getTag() {
+        return tag;
+    }
 
     public static Expectation from(String expectationString) {
         var pattern = Pattern.compile(
@@ -42,6 +56,8 @@ public abstract class Expectation {
         }
 
         var expectation = expectationSupplier.get();
+        expectation.setCode(expectationString);
+        expectation.setTag(matcher.group(1));
         expectation.load(matcher.group(2));
         return expectation;
     }
@@ -59,9 +75,8 @@ public abstract class Expectation {
         return line;
     }
 
-    public Expectation setCode(String code) {
+    public void setCode(String code) {
         this.code = code;
-        return this;
     }
 
     public String getCode() {

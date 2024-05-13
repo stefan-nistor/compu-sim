@@ -48,6 +48,7 @@ public class ExpressionExpectation extends Expectation {
         expressions.forEach(expr -> expr.readAddressesFrom(unit, begin, end));
     }
 
+    @Override
     public String dump() {
         var builder = new StringBuilder();
         for (var expr : expressions) {
