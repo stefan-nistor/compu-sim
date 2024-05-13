@@ -31,10 +31,12 @@ mov r0 [sp - 6];
 add r0 [sp - 4];
 ret;
 
+
 @square:
 mov r0 [sp - 4];
 umul r0 r0;
 ret;
+
 
 @cube:
 push [sp - 4];
@@ -43,8 +45,8 @@ pop;
 umul r0 [sp - 4];
 ret;
 
-@main:
 
+@main:
 push 2;
 push 4;
 call @sum;
