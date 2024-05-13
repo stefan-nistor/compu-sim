@@ -22,6 +22,10 @@
 //   Reason:
 //     memory: ... param0 param1 ... paramN-1 paramN returnAddr ...
 //     SP:                           [SP-6]   [SP-4] [SP-2]     ^ SP is here
+// Call ret
+// ILU will jump to the returnAddr (implicitly, stored at SP - 2)
+// Stack is popped (implicitly, to remove returnAddr)
+// Used parameters are popped (explicitly)
 
 jmp @main;
 
