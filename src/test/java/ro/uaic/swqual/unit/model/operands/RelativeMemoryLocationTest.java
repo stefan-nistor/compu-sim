@@ -119,4 +119,10 @@ class RelativeMemoryLocationTest implements TestUtility, RegisterTestUtility, Me
         rloc.resolveInnerReferences(refMap1);
         assertEquals((char) 0, rloc.getValue());
     }
+
+    @Test
+    void toStringShouldResolveToUnknown() {
+        var rloc = rloc(reg(0x20));
+        assertEquals("[<relative-location>] (=0x20)", rloc.toString());
+    }
 }

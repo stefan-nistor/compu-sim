@@ -46,6 +46,7 @@ public class TesterParser extends Parser {
     protected void parseLine(String line, int lineIdx) {
         line = line.trim();
         if (line.isEmpty()) {
+            state = State.PASSED_HEADER;
             return;
         }
 

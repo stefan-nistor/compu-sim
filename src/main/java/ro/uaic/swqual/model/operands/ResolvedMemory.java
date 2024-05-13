@@ -33,7 +33,7 @@ public class ResolvedMemory extends Parameter {
 
     @Override
     public String toString() {
-        return "Mem(" + (int) getValue() + ")";
+        return "mem(" + (int) getValue() + ")";
     }
 
     // HashCode is intentionally NOT overridden here.

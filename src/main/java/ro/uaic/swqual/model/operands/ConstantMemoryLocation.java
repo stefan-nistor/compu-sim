@@ -14,6 +14,6 @@ public class ConstantMemoryLocation extends MemoryLocation {
 
     @Override
     public String toString() {
-        return "[" + Integer.toString(value, 16) + "]";
+        return "[0x" + Integer.toString(value, 16) + "]";
     }
 }

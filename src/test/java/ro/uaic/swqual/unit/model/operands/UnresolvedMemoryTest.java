@@ -7,6 +7,7 @@ import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UnresolvedMemoryTest implements TestUtility, RegisterTestUtility, ProcTestUtility {
@@ -36,5 +37,10 @@ class UnresolvedMemoryTest implements TestUtility, RegisterTestUtility, ProcTest
                 new UnresolvedMemory(r1),
                 _const((char) 0x10)
         ));
+    }
+
+    @Test
+    void toStringShouldResolveToInvalid() {
+        assertEquals("<Invalid Location>", new UnresolvedMemory(() -> {}).toString());
     }
 }

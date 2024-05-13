@@ -6,6 +6,7 @@ import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegisterTest implements ProcTestUtility, RegisterTestUtility {
@@ -14,10 +15,10 @@ class RegisterTest implements ProcTestUtility, RegisterTestUtility {
         var register = new Register();
         try {
             register.setValue(0x1234);
-            Assertions.assertEquals(0x1234, register.getValue());
+            assertEquals(0x1234, register.getValue());
 
             register.setValue(0xFFFF);
-            Assertions.assertEquals(0xFFFF, register.getValue());
+            assertEquals(0xFFFF, register.getValue());
         } catch (ValueException e) {
             Assertions.fail(e.getMessage());
         }
@@ -45,5 +46,10 @@ class RegisterTest implements ProcTestUtility, RegisterTestUtility {
                 reg((char) 0xDEAD),
                 _const((char) 0x1234)
         ));
+    }
+
+    @Test
+    void toStringShouldResolve() {
+        assertEquals("reg(15)", reg((char) 15).toString());
     }
 }
