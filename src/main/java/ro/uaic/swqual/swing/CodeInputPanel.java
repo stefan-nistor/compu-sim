@@ -2,8 +2,10 @@ package ro.uaic.swqual.swing;
 
 import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.peripheral.Keyboard;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -22,7 +24,6 @@ public class CodeInputPanel extends JPanel {
     private JButton chooseFileButton;
     private JTextArea textArea3;
     private JTextPane textPane1;
-    private JTextArea textArea4;
     private JLabel r0Val;
     private JLabel r1Val;
     private JLabel r2Val;
@@ -34,6 +35,7 @@ public class CodeInputPanel extends JPanel {
     private JLabel spVal;
     private JLabel pcVal;
     private JLabel flVal;
+    private JPanel kbPanel;
 
     private static Parser parser = new Parser();
     private CpuOrchestrator cpuOrchestrator;
@@ -146,13 +148,19 @@ public class CodeInputPanel extends JPanel {
         var codeInputPanel = new CodeInputPanel();
         frame.setContentPane(codeInputPanel.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
+        frame.setSize(1280, 720);
         frame.setVisible(true);
 
+
         var orch = new CpuOrchestrator(Map.of());
+        codeInputPanel.add(new KeyboardPanel(orch.getKeyboard()));
         codeInputPanel.setCpuOrchestrator(orch);
+
         orch.addUpdateListener(codeInputPanel::update);
         codeInputPanel.update();
+
+        codeInputPanel.kbPanel.setLayout(new BorderLayout());
+        codeInputPanel.kbPanel.add(new KeyboardPanel(orch.getKeyboard()));
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
