@@ -69,10 +69,8 @@ public class Instruction {
         return type == that.type && Objects.equals(param1, that.param1) && Objects.equals(param2, that.param2);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, param1, param2);
-    }
+    // Overriding HashCode causes Undefined Behavior.
+    // I mean the C++ Undefined Behavior, that Java is not supposed to have.
 
     @Override
     public String toString() {
