@@ -7,6 +7,7 @@ import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
 import ro.uaic.swqual.tester.Expectation;
+import ro.uaic.swqual.tester.ExpressionExpectation;
 import ro.uaic.swqual.tester.TesterParser;
 import ro.uaic.swqual.util.Function3;
 import ro.uaic.swqual.util.Tuple;
@@ -72,7 +73,12 @@ class TesterParserTest {
             var expectations = parser.getExpectationMap();
             assertEquals(2, expectations.size());
 
-            expectations.values().forEach(e -> e.referencing(refs));
+//            expectations.values().forEach(e -> e.referencing(refs));
+            expectations.values().forEach(e -> {
+                if (e instanceof ExpressionExpectation ee) {
+                    ee.referencing(refs);
+                }
+            });
             regs.get(0).setValue((char) 10);
             regs.get(1).setValue((char) 10);
             regs.get(2).setValue((char) 10);
