@@ -66,14 +66,7 @@ public class Instruction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Instruction that = (Instruction) o;
-        // Not worth implementing equals for every single operand type, as they should only be compared in tests.
-        // By architectural design, equality of Parameter values should never be done by Object.equals, but by
-        // Parameter::getValue, since the behavior is different depending on cases.
-        return type == that.type
-            && param1.getClass() == that.param1.getClass()
-            && param2.getClass() == that.param2.getClass()
-            && param1.getValue() == that.param1.getValue()
-            && param2.getValue() == that.param2.getValue();
+        return type == that.type && Objects.equals(param1, that.param1) && Objects.equals(param2, that.param2);
     }
 
     @Override

@@ -32,11 +32,17 @@ class InputOutputManagementUnitIntegrationTest implements MemTestUtility, ProcTe
         var freg = cpu.getFlagRegister();
         var pc = cpu.getProgramCounter();
         var sp = cpu.getStackPointer();
-        instructions = Parser.resolveReferences(instructions, cpu.registryReferenceMap);
+        var parser = new Parser();
+        parser.getInstructions().addAll(instructions);
+        parser.resolveReferences(cpu.getRegistryReferenceMap());
         var ipu = new InstructionProcessingUnit(instructions, freg, pc);
         var mmu = new MemoryManagementUnit(freg, sp);
         cpu.registerExecutor(ipu);
         cpu.registerExecutor(mmu);
+
+        // Never register IPU to the CPU as a clock listener.
+        // This will create a short-circuit/circular-dependency/stack-overflow scenario
+        cpu.registerClockListener(mmu);
 
         mmu.registerExecutor(cpu);
 
@@ -62,15 +68,16 @@ class InputOutputManagementUnitIntegrationTest implements MemTestUtility, ProcTe
                     kb.press((char) 0x50);
                     kb.press((char) 0x51);
                     kb.press((char) 0x52);
+                    mmu.registerClockListener(iomu);
 
                     var r0 = cpu.getDataRegisters().getFirst();
 
                     stepper.onTick();
                     assertEquals((char) 0x50, r0.getValue());
                     stepper.onTick();
-                    assertEquals((char) 0x50, r0.getValue());
+                    assertEquals((char) 0x51, r0.getValue());
                     stepper.onTick();
-                    assertEquals((char) 0x50, r0.getValue());
+                    assertEquals((char) 0x52, r0.getValue());
                 }
         );
     }

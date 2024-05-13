@@ -7,10 +7,17 @@ import ro.uaic.swqual.exception.ValueException;
 import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.RelativeMemoryLocation;
+import ro.uaic.swqual.unit.mem.MemTestUtility;
+import ro.uaic.swqual.unit.proc.ProcTestUtility;
 
 import java.util.List;
+import java.util.function.BinaryOperator;
 
-class RelativeMemoryLocationTest implements TestUtility {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class RelativeMemoryLocationTest implements TestUtility, RegisterTestUtility, MemTestUtility, ProcTestUtility {
     @Test
     void fromSingleOperand() {
         exceptionLess(() -> {
@@ -21,11 +28,11 @@ class RelativeMemoryLocationTest implements TestUtility {
             var loc1 = new RelativeMemoryLocation(List.of(register), List.of());
             var loc2 = new RelativeMemoryLocation(List.of(constant), List.of());
 
-            Assertions.assertEquals((char) 25, loc1.getValue());
-            Assertions.assertEquals((char) 10, loc2.getValue());
+            assertEquals((char) 25, loc1.getValue());
+            assertEquals((char) 10, loc2.getValue());
 
             register.setValue((char) 400);
-            Assertions.assertEquals((char) 400, loc1.getValue());
+            assertEquals((char) 400, loc1.getValue());
         });
     }
 
@@ -47,13 +54,13 @@ class RelativeMemoryLocationTest implements TestUtility {
 
             r1.setValue(10);
             r2.setValue(30);
-            Assertions.assertEquals((char) 34, loc.getValue());
+            assertEquals((char) 34, loc.getValue());
 
             r2.setValue(10);
-            Assertions.assertEquals((char) 14, loc.getValue());
+            assertEquals((char) 14, loc.getValue());
 
             r1.setValue(50);
-            Assertions.assertEquals((char) 54, loc.getValue());
+            assertEquals((char) 54, loc.getValue());
         });
     }
 
@@ -72,5 +79,49 @@ class RelativeMemoryLocationTest implements TestUtility {
             var r2 = new Register();
             new RelativeMemoryLocation(List.of(r1, r2), List.of((a, b) -> (char)(a + b), (a, b) -> (char)(a + b)));
         });
+    }
+
+    @Test
+    void relativeLocationEqualsTest() {
+        BinaryOperator<Character> r0 = (a, b) -> (char) (a - b);
+        BinaryOperator<Character> r1 = (a, b) -> (char) (a + b);
+        assertTrue(equalsCoverageTest(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)),
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)),
+                rloc(reg((char) 0xDEAD), r1, reg((char) 0xBEEF)),
+                _const((char) 0xABCD)
+        ));
+
+        assertTrue(equalsCoverageTest(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)),
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)),
+                rloc(reg((char) 0xBEEF), r0, reg((char) 0xDEAD)),
+                _const((char) 0xABCD)
+        ));
+    }
+
+    @Test
+    void hashCodeTest() {
+        BinaryOperator<Character> r0 = (a, b) -> (char) (a - b);
+        BinaryOperator<Character> r1 = (a, b) -> (char) (a + b);
+        assertEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode()
+        );
+
+        assertNotEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xDEAD), r1, reg((char) 0xBEEF)).hashCode()
+        );
+
+        assertNotEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xBEEF), r0, reg((char) 0xDEAD)).hashCode()
+        );
+
+        assertNotEquals(
+                rloc(reg((char) 0xDEAD), r0, reg((char) 0xBEEF)).hashCode(),
+                rloc(reg((char) 0xBEEF), r1, reg((char) 0xDEAD)).hashCode()
+        );
     }
 }
