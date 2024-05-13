@@ -60,11 +60,6 @@ public class MemoryManagementUnit extends ProxyUnit<MemoryUnit> {
     }
 
     private void pop(Parameter dest) {
-        // Sonar: S5411 FP here, given the case.
-        // Given that preDecrementStackPointer is final, an AST check over
-        //      the assigned Supplier.
-        // If symbol is resolved in the SE call point,
-        //      can determine that all CFG branches resolve to a non-null value.
         if (preDecrementStackPointer.get()) {
             super.execute(decrementStackPointer);
             // pop may be invoked without a destination parameter, just to remove.

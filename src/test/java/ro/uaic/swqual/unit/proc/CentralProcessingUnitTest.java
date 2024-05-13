@@ -50,10 +50,6 @@ class CentralProcessingUnitTest implements ProcTestUtility {
 
     @Test
     void handleAllInstructions() {
-        // Sonar: FP S2699 - Does not check inside for assertions.
-        //      exceptionLess does assert on exception.
-        // This check inside functions is already done in S5961
-        //      so this can be backported, unless it is SE and not AST.
         exceptionLess(() -> {
             var processor = new CentralProcessingUnit();
             var dataRegs = processor.getDataRegisters();

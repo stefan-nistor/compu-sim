@@ -2,7 +2,6 @@ package ro.uaic.swqual.swing;
 
 import ro.uaic.swqual.Parser;
 import ro.uaic.swqual.model.Instruction;
-import ro.uaic.swqual.model.peripheral.Keyboard;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +22,7 @@ public class CodeInputPanel extends JPanel {
     private JButton runButton;
     private JButton chooseFileButton;
     private JTextArea textArea3;
-    private JTextPane textPane1;
+    private JTextPane display;
     private JLabel r0Val;
     private JLabel r1Val;
     private JLabel r2Val;
@@ -141,6 +140,7 @@ public class CodeInputPanel extends JPanel {
         spVal.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getStackPointer().getValue(), 16));
         pcVal.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getProgramCounter().getValue(), 16));
         flVal.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getFlagRegister().getValue(), 16));
+        display.setText(cpuOrchestrator.getDisplay().getText());
     }
 
     public static void main(String[] args) {

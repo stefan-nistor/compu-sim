@@ -2,4 +2,9 @@
 @redo:
 mov r0 [0x10];
 mov r0 [0x10];
+
+mov [0x20] 97;
+mov [0x21] 98;
+mov [0x22] 99;
+
 jmp @redo;
