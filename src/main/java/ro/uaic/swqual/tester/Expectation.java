@@ -14,6 +14,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import static ro.uaic.swqual.tester.Expression.EvaluationType.FALSE;
+import static ro.uaic.swqual.tester.Expression.EvaluationType.TRUE;
+
 public class Expectation {
     private static final Map<String, Supplier<Expectation>> EXPECTATION_SUPPLIERS = Map.of(
         "expect-true", Expectation::expectTrue,
@@ -31,11 +34,11 @@ public class Expectation {
     }
 
     public static Expectation expectTrue() {
-        return new Expectation(Expression::evaluate, new ArrayList<>());
+        return new Expectation(expression -> expression.evaluate() == TRUE, new ArrayList<>());
     }
 
     public static Expectation expectFalse() {
-        return new Expectation(Predicate.not(Expression::evaluate), new ArrayList<>());
+        return new Expectation(expression -> expression.evaluate() == FALSE, new ArrayList<>());
     }
 
     public static Expectation from(String expectationString) {

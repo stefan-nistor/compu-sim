@@ -52,4 +52,9 @@ class ResolvedMemoryTest implements RegisterTestUtility, TestUtility, ProcTestUt
                 _const((char) 0x100)
         ));
     }
+
+    @Test
+    void toStringShouldResolve() {
+        assertEquals("mem(15)", new ResolvedMemory(() -> (char) 15, null).toString());
+    }
 }

@@ -15,8 +15,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
+
+import static ro.uaic.swqual.tester.Expression.EvaluationType.UNKNOWN;
 
 public class Expression {
     private final BiPredicate<Parameter, Parameter> predicate;
@@ -28,6 +31,10 @@ public class Expression {
     private final Map<Character, Constant> memoryValues = new HashMap<>();
     private Boolean evaluatedAs = null;
     private final List<Tuple3<ReadableMemoryUnit, Character, Character>> locationsToReadAddressesFrom = new ArrayList<>();
+
+    public enum EvaluationType {
+        TRUE, FALSE, UNKNOWN
+    }
 
     public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
         locationsToReadAddressesFrom.add(Tuple.of(unit, begin, end));
@@ -72,10 +79,6 @@ public class Expression {
 
         var p0 = Parameter.parse(matcher.group(1).trim());
         var p1 = Parameter.parse(matcher.group(3).trim());
-        if (p0 == null || p1 == null) {
-            return null;
-        }
-
         var params = Tuple.of(p0, p1);
         return switch (matcher.group(2)) {
             case "==" -> eq(params).setCode(string);
@@ -119,34 +122,40 @@ public class Expression {
         if (param instanceof Register reg) {
             evaluatedValues.put(reg, new Constant(reg.getValue()));
         } else if (param instanceof MemoryLocation loc) {
-            memoryValues.put(loc.getValue(), new Constant(locate(loc).getValue()));
+            var located = locate(loc);
+            if (located.isEmpty()) {
+                return;
+            }
+            memoryValues.put(loc.getValue(), new Constant(located.get().getValue()));
         }
     }
 
-    private Parameter locate(Parameter param) {
+    private Optional<Parameter> locate(Parameter param) {
         if (!(param instanceof MemoryLocation loc)) {
-            return param;
+            return Optional.of(param);
         }
 
         var addr = loc.getValue();
         var unit = locationsToReadAddressesFrom.stream().filter(t -> t.getSecond() <= addr && addr < t.getThird()).findAny();
-        if (unit.isEmpty()) {
-            // TODO: fail evaluation because it is out of range
-            throw new UnsupportedOperationException("Failed to locate memory location: " + addr);
-        }
-
-        return new ResolvedMemory(
-                () -> unit.get().getFirst().read(loc),
+        return unit.map(readableMemoryUnitCharacterCharacterTuple3 -> new ResolvedMemory(
+                () -> readableMemoryUnitCharacterCharacterTuple3.getFirst().read(loc),
                 null
-        );
+        ));
     }
 
-    public boolean evaluate() {
+    public EvaluationType evaluate() {
         recordState(firstParam);
         recordState(secondParam);
 
-        evaluatedAs = predicate.test(locate(firstParam), locate(secondParam));
-        return evaluatedAs;
+        var located0 = locate(firstParam);
+        var located1 = locate(secondParam);
+
+        if (located0.isEmpty() || located1.isEmpty()) {
+            return UNKNOWN;
+        }
+
+        evaluatedAs = predicate.test(located0.get(), located1.get());
+        return Boolean.TRUE.equals(evaluatedAs) ? EvaluationType.TRUE : EvaluationType.FALSE;
     }
 
     public String dump() {

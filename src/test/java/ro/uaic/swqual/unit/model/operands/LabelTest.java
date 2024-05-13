@@ -39,4 +39,10 @@ class LabelTest implements TestUtility, RegisterTestUtility, ProcTestUtility {
                 new Constant((char) 0xABCD)
         ));
     }
+
+    @Test
+    void toStringShouldResolve() {
+        var label = new Label("test");
+        assertEquals("label(test)", label.toString());
+    }
 }
