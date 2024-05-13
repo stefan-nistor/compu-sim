@@ -2,17 +2,17 @@ NTH = Nice-to-Have
 
 Non-dependent Interface steps:
  - [x] Code view
-   - [ ] Update font to look like code.
-   - [ ] Adjust buttons as: <strike>compile</strike> load, run/continue (same or two buttons), break/step (same or two buttons)
+   - [x] Update font to look like code.
+   - [x] Adjust buttons as: <strike>compile</strike> load, run/continue (same or two buttons), break/step (same or two buttons)
    - [ ] Add listeners for the following:
-     - [ ] onFileLoad
+     - [x] onFileLoad
      - [ ] onRun
      - [ ] onBreak
      - [ ] onStep
    - [ ] NTH -> highlight the line of the current PC
    - [ ] NTH -> line numbers
  - [x] Registry view
-   - [ ] Make it smaller.
+   - [x] Make it smaller.
    - [ ] Add labels/text boxes for - r0...r7, sp, pc, flags
    - [ ] NTH -> make register labels/text boxes editable and onEdit will have listener(s) (cpu update)
    - [ ] Either:
