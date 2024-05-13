@@ -130,17 +130,17 @@ public class CodeInputPanel extends JPanel {
     }
 
     public void update() {
-        r0Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(0).getValue(), 16));
-        r1Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(1).getValue(), 16));
-        r2Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(2).getValue(), 16));
-        r3Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(3).getValue(), 16));
-        r4Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(4).getValue(), 16));
-        r5Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(5).getValue(), 16));
-        r6Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(6).getValue(), 16));
-        r7Val.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(7).getValue(), 16));
-        spVal.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getStackPointer().getValue(), 16));
-        pcVal.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getProgramCounter().getValue(), 16));
-        flVal.setText(Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getFlagRegister().getValue(), 16));
+        r0Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(0).getValue(), 16));
+        r1Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(1).getValue(), 16));
+        r2Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(2).getValue(), 16));
+        r3Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(3).getValue(), 16));
+        r4Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(4).getValue(), 16));
+        r5Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(5).getValue(), 16));
+        r6Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(6).getValue(), 16));
+        r7Val.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getDataRegisters().get(7).getValue(), 16));
+        spVal.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getStackPointer().getValue(), 16));
+        pcVal.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getProgramCounter().getValue(), 16));
+        flVal.setText("0x" + Integer.toString(cpuOrchestrator.getCentralProcessingUnit().getFlagRegister().getValue(), 16));
     }
 
     public static void main(String[] args) {
