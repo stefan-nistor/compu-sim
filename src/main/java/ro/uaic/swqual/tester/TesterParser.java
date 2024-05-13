@@ -1,14 +1,20 @@
 package ro.uaic.swqual.tester;
 
 import ro.uaic.swqual.Parser;
+import ro.uaic.swqual.exception.parser.ParserException;
 import ro.uaic.swqual.exception.parser.UndefinedReferenceException;
 import ro.uaic.swqual.exception.tester.InvalidHeaderItemException;
 import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class TesterParser extends Parser {
     private enum State {
@@ -20,6 +26,11 @@ public class TesterParser extends Parser {
     private final Map<Instruction, Expectation> expectationMap = new HashMap<>();
     private State state = State.NO_HEADER_DETECTED;
     private boolean expectedToSucceed = false;
+    private final List<Consumer<List<Parameter>>> onKbPreloadListeners = new ArrayList<>();
+
+    public void addOnKbPreloadListener(Consumer<List<Parameter>> listener) {
+        onKbPreloadListeners.add(listener);
+    }
 
     private void parseHeaderItem(String itemText) {
         if (itemText.startsWith("expected: ")) {
@@ -52,6 +63,21 @@ public class TesterParser extends Parser {
 
         if (!line.startsWith("//")) {
             state = State.PASSED_HEADER;
+        } else if (line.startsWith("// kb-preload")) {
+            var lBracketIdx = line.indexOf('{');
+            var rBracketIdx = line.indexOf('}');
+            if (lBracketIdx == -1 || rBracketIdx == -1) {
+                throw new ParserException("Expected 'kb-preload' to have {values...}");
+            }
+
+            String[] tokens = line.substring(lBracketIdx + 1, rBracketIdx).split(",");
+            onKbPreloadListeners.forEach(listener -> listener.accept(
+                    Arrays.stream(tokens)
+                            .map(String::trim)
+                            .map(l -> Parameter.parse(lineIdx, l))
+                            .toList()
+            ));
+            return;
         }
 
         switch (state) {

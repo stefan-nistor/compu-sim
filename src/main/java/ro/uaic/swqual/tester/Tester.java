@@ -2,9 +2,11 @@ package ro.uaic.swqual.tester;
 
 import ro.uaic.swqual.mem.RandomAccessMemory;
 import ro.uaic.swqual.model.Instruction;
+import ro.uaic.swqual.model.peripheral.Keyboard;
 import ro.uaic.swqual.proc.ArithmeticLogicUnit;
 import ro.uaic.swqual.proc.CentralProcessingUnit;
 import ro.uaic.swqual.proc.ClockListener;
+import ro.uaic.swqual.proc.InputOutputManagementUnit;
 import ro.uaic.swqual.proc.InstructionProcessingUnit;
 import ro.uaic.swqual.proc.MemoryManagementUnit;
 
@@ -24,8 +26,14 @@ public class Tester implements Runnable {
     private final Consumer<String> out;
     private final Consumer<String> err;
 
-    private static final char RAM_OFFSET = 0x100;
-    private static final char RAM_SIZE = 0xFF00;
+    private static final char MMU_IOMU_OFFSET = 0x0;
+    private static final char MMU_ADDRESS_RANGE = 0x100;
+
+    private static final char MMU_RAM_OFFSET = 0x100;
+    private static final char MMU_RAM_SIZE = 0xFF00;
+
+    private static final char IOMU_KB_OFFSET = 0x10;
+    private static final char IOMU_KB_SIZE = 0x2;
 
     public boolean getOutcome() {
         return globalOutcome;
@@ -34,21 +42,27 @@ public class Tester implements Runnable {
     @Override
     public void run() {
         var parser = new TesterParser();
+
+        var kb = new Keyboard();
+        parser.addOnKbPreloadListener(parameters -> parameters.forEach(p -> kb.press(p.getValue())));
+
         var instr = parser.parse(path).link().getInstructions();
         var cpu = new CentralProcessingUnit();
         var freg = cpu.getFlagRegister();
         var dregs = cpu.getDataRegisters();
         var pc = cpu.getProgramCounter();
         var sp = cpu.getStackPointer();
-        sp.setValue(RAM_OFFSET);
+        sp.setValue(MMU_RAM_OFFSET); // start SP at beginning of RAM
         parser.resolveReferences(cpu.getRegistryReferenceMap());
         var ipu = new InstructionProcessingUnit(instr, freg, pc, sp);
         var mmu = new MemoryManagementUnit(freg, sp);
         var alu = new ArithmeticLogicUnit(freg, dregs.get(7));
+
         cpu.registerExecutor(alu);
         cpu.registerExecutor(ipu);
         cpu.registerExecutor(mmu);
         cpu.registerLocator(mmu);
+
 
         mmu.registerExecutor(cpu);
         alu.registerLocator(cpu);
@@ -62,10 +76,16 @@ public class Tester implements Runnable {
         cpu.registerClockListener(alu);
         // Never link cpu back to ipu with ClockListener
 
+        var iomu = new InputOutputManagementUnit(freg);
+        iomu.registerHardwareUnit(kb, IOMU_KB_OFFSET, IOMU_KB_SIZE);
+
+        mmu.registerLocator(iomu, MMU_IOMU_OFFSET, MMU_ADDRESS_RANGE);
+        mmu.registerClockListener(iomu);
+
         try {
-            var ram = new RandomAccessMemory(RAM_SIZE, freg);
-            mmu.registerHardwareUnit(ram, RAM_OFFSET, addr -> true); // any values pass since it is max size
-            parser.readAddressesFrom(ram, RAM_OFFSET, (char) (RAM_SIZE - 1));
+            var ram = new RandomAccessMemory(MMU_RAM_SIZE, freg);
+            mmu.registerHardwareUnit(ram, MMU_RAM_OFFSET, addr -> addr >= MMU_RAM_OFFSET);
+            parser.readAddressesFrom(ram, MMU_RAM_OFFSET, (char) (MMU_RAM_SIZE - 1));
         } catch (Exception e) {
             // do nothing
         }
@@ -75,6 +95,7 @@ public class Tester implements Runnable {
             globalOutcome = false;
             return;
         }
+
 
         simulate(parser, cpu, ipu, () -> pc.getValue() < instr.size() ? instr.get(pc.getValue()) : null);
         drawConclusions(parser.isExpectedToSucceed());
