@@ -24,6 +24,9 @@ public class Tester implements Runnable {
     private final Consumer<String> out;
     private final Consumer<String> err;
 
+    private static final char RAM_OFFSET = 0x100;
+    private static final char RAM_SIZE = 0xFF00;
+
     public boolean getOutcome() {
         return globalOutcome;
     }
@@ -37,6 +40,7 @@ public class Tester implements Runnable {
         var dregs = cpu.getDataRegisters();
         var pc = cpu.getProgramCounter();
         var sp = cpu.getStackPointer();
+        sp.setValue(RAM_OFFSET);
         parser.resolveReferences(cpu.getRegistryReferenceMap());
         var ipu = new InstructionProcessingUnit(instr, freg, pc, sp);
         var mmu = new MemoryManagementUnit(freg, sp);
@@ -59,9 +63,9 @@ public class Tester implements Runnable {
         // Never link cpu back to ipu with ClockListener
 
         try {
-            var ram = new RandomAccessMemory(0x10000, freg); // 65536
-            mmu.registerHardwareUnit(ram, (char) 0, addr -> true); // any values pass since it is max size
-            parser.readAddressesFrom(ram, (char) 0, (char) 0xFFFF);
+            var ram = new RandomAccessMemory(RAM_SIZE, freg);
+            mmu.registerHardwareUnit(ram, RAM_OFFSET, addr -> true); // any values pass since it is max size
+            parser.readAddressesFrom(ram, RAM_OFFSET, (char) (RAM_SIZE - 1));
         } catch (Exception e) {
             // do nothing
         }

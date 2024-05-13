@@ -2,6 +2,7 @@ package ro.uaic.swqual.tester;
 
 import ro.uaic.swqual.mem.ReadableMemoryUnit;
 import ro.uaic.swqual.model.operands.Constant;
+import ro.uaic.swqual.model.operands.ConstantMemoryLocation;
 import ro.uaic.swqual.model.operands.MemoryLocation;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
@@ -137,8 +138,10 @@ public class Expression {
 
         var addr = loc.getValue();
         var unit = locationsToReadAddressesFrom.stream().filter(t -> t.getSecond() <= addr && addr < t.getThird()).findAny();
-        return unit.map(readableMemoryUnitCharacterCharacterTuple3 -> new ResolvedMemory(
-                () -> readableMemoryUnitCharacterCharacterTuple3.getFirst().read(loc),
+        return unit.map(unitOffsetSize -> new ResolvedMemory(
+                () -> unitOffsetSize.getFirst().read(
+                        new ConstantMemoryLocation((char) (loc.getValue() - unitOffsetSize.getSecond()))
+                ),
                 null
         ));
     }
