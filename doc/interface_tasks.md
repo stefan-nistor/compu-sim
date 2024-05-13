@@ -1,0 +1,39 @@
+NTH = Nice-to-Have
+
+Non-dependent Interface steps:
+ - [x] Code view
+   - [ ] Update font to look like code.
+   - [ ] Adjust buttons as: <strike>compile</strike> load, run/continue (same or two buttons), break/step (same or two buttons)
+   - [ ] Add listeners for the following:
+     - [ ] onFileLoad
+     - [ ] onRun
+     - [ ] onBreak
+     - [ ] onStep
+   - [ ] NTH -> highlight the line of the current PC
+   - [ ] NTH -> line numbers
+ - [x] Registry view
+   - [ ] Make it smaller.
+   - [ ] Add labels/text boxes for - r0...r7, sp, pc, flags
+   - [ ] NTH -> make register labels/text boxes editable and onEdit will have listener(s) (cpu update)
+   - [ ] Either:
+     - [ ] setValues(regs...)
+     - [ ] setValue(reg, value)
+     - [ ] init() retains registers and update() re-reads
+ - [x] Flags view
+   - [ ] Decompose flags in a label/text box each. Update from reg view
+ - [x] Memory section
+   - [ ] A lot of labels for ram
+   - [ ] Line edit / value for offset in RAM. Will not fit all RAM
+   - [ ] init() to hook to ram, update() hook to re-read
+ - [ ] Keyboard/Keypad
+   - [ ] Numerical initially
+   - [ ] init() link to kb peripheral
+ - [ ] Display
+   - [ ] Label, init() to hook, update() to re-read
+ - [ ] Simulator component
+   - [ ] Runs the cpu endlessly, like tester. At run
+   - [ ] Starts in break
+   - [ ] step calls onStep (obviously)
+   - [ ] run starts a thread that steps endlessly.
+   - [ ] break stops the thread
+   - [ ] linked to Code View
