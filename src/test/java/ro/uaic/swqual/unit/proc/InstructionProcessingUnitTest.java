@@ -30,7 +30,7 @@ class InstructionProcessingUnitTest implements ProcTestUtility {
     void ipuTest(List<Instruction> instructions, InstructionProcessingUnitTestConsumer consumer) throws Throwable {
         var flagReg = new FlagRegister();
         var pc = new Register();
-        var ipu = new InstructionProcessingUnit(instructions, flagReg, pc);
+        var ipu = new InstructionProcessingUnit(instructions, flagReg, pc, reg());
 
         pc.setValue((char)0);
         FlagTestPredicate test = (flags) -> {
@@ -46,7 +46,7 @@ class InstructionProcessingUnitTest implements ProcTestUtility {
     void ipuTestWithFlagEdit(List<Instruction> instructions, InstructionProcessingUnitTestWithFlagConsumer consumer) throws Throwable {
         var flagReg = new FlagRegister();
         var pc = new Register();
-        var ipu = new InstructionProcessingUnit(instructions, flagReg, pc);
+        var ipu = new InstructionProcessingUnit(instructions, flagReg, pc, reg());
 
         pc.setValue((char)0);
         consumer.apply(ipu, flagReg, pc, instructions);
@@ -452,14 +452,14 @@ class InstructionProcessingUnitTest implements ProcTestUtility {
     @Test
     void ipuRaiseFlagShouldRaiseFlag() {
         var freg = freg();
-        var ipu = new InstructionProcessingUnit(List.of(), freg, reg());
+        var ipu = new InstructionProcessingUnit(List.of(), freg, reg(), reg());
         ipu.raiseFlag(SEG_FLAG);
         assertTrue(freg.isSet(SEG_FLAG));
     }
 
     @Test
     void ipuDefaultFilterShouldAcceptOnlyIpuInstructions() {
-        var ipu = new InstructionProcessingUnit(List.of(), freg(), reg());
+        var ipu = new InstructionProcessingUnit(List.of(), freg(), reg(), reg());
         var pred = ipu.getDefaultFilter();
         assertEquals(
                 InstructionType.IPU_JMP,

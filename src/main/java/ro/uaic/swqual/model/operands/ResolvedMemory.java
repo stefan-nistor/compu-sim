@@ -31,6 +31,11 @@ public class ResolvedMemory extends Parameter {
         return Objects.equals(getProxy, that.getProxy) && Objects.equals(setProxy, that.setProxy);
     }
 
+    @Override
+    public String toString() {
+        return "mem(" + (int) getValue() + ")";
+    }
+
     // HashCode is intentionally NOT overridden here.
     // Reason: take a memory location for example:
     //  [r0] -> AbsMemLoc over Register

@@ -69,8 +69,33 @@ public class Instruction {
         return type == that.type && Objects.equals(param1, that.param1) && Objects.equals(param2, that.param2);
     }
 
+    // Overriding HashCode causes Undefined Behavior.
+    // I mean the C++ Undefined Behavior, that Java is not supposed to have.
+    // Let's look at the previously available HashCode
+    //
+    // @Override
+    // public int hashCode() {
+    //     return Objects.hash(type, param1, param2);
+    // }
+    //
+    // Parameter::hashCode is implemented as default on purpose - In order to resolve
+    // to Object address instead of values, required since Parameters can change and can
+    // screw up HashMaps.
+    //
+    // InstructionType::hashCode is default to enum value - no issues there, this never changes.
+    //
+    // It must mean that pop r7; as an instruction has the same hashCode everywhere, since
+    // r7 always resolves to the same instance (CentralProcessingUnit::dataRegisters)
+    //
+    // In normal run, this makes sense, and hashCodes of two different pop r7; resolve to the same value
+    // But in debug and under a thread pool executor, it does not. It will also include the object
+    // address in the hash.
+    //
+    // Beautiful.
+
+
     @Override
-    public int hashCode() {
-        return Objects.hash(type, param1, param2);
+    public String toString() {
+        return type.label + " " + param1 + " " + param2;
     }
 }
