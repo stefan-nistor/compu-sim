@@ -39,7 +39,7 @@ ret;
 @cube:
 push [sp - 4];
 call @square;
-pop r7;
+pop;
 umul r0 [sp - 4];
 ret;
 
@@ -48,13 +48,13 @@ ret;
 push 2;
 push 4;
 call @sum;
-pop r7;
-pop r7; // expect-true {r0 == 6}
+pop;
+pop; // expect-true {r0 == 6}
 
 push 4;
 call @square;
-pop r7; // expect-true {r0 == 16}
+pop; // expect-true {r0 == 16}
 
 push 3;
 call @cube;
-pop r7; // expect-true {r0 == 27}
+pop; // expect-true {r0 == 27}
