@@ -10,12 +10,14 @@ public class Display implements WriteablePeripheral {
     private final byte[] byteCharacters;
 
     public Display(char sizeInBytes, FlagRegister flagRegister) {
+        assert flagRegister != null;
         byteCharacters = new byte[sizeInBytes];
         this.flagRegister = flagRegister;
     }
 
     @Override
     public void write(MemoryLocation location, char value) {
+        assert location != null;
         var addr = location.getValue();
         if (addr >= byteCharacters.length) {
             flagRegister.set(SEG_FLAG);

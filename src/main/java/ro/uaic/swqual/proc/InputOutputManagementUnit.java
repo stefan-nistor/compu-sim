@@ -10,6 +10,7 @@ public class InputOutputManagementUnit extends ProxyUnit<Peripheral> implements 
     private final FlagRegister flagRegister;
 
     public InputOutputManagementUnit(FlagRegister flagRegister) {
+        assert flagRegister != null;
         this.flagRegister = flagRegister;
     }
 

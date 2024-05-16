@@ -8,6 +8,7 @@ public class Label extends Parameter {
     private final String name;
 
     public Label(String label) {
+        assert label != null;
         this.name = label;
     }
 

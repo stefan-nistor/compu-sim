@@ -9,6 +9,7 @@ public class RegisterReference extends Parameter {
     private final int referencedAtLine;
 
     public RegisterReference(int referencedAtLine, String asmName) {
+        assert asmName != null;
         this.asmName = asmName;
         this.referencedAtLine = referencedAtLine;
     }

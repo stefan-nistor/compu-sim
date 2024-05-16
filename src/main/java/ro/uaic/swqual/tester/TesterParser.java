@@ -29,10 +29,12 @@ public class TesterParser extends Parser {
     private final List<Consumer<List<Parameter>>> onKbPreloadListeners = new ArrayList<>();
 
     public void addOnKbPreloadListener(Consumer<List<Parameter>> listener) {
+        assert listener != null;
         onKbPreloadListeners.add(listener);
     }
 
     private void parseHeaderItem(String itemText) {
+        assert itemText != null;
         if (itemText.startsWith("expected: ")) {
             var expectation = itemText.substring("expected: ".length());
             if (expectation.equals("success")) {
@@ -55,6 +57,7 @@ public class TesterParser extends Parser {
 
     @Override
     protected void parseLine(String line, int lineIdx) {
+        assert line != null;
         line = line.trim();
         if (line.isEmpty()) {
             state = State.PASSED_HEADER;
@@ -89,6 +92,7 @@ public class TesterParser extends Parser {
 
     @Override
     public TesterParser parseInstruction(int lineIndex, String line) {
+        assert line != null;
         var commentIndex = line.indexOf("//");
         if (commentIndex == -1) {
             super.parseInstruction(lineIndex, line);
@@ -113,6 +117,7 @@ public class TesterParser extends Parser {
 
     @Override
     public Parser resolveReferences(Map<String, Register> registerMap) throws UndefinedReferenceException {
+        assert registerMap != null;
         super.resolveReferences(registerMap);
         expectationMap.values().forEach(v -> {
             if (v instanceof ExpressionExpectation ee) {
@@ -127,6 +132,9 @@ public class TesterParser extends Parser {
     }
 
     public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
+        assert unit != null;
+        assert begin != null;
+        assert end != null;
         expectationMap.values().forEach(expectation -> {
             if (expectation instanceof ExpressionExpectation ee) {
                 ee.readAddressesFrom(unit, begin, end);

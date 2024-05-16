@@ -41,6 +41,7 @@ public class Parser {
     }
 
     protected void parseLine(String line, int lineIdx) {
+        assert line != null;
         if (line.trim().isEmpty() || line.trim().startsWith("//")) {
             return;
         }
@@ -56,6 +57,7 @@ public class Parser {
     }
 
     public Parser parse(String path) {
+        assert path != null;
         clear();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             var lineIndex = 0;
@@ -70,6 +72,7 @@ public class Parser {
     }
 
     private List<String> mergeAddressParameters(List<String> tokens) {
+        assert tokens != null;
         var newList = new ArrayList<String>();
         boolean inAddress = false;
         StringBuilder addressCompound = new StringBuilder();
@@ -110,6 +113,7 @@ public class Parser {
     }
 
     public Parser parseInstruction(int lineIndex, String line) {
+        assert line != null;
         line = line.trim();
         if (!line.endsWith(";") && !line.endsWith(":")) {
             throw new ParserException("Error at line " + line + ": expected ';' or ':'");
@@ -157,6 +161,7 @@ public class Parser {
     public Parser resolveReferences(
             Map<String, Register> registerMap
     ) throws UndefinedReferenceException {
+        assert registerMap != null;
         instructions.forEach(instruction -> {
             BiConsumer<Supplier<Parameter>, Consumer<Parameter>> referenceResolver = (supplier, consumer) -> {
                 var param = supplier.get();

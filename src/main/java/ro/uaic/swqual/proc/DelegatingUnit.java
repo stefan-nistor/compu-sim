@@ -32,6 +32,8 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
             List<Tuple3<AbstractUnit, Character, Predicate<Character>>> units,
             MemoryLocation location
     ) {
+        assert units != null;
+        assert location != null;
         var acceptingUnits = units.stream()
                 .filter(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.getThird().test(location.getValue()))
                 .map(unitOffsetValidatorTuple -> unitOffsetValidatorTuple.map(
@@ -51,6 +53,8 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
     }
 
     public void registerExecutor(ProcessingUnit unit, Predicate<Instruction> filter) {
+        assert unit != null;
+        assert filter != null;
         executorUnits.add(Tuple.of(unit, filter));
     }
 
@@ -63,6 +67,9 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
             Character offset,
             Predicate<Character> addressSpaceValidator
     ) {
+        assert unit != null;
+        assert offset != null;
+        assert addressSpaceValidator != null;
         locatingUnits.add(Tuple.of(unit, offset, addressSpaceValidator));
     }
 
@@ -71,7 +78,7 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
             Character offset,
             Character size
     ) {
-        locatingUnits.add(Tuple.of(unit, offset, location -> location >= offset && location + 1 < offset + size));
+        registerLocator(unit, offset, location -> location >= offset && location + 1 < offset + size);
     }
 
     public void registerLocator(LocatingUnit unit) {
@@ -79,12 +86,14 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
     }
 
     protected void registerPotentialClockListener(Object potentialListener) {
+        assert potentialListener != null;
         if (potentialListener instanceof ClockListener listener) {
             registerClockListener(listener);
         }
     }
 
     public void registerClockListener(ClockListener listener) {
+        assert listener != null;
         clockListeners.add(listener);
     }
 
@@ -107,6 +116,7 @@ public abstract class DelegatingUnit implements ProcessingUnit, LocatingUnit, Cl
 
     @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        assert instruction != null;
         executorUnits.stream()
                 .filter(executorValidatorTuple -> executorValidatorTuple.getSecond().test(instruction))
                 .map(Tuple2::getFirst)

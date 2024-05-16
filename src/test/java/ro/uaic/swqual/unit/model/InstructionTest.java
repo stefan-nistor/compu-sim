@@ -64,7 +64,7 @@ class InstructionTest {
 
     @Test
     void instructionParam1SetterShouldUpdate() {
-        var instr = new Instruction(null, null);
+        var instr = new Instruction();
         assertNull(instr.getParam1());
         instr.setParam1(new Constant((char) 20));
         assertNotNull(instr.getParam1());
@@ -73,7 +73,7 @@ class InstructionTest {
 
     @Test
     void instructionParam2SetterShouldUpdate() {
-        var instr = new Instruction(null, null, null);
+        var instr = new Instruction();
         assertNull(instr.getParam2());
         instr.setParam2(new Constant((char) 20));
         assertNotNull(instr.getParam2());
@@ -82,7 +82,7 @@ class InstructionTest {
 
     @Test
     void instructionParameterSetShouldUpdate() {
-        var instr = new Instruction(null, null, null);
+        var instr = new Instruction();
 
         assertNull(instr.getParameters().getFirst());
         assertNull(instr.getParameters().getSecond());

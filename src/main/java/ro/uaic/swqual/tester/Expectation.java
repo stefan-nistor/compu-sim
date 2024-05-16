@@ -32,6 +32,7 @@ public abstract class Expectation {
     protected String tag;
 
     protected void setTag(String tag) {
+        assert tag != null;
         this.tag = tag;
     }
 
@@ -40,6 +41,7 @@ public abstract class Expectation {
     }
 
     public static Expectation from(String expectationString) {
+        assert expectationString != null;
         var pattern = Pattern.compile(
                 "(" + EXPECTATION_SUPPLIERS.keySet().stream().reduce((a, b) -> a + "|" + b).orElse("") + ")"
                 + " \\{([^}]*)}"
@@ -76,6 +78,7 @@ public abstract class Expectation {
     }
 
     public void setCode(String code) {
+        assert code != null;
         this.code = code;
     }
 

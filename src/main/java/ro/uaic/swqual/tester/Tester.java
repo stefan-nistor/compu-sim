@@ -152,6 +152,7 @@ public class Tester implements Runnable {
         while (!freg.isSet(ILLEGAL_FLAG)) {
             var nextInstr = currentInstruction.get();
             var expMap = parser.getExpectationMap();
+            assert expMap != null;
             var expectation = expMap.get(nextInstr);
             stepper.onTick();
             if (expectation != null) {
@@ -161,6 +162,9 @@ public class Tester implements Runnable {
     }
 
     public Tester(String path, Consumer<String> out, Consumer<String> err) {
+        assert path != null;
+        assert out != null;
+        assert err != null;
         this.path = path;
         this.out = out;
         this.err = err;

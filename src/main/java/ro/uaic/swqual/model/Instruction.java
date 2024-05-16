@@ -18,12 +18,15 @@ public class Instruction {
     }
 
     public Instruction(InstructionType type, Parameter param1, Parameter param2) {
+        assert param1 != null;
+        assert param2 != null;
         this.type = type;
         this.param1 = param1;
         this.param2 = param2;
     }
 
     public Instruction(InstructionType type, Parameter param1) {
+        assert param1 != null;
         this.type = type;
         this.param1 = param1;
     }
@@ -53,6 +56,7 @@ public class Instruction {
     }
 
     public void setParameters(Tuple2<Parameter, Parameter> parameters) {
+        assert parameters != null;
         param1 = parameters.getFirst();
         param2 = parameters.getSecond();
     }

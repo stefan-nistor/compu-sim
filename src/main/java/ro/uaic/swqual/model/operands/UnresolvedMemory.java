@@ -10,10 +10,12 @@ public class UnresolvedMemory extends Parameter {
     }
 
     @Override public void setValue(char value) {
+        assert onAccess != null;
         onAccess.run();
     }
 
     @Override public char getValue() {
+        assert onAccess != null;
         onAccess.run();
         return 0;
     }

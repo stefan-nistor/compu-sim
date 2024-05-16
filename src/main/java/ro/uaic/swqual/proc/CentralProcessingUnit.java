@@ -24,6 +24,7 @@ public class CentralProcessingUnit extends DelegatingUnit {
     private final Map<String, Register> registryReferenceMap = new HashMap<>();
 
     private void prepareStateBefore(InstructionType instructionType) {
+        assert instructionType != null;
         if (!InstructionType.isIpuInstruction(instructionType)) {
             flagRegister.clear();
         }
@@ -41,6 +42,7 @@ public class CentralProcessingUnit extends DelegatingUnit {
 
     @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        assert instruction != null;
         prepareStateBefore(instruction.getType());
         super.execute(instruction);
     }

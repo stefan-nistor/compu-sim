@@ -39,6 +39,9 @@ public enum InstructionType {
     LABEL("@");
 
     static boolean isInRange(InstructionType inQuestion, InstructionType begin, InstructionType end) {
+        assert inQuestion != null;
+        assert begin != null;
+        assert end != null;
         return begin.ordinal() <= inQuestion.ordinal() && inQuestion.ordinal() <= end.ordinal();
     }
 
@@ -63,6 +66,7 @@ public enum InstructionType {
     }
 
     public static InstructionType fromLabel(String label) {
+        assert label != null;
         return BY_LABEL.get(label);
     }
 

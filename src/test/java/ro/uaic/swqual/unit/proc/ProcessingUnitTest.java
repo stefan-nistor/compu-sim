@@ -33,9 +33,9 @@ class ProcessingUnitTest implements ProcTestUtility {
         };
 
         var instructions = List.of(
-                new Instruction(InstructionType.ALU_ADD, null, null),
-                new Instruction(InstructionType.ALU_SUB, null, null),
-                new Instruction(InstructionType.ALU_CMP, null, null)
+                new Instruction(InstructionType.ALU_ADD),
+                new Instruction(InstructionType.ALU_SUB),
+                new Instruction(InstructionType.ALU_CMP)
         );
 
         for (Instruction instruction : instructions) {
@@ -67,9 +67,9 @@ class ProcessingUnitTest implements ProcTestUtility {
         proc.registerExecutor(unit);
 
         var instructions = List.of(
-                new Instruction(InstructionType.ALU_ADD, null, null),
-                new Instruction(InstructionType.ALU_SUB, null, null),
-                new Instruction(InstructionType.ALU_CMP, null, null)
+                new Instruction(InstructionType.ALU_ADD),
+                new Instruction(InstructionType.ALU_SUB),
+                new Instruction(InstructionType.ALU_CMP)
         );
 
         for (Instruction instruction : instructions) {

@@ -14,16 +14,20 @@ public class ExpressionExpectation extends Expectation {
     private final List<Expression> expressions;
 
     public ExpressionExpectation(Predicate<Expression> predicate, List<Expression> expressions) {
+        assert predicate != null;
+        assert expressions != null;
         this.predicate = predicate;
         this.expressions = expressions;
     }
 
     public ExpressionExpectation addExpressions(List<Expression> expressions) {
+        assert expressions != null;
         this.expressions.addAll(expressions);
         return this;
     }
 
     public ExpressionExpectation referencing(Map<String, Register> registerMap) {
+        assert registerMap != null;
         expressions.forEach(expr -> expr.resolveReferences(registerMap));
         return this;
     }
@@ -35,6 +39,7 @@ public class ExpressionExpectation extends Expectation {
 
     @Override
     protected void load(String data) {
+        assert data != null;
         addExpressions(
                 Arrays.stream(data.split(";"))
                         .map(String::trim)
@@ -45,6 +50,9 @@ public class ExpressionExpectation extends Expectation {
     }
 
     public void readAddressesFrom(ReadableMemoryUnit unit, Character begin, Character end) {
+        assert unit != null;
+        assert begin != null;
+        assert end != null;
         expressions.forEach(expr -> expr.readAddressesFrom(unit, begin, end));
     }
 

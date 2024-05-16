@@ -7,12 +7,17 @@ import ro.uaic.swqual.model.Instruction;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Register;
 import ro.uaic.swqual.model.operands.Parameter;
+import ro.uaic.swqual.model.operands.ResolvedMemory;
+import ro.uaic.swqual.model.operands.UnresolvedMemory;
 
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
 
+import static ro.uaic.swqual.model.operands.FlagRegister.ILLEGAL_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.MULTISTATE_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
 import static ro.uaic.swqual.model.operands.FlagRegister.ZERO_FLAG;
 import static ro.uaic.swqual.model.operands.FlagRegister.OVERFLOW_FLAG;
 import static ro.uaic.swqual.model.operands.FlagRegister.DIV_ZERO_FLAG;
@@ -40,6 +45,8 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     private final Consumer<Character> acceptOverflow;
 
     public ArithmeticLogicUnit(FlagRegister flagRegister, Register additionalOutputRegister) {
+        assert flagRegister != null;
+        assert additionalOutputRegister != null;
         this.flagRegister = flagRegister;
         this.ignoreOverflow = o -> {};
         this.acceptOverflow = additionalOutputRegister::setValue;
@@ -52,6 +59,9 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     private void computeAndSetOverflow(
             IntBinaryOperator compute, Parameter destSource0, Parameter source1, Consumer<Character> overflowConsumer
     ) throws ParameterException {
+        assert compute != null;
+        assert overflowConsumer != null;
+        assert destSource0 != null;
         final var compoundResult = compute.applyAsInt(destSource0.getValue(), source1.getValue());
 
         /// TL; DR - Some evil bit level hacking here
@@ -83,6 +93,8 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     private void computeIgnoreOverflow(
             BinaryOperator<Character> compute, Parameter destSource0, Parameter source1
     ) throws ParameterException {
+        assert compute != null;
+        assert destSource0 != null;
         // Operations ignoring overflow do not need the integer wrap-around logic. So we can just
         // use Character operations directly.
         destSource0.setValue(compute.apply(destSource0.getValue(), source1.getValue()));
@@ -92,19 +104,23 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     }
 
     private void add(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         // Funnily enough, java only defined Integer::sum
         computeAndSetOverflow(Integer::sum, destSource0, source1, ignoreOverflow);
     }
 
     private void sub(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeAndSetOverflow((s0, s1) -> s0 - s1, destSource0, source1, ignoreOverflow);
     }
 
     private void umul(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeAndSetOverflow((s0, s1) -> s0 * s1, destSource0, source1, acceptOverflow);
     }
 
     private void smul(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         // Since the result is computed in int, we are interested in the actual value
         // So we obtain this by converting to short. 0xFFFF to int results in 65535 in int, but converting
         // to short first, we get a -1.
@@ -115,6 +131,9 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
             IntBinaryOperator divCompute, IntBinaryOperator remainderCompute,
             Parameter destSource0, Parameter source1
     ) throws ParameterException {
+        assert divCompute != null;
+        assert remainderCompute != null;
+        assert source1 != null;
         // TL; DR - Some more evil bit level hacking here
         // We store the result in the lower 16 bits and the remainder in the higher 16.
         // We also use bitwise mask and or to ensure that java does not do any implicit integer computation
@@ -134,6 +153,7 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     }
 
     private void udiv(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         if (source1.getValue() == 0) {
             flagRegister.set(DIV_ZERO_FLAG);
             return;
@@ -143,6 +163,7 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     }
 
     private void sdiv(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         if (source1.getValue() == 0) {
             flagRegister.set(DIV_ZERO_FLAG);
             return;
@@ -154,18 +175,22 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     }
 
     private void or(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeIgnoreOverflow((s0, s1) -> (char) (s0 | s1), destSource0, source1);
     }
 
     private void and(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeIgnoreOverflow((s0, s1) -> (char) (s0 & s1), destSource0, source1);
     }
 
     private void shl(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeIgnoreOverflow((s0, s1) -> (char) (s0 << s1), destSource0, source1);
     }
 
     private void shr(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeIgnoreOverflow((s0, s1) -> (char) (s0 >>> s1), destSource0, source1);
     }
 
@@ -174,11 +199,14 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
     }
 
     private void xor(Parameter destSource0, Parameter source1) throws ParameterException {
+        assert source1 != null;
         computeIgnoreOverflow((s0, s1) -> (char) (s0 ^ s1), destSource0, source1);
     }
 
-    private void compare(Parameter destSource0, Parameter source1) {
-        final var s0 = destSource0.getValue();
+    private void compare(Parameter source0, Parameter source1) {
+        assert source0 != null;
+        assert source1 != null;
+        final var s0 = source0.getValue();
         final var s1 = source1.getValue();
 
         /*
@@ -205,8 +233,11 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
 
     @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        assert instruction != null;
         var p0 = locate(instruction.getParam1());
         var p1 = locate(instruction.getParam2());
+        assert !(p0 instanceof UnresolvedMemory);
+        assert !(p1 instanceof UnresolvedMemory);
         switch (instruction.getType()) {
             case ALU_ADD -> add(p0, p1);
             case ALU_SUB -> sub(p0, p1);
@@ -223,5 +254,9 @@ public class ArithmeticLogicUnit extends DelegatingUnit {
             case ALU_CMP -> compare(p0, p1);
             default -> throw new InstructionException("Invalid instruction type received in ALU: \"" + instruction + "\"");
         }
+
+        assert !flagRegister.isSet(ILLEGAL_FLAG)
+                && !flagRegister.isSet(MULTISTATE_FLAG)
+                && !flagRegister.isSet(SEG_FLAG);
     }
 }

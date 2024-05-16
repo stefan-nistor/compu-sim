@@ -9,6 +9,8 @@ import ro.uaic.swqual.model.operands.Constant;
 import ro.uaic.swqual.model.operands.FlagRegister;
 import ro.uaic.swqual.model.operands.Parameter;
 import ro.uaic.swqual.model.operands.Register;
+import ro.uaic.swqual.model.operands.ResolvedMemory;
+import ro.uaic.swqual.model.operands.UnresolvedMemory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +20,10 @@ import java.util.function.Predicate;
 import static ro.uaic.swqual.model.InstructionType.IPU_JMP;
 import static ro.uaic.swqual.model.InstructionType.MMU_POP;
 import static ro.uaic.swqual.model.InstructionType.MMU_PUSH;
+import static ro.uaic.swqual.model.operands.FlagRegister.DIV_ZERO_FLAG;
 import static ro.uaic.swqual.model.operands.FlagRegister.EQUAL_FLAG;
 import static ro.uaic.swqual.model.operands.FlagRegister.LESS_FLAG;
+import static ro.uaic.swqual.model.operands.FlagRegister.OVERFLOW_FLAG;
 
 /**
  * Instruction Processing Unit
@@ -42,6 +46,10 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
             Register programCounter,
             Register stackPointer
     ) {
+        assert instructions != null;
+        assert flagRegister != null;
+        assert programCounter != null;
+        assert stackPointer != null;
         this.flagRegister = flagRegister;
         this.programCounter = programCounter;
         this.instructions = instructions;
@@ -66,6 +74,7 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
     }
 
     private void jump(Parameter at) {
+        assert at != null;
         programCounter.setValue((char)(at.getValue() - 1));
     }
 
@@ -90,8 +99,10 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
 
     @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        assert instruction != null;
         var type = instruction.getType();
         var p0 = locate(instruction.getParam1());
+        assert !(p0 instanceof ResolvedMemory);
         Consumer<Boolean> conditionedJumpAtP0 = condition -> conditionedJump(condition, p0);
         switch (type) {
             case IPU_JMP -> jump(p0);
@@ -108,6 +119,7 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
     }
 
     public void setInstructions(List<Instruction> instructions) {
+        assert instructions != null;
         this.instructions.clear();
         this.instructions.addAll(instructions);
     }
@@ -132,6 +144,8 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
         if (programCounter.getValue() >= instructions.size()) {
             return defaultInstruction;
         }
-        return instructions.get(programCounter.getValue());
+        var instruction = instructions.get(programCounter.getValue());
+        assert instruction != null;
+        return instruction;
     }
 }
