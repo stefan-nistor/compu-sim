@@ -11,6 +11,8 @@ public class RelativeMemoryLocation extends MemoryLocation {
     private List<Parameter> parameters;
     private final List<BinaryOperator<Character>> relations;
     public RelativeMemoryLocation(List<Parameter> parameters, List<BinaryOperator<Character>> relations) throws ValueException {
+        assert parameters != null;
+        assert relations != null;
         this.parameters = parameters;
         this.relations = relations;
         if (this.parameters.size() != this.relations.size() + 1) {
@@ -45,6 +47,7 @@ public class RelativeMemoryLocation extends MemoryLocation {
 
     @Override
     public void resolveInnerReferences(Map<String, Register> registerMap) {
+        assert registerMap != null;
         parameters = parameters.stream().map(location -> {
             if (location instanceof RegisterReference ref) {
                 var referee = registerMap.get(ref.getName());

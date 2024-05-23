@@ -61,16 +61,26 @@ public class FlagRegister extends Register {
      */
     public static final char MULTISTATE_FLAG    = 0x0080;
 
+    private static final char BITMASK =
+            OVERFLOW_FLAG | ZERO_FLAG | DIV_ZERO_FLAG | EQUAL_FLAG | LESS_FLAG | ILLEGAL_FLAG | SEG_FLAG
+                    | MULTISTATE_FLAG;
+
+    private void stateValidation() {
+        assert value == (value & BITMASK);
+    }
+
     public void clear() {
         setValue((char)0);
     }
 
     public void set(char flag) {
         setValue((char)(getValue() | flag));
+        stateValidation();
     }
 
     public void unset(char flag) {
         setValue((char)(getValue() & ~flag));
+        stateValidation();
     }
 
     public boolean isSet(char flag) {

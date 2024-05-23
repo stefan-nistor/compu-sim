@@ -93,6 +93,7 @@ public abstract class Parameter {
     }
 
     public static Parameter parse(int lineIdx, String string) {
+        assert string != null;
         if (string.startsWith("[") && string.endsWith("]")) {
             return parseAddress(lineIdx, string.substring(1, string.length() - 1));
         }

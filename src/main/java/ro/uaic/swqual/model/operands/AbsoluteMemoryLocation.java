@@ -6,11 +6,13 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
     private Parameter location;
 
     public AbsoluteMemoryLocation(Parameter parameter) {
+        assert parameter != null;
         this.location = parameter;
     }
 
     @Override
     public char getValue() {
+        assert location != null;
         return location.getValue();
     }
 
@@ -24,6 +26,7 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
 
     @Override
     public void resolveInnerReferences(Map<String, Register> registerMap) {
+        assert registerMap != null;
         if (location instanceof RegisterReference ref) {
             var referee = registerMap.get(ref.getName());
             if (referee != null) {
@@ -34,6 +37,7 @@ public class AbsoluteMemoryLocation extends MemoryLocation {
 
     @Override
     public String toString() {
+        assert location != null;
         return "[" + location + "] (=0x" + Integer.toString(location.getValue(), 16) + ")";
     }
 

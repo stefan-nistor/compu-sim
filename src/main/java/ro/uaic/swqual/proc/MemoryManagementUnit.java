@@ -32,6 +32,8 @@ public class MemoryManagementUnit extends ProxyUnit<MemoryUnit> {
     private static final Constant STACK_POINTER_OFFSET_ON_CHANGE = new Constant((char) 2);
 
     public MemoryManagementUnit(FlagRegister flagRegister, Register stackPointer) {
+        assert flagRegister != null;
+        assert stackPointer != null;
         this.flagRegister = flagRegister;
         stackHeadReference = new AbsoluteMemoryLocation(stackPointer);
         incrementStackPointer = new Instruction(ALU_ADD, stackPointer, STACK_POINTER_OFFSET_ON_CHANGE);
@@ -51,10 +53,13 @@ public class MemoryManagementUnit extends ProxyUnit<MemoryUnit> {
     }
 
     private void mov(Parameter dst, Parameter src) {
+        assert dst != null;
+        assert src != null;
         dst.setValue(src.getValue());
     }
 
     private void push(Parameter value) {
+        assert value != null;
         mov(locate(stackHeadReference), value);
         super.execute(incrementStackPointer);
     }
@@ -77,6 +82,7 @@ public class MemoryManagementUnit extends ProxyUnit<MemoryUnit> {
 
     @Override
     public void execute(Instruction instruction) throws InstructionException, ParameterException {
+        assert instruction != null;
         // Do not use default execute, as we want to delegate on push, pop, call, ret
         switch (instruction.getType()) {
             case MMU_MOV -> mov(locate(instruction.getParam1()), locate(instruction.getParam2()));

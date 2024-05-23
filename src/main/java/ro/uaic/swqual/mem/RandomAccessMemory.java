@@ -34,6 +34,8 @@ public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
     final FlagRegister flagRegister;
 
     public RandomAccessMemory(int sizeInBytes, FlagRegister flagRegister) throws ValueException {
+        assert flagRegister != null;
+
         if (sizeInBytes < 2 || sizeInBytes > Character.MAX_VALUE + 1) {
             throw new ValueException("Unaddressable memory size provided: '" + sizeInBytes + "'. "
                     + "Required size: [2, 65536] byte");
@@ -49,6 +51,7 @@ public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
 
     @Override
     public char read(MemoryLocation location) {
+        assert location != null;
         var address = location.getValue();
         if (address + 1 >= bytes.length) {
             flagRegister.set(FlagRegister.SEG_FLAG);
@@ -66,6 +69,7 @@ public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
 
     @Override
     public void write(MemoryLocation location, char value) {
+        assert location != null;
         var address = location.getValue();
         if (address + 1 >= bytes.length) {
             flagRegister.set(FlagRegister.SEG_FLAG);

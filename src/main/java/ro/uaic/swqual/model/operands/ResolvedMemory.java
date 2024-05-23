@@ -15,12 +15,16 @@ public class ResolvedMemory extends Parameter {
 
     @Override
     public void setValue(char value) {
+        assert setProxy != null;
         setProxy.accept(value);
     }
 
     @Override
     public char getValue() {
-        return getProxy.get();
+        assert getProxy != null;
+        var memory = getProxy.get();
+        assert memory != null;
+        return memory;
     }
 
     @Override

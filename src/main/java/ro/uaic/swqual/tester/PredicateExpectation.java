@@ -9,10 +9,12 @@ public class PredicateExpectation extends Expectation {
     private String data;
 
     public void setCallback(Predicate<String> callback) {
+        assert callback != null;
         this.callback = callback;
     }
 
     public void setDumpHintSupplier(Supplier<String> dumpHintSupplier) {
+        assert dumpHintSupplier != null;
         this.dumpHintSupplier = dumpHintSupplier;
     }
 

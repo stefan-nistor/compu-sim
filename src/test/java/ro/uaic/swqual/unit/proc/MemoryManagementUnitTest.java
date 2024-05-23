@@ -226,7 +226,7 @@ class MemoryManagementUnitTest implements ProcTestUtility, MemTestUtility {
     @Test
     void executeInvalidInstructionShouldThrow() {
         var mmu = new MemoryManagementUnit(freg(), reg());
-        assertThrows(InstructionException.class, () -> mmu.execute(add(null, null)));
+        assertThrows(InstructionException.class, () -> mmu.execute(new Instruction(InstructionType.ALU_ADD)));
     }
 
     @Test

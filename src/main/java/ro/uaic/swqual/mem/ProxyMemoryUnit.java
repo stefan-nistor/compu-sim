@@ -1,6 +1,7 @@
 package ro.uaic.swqual.mem;
 
 import ro.uaic.swqual.model.operands.MemoryLocation;
+import ro.uaic.swqual.model.operands.ResolvedMemory;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -15,10 +16,14 @@ public class ProxyMemoryUnit implements ReadableWriteableMemoryUnit {
     }
 
     @Override public void write(MemoryLocation location, char value) {
+        assert onWrite != null;
         onWrite.accept(location, value);
     }
 
     @Override public char read(MemoryLocation location) {
-        return onRead.apply(location);
+        assert onRead != null;
+        var memory = onRead.apply(location);
+        assert memory != null;
+        return memory;
     }
 }
