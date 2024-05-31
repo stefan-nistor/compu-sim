@@ -7,9 +7,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 
+/**
+ * Represents a memory value at an address identified by an expression. Will evaluate the expression when the address is requested.
+ */
 public class RelativeMemoryLocation extends MemoryLocation {
+    /* The parameters involved in the expression */
     private List<Parameter> parameters;
+    /* The relations between the parameters */
     private final List<BinaryOperator<Character>> relations;
+
+    /**
+     * Primary constructor
+     * @param parameters list of parameters in the expression
+     * @param relations list of relations between the parameters
+     * @throws ValueException if parameter and relations lists do not form a valid expression.
+     */
     public RelativeMemoryLocation(List<Parameter> parameters, List<BinaryOperator<Character>> relations) throws ValueException {
         assert parameters != null;
         assert relations != null;
@@ -26,6 +38,10 @@ public class RelativeMemoryLocation extends MemoryLocation {
         }
     }
 
+    /**
+     * Getter for address. Will evaluate expression
+     * @return the address currently resolved from the expression.
+     */
     @Override
     public char getValue() {
         var resolved = parameters.getFirst().getValue();
@@ -45,6 +61,11 @@ public class RelativeMemoryLocation extends MemoryLocation {
         return paramEqual && relEqual;
     }
 
+    /**
+     * Method that allows resolving any {@link RegisterReference} to {@link Register}
+     * that may be part of the expression resolving the memory address.
+     * @param registerMap name to {@link Register} dictionary.
+     */
     @Override
     public void resolveInnerReferences(Map<String, Register> registerMap) {
         assert registerMap != null;

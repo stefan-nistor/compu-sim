@@ -5,6 +5,9 @@ import ro.uaic.swqual.util.Tuple2;
 
 import java.util.stream.Stream;
 
+/**
+ * Extended register type, allowing for enabling/disabling specific bits (as flags).
+ */
 public class FlagRegister extends Register {
     /**
      * OVERFLOW_FLAG is set when:
@@ -61,28 +64,48 @@ public class FlagRegister extends Register {
      */
     public static final char MULTISTATE_FLAG    = 0x0080;
 
+    /* All known flag mask */
     private static final char BITMASK =
             OVERFLOW_FLAG | ZERO_FLAG | DIV_ZERO_FLAG | EQUAL_FLAG | LESS_FLAG | ILLEGAL_FLAG | SEG_FLAG
                     | MULTISTATE_FLAG;
 
+    /**
+     * Asserting method for validating that the current value contains only valid flags.
+     */
     private void stateValidation() {
         assert value == (value & BITMASK);
     }
 
+    /**
+     * Method used to unset all the flags
+     */
     public void clear() {
         setValue((char)0);
     }
 
+    /**
+     * Method used to set a flag
+     * @param flag value for the flag to be set
+     */
     public void set(char flag) {
         setValue((char)(getValue() | flag));
         stateValidation();
     }
 
+    /**
+     * Method used to unset a flag
+     * @param flag value for the flag to be unset
+     */
     public void unset(char flag) {
         setValue((char)(getValue() & ~flag));
         stateValidation();
     }
 
+    /**
+     * Method used to check a flag's state
+     * @param flag value of the flag to be checked
+     * @return true if flag is set, false otherwise
+     */
     public boolean isSet(char flag) {
         return (getValue() & flag) != 0;
     }
