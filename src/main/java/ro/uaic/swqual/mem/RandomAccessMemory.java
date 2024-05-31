@@ -14,10 +14,13 @@ import ro.uaic.swqual.model.operands.MemoryLocation;
  *   If we have a memory layout as follows:
  *   Values:      5  8  1  4  2  1  9  1  2  5
  *   Addresses:   10 11 12 13 14 15 16 17 18 19
+ *
  *   If we read a 2-byte value from address 15
  *   The value will be: 1 * 256 + 9 -> 265
+ *
  *   If we read a 2-byte value rom 13
  *   The value will be: 4 * 256 + 2 -> 1026
+ *
  *   Pros of LE:
  *      - Equivalent to x86-64 (almost all intel/amd cpus)
  *      - Address mistakes are more obvious, since values are "reversed" as one might think
