@@ -6,17 +6,39 @@ import ro.uaic.swqual.util.Tuple2;
 
 import java.util.Objects;
 
+/**
+ * Represents a decoded instruction resulted from parsing an assembly instruction.
+ * Can also represent instructions not meant to be executed by the processing unit
+ * (i.e. still having a {@link ro.uaic.swqual.model.operands.RegisterReference RegisterReference} parameter).
+ * Instructions can have up to two parameters.
+ */
 public class Instruction {
+    /* Current instruction type */
     private InstructionType type;
+    /* First parameter */
     private Parameter param1;
+    /* Second parameter */
     private Parameter param2;
 
+    /**
+     * Default constructor. Does not explicitly set any values beyond the default nulls.
+     */
     public Instruction() {}
 
+    /**
+     * Constructor from the instruction type
+     * @param type type of instruction to be set
+     */
     public Instruction(InstructionType type) {
         this.type = type;
     }
 
+    /**
+     * Constructor using type and two non-null parameters
+     * @param type type of instruction to be set
+     * @param param1 reference to the first parameter
+     * @param param2 reference to the second parameter
+     */
     public Instruction(InstructionType type, Parameter param1, Parameter param2) {
         assert param1 != null;
         assert param2 != null;
@@ -25,42 +47,79 @@ public class Instruction {
         this.param2 = param2;
     }
 
+    /**
+     * Constructor using type and a single parameter
+     * @param type type of instruction to be set
+     * @param param1 reference to the first and only parameter
+     */
     public Instruction(InstructionType type, Parameter param1) {
         assert param1 != null;
         this.type = type;
         this.param1 = param1;
     }
 
+    /**
+     * Instruction Type getter
+     * @return current instruction type
+     */
     public InstructionType getType() {
         return type;
     }
 
+    /**
+     * Instruction Type setter
+     * @param type instruction type to be set
+     */
     public void setType(InstructionType type) {
         this.type = type;
     }
 
+    /**
+     * First parameter getter
+     * @return reference to the first parameter. If none exists, null.
+     */
     public Parameter getParam1() {
         return param1;
     }
 
+    /**
+     * First parameter setter
+     * @param param1 reference to be set as the first parameter.
+     */
     public void setParam1(Parameter param1) {
         this.param1 = param1;
     }
 
+    /**
+     * Second parameter getter
+     * @return reference to the second parameter. If none exists, null.
+     */
     public Parameter getParam2() {
         return param2;
     }
 
+    /**
+     * Second parameter setter
+     * @param param2 reference to be set as the second parameter.
+     */
     public void setParam2(Parameter param2) {
         this.param2 = param2;
     }
 
+    /**
+     * Setter for both parameters.
+     * @param parameters Tuple containing new first and second parameter references.
+     */
     public void setParameters(Tuple2<Parameter, Parameter> parameters) {
         assert parameters != null;
         param1 = parameters.getFirst();
         param2 = parameters.getSecond();
     }
 
+    /**
+     * Getter for both parameters
+     * @return tuple containing references to the first and second parameters.
+     */
     public Tuple2<Parameter, Parameter> getParameters() {
         return Tuple.of(param1, param2);
     }
