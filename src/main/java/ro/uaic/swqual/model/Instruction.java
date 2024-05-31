@@ -13,11 +13,11 @@ import java.util.Objects;
  * Instructions can have up to two parameters.
  */
 public class Instruction {
-    /* Current instruction type */
+    /** Current instruction type */
     private InstructionType type;
-    /* First parameter */
+    /** First parameter */
     private Parameter param1;
-    /* Second parameter */
+    /** Second parameter */
     private Parameter param2;
 
     /**

@@ -11,9 +11,9 @@ import java.util.function.BinaryOperator;
  * Represents a memory value at an address identified by an expression. Will evaluate the expression when the address is requested.
  */
 public class RelativeMemoryLocation extends MemoryLocation {
-    /* The parameters involved in the expression */
+    /** The parameters involved in the expression */
     private List<Parameter> parameters;
-    /* The relations between the parameters */
+    /** The relations between the parameters */
     private final List<BinaryOperator<Character>> relations;
 
     /**

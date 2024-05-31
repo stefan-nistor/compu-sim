@@ -8,9 +8,9 @@ import java.util.Objects;
  * Represents a register reference by identifier. These should only appear in non-processed instructions.
  */
 public class RegisterReference extends Parameter {
-    /* Register assembly identifier */
+    /** Register assembly identifier */
     private final String asmName;
-    /* Line appearance */
+    /** Line appearance */
     private final int referencedAtLine;
 
     /**

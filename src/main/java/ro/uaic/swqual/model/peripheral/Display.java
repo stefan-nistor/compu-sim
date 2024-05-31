@@ -11,15 +11,15 @@ import static ro.uaic.swqual.model.operands.FlagRegister.SEG_FLAG;
  * string is determined via a terminating null character.
  */
 public class Display implements WriteablePeripheral {
-    /* Reference to a register to report invalid accesses to */
+    /** Reference to the {@link FlagRegister} to report invalid accesses to */
     private final FlagRegister flagRegister;
-    /* Character byte-array */
+    /** Character byte-array */
     private final byte[] byteCharacters;
 
     /**
      * Constructor with explicitly-bounded size. Cannot be given an invalid size.
      * @param sizeInBytes number of characters the display will have (implicitly, also the number of bytes in its memory)
-     * @param flagRegister reference to the flag register to use
+     * @param flagRegister reference to the {@link FlagRegister} to be used for raising status and errors
      */
     public Display(char sizeInBytes, FlagRegister flagRegister) {
         assert flagRegister != null;

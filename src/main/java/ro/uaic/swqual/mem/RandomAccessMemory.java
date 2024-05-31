@@ -31,15 +31,15 @@ import ro.uaic.swqual.model.operands.MemoryLocation;
  * Represents a unit of RAM, providing read-write access to multiple byte values, accessed by address.
  */
 public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
-    /* Actual memory contents */
+    /** Actual memory contents */
     final byte[] bytes;
-    /* Reference to a register to report invalid accesses to */
+    /** Reference to the {@link FlagRegister} to raise errors to */
     final FlagRegister flagRegister;
 
     /**
      * Constructor with implicit integer RAM size. Can be given an invalid size, in which case, it will throw
      * @param sizeInBytes amount of memory the unit will have
-     * @param flagRegister reference to the flag register to use
+     * @param flagRegister reference to the {@link FlagRegister} to be used for raising status and errors
      * @throws ValueException when given a size that would generate a non-addressable space.
      * All addresses must be accessible via 16 bit values, so if given a greater than 16 bit max value, it will
      * not be addressable.
@@ -58,7 +58,7 @@ public class RandomAccessMemory implements ReadableWriteableMemoryUnit {
     /**
      * Constructor with explicitly-bounded RAM size. Cannot be given an invalid size.
      * @param sizeInBytes amount of memory the unit will have
-     * @param flagRegister reference to the flag register to use
+     * @param flagRegister reference to the {@link FlagRegister} to be used for raising status and errors
      */
     public RandomAccessMemory(char sizeInBytes, FlagRegister flagRegister) {
         this.bytes = new byte[sizeInBytes];

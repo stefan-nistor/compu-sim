@@ -6,12 +6,14 @@ import java.util.function.Supplier;
 
 /**
  * Represents a resolved value in any non-concrete, identified memory location. <br/>
+ * <br/>
  * Obtained from: <br/>
  *  - {@link ro.uaic.swqual.proc.LocatingUnit#locate LocatingUnit.locate} <br/>
  *  - or {@link ro.uaic.swqual.proc.ProxyUnit#locate ProxyUnit.locate} <br/>
  * when given a {@link MemoryLocation} parameter that addresses a location in an owned: <br/>
  *  - {@link ro.uaic.swqual.mem.MemoryUnit MemoryUnit} <br/>
  *  - or {@link ro.uaic.swqual.model.peripheral.Peripheral Peripheral} <br/>
+ * <br/>
  * Uses: <br/>
  *  - {@link Supplier} to be a proxy for: <br/>
  *  --- {@link ro.uaic.swqual.mem.ReadableMemoryUnit#read ReadableMemoryUnit.read} <br/>
@@ -21,9 +23,9 @@ import java.util.function.Supplier;
  *  --- or {@link ro.uaic.swqual.model.peripheral.WriteablePeripheral#write WriteablePeripheral.write}
  */
 public class ResolvedMemory extends Parameter {
-    /* Read proxy */
+    /** Read proxy */
     private final Supplier<Character> getProxy;
-    /* Write proxy */
+    /** Write proxy */
     private final Consumer<Character> setProxy;
 
     /**

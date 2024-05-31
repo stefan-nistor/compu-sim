@@ -6,7 +6,7 @@ import java.util.Map;
  * Represents the address of a memory value identified directly by another parameter's value at the time of resolve.
  */
 public class AbsoluteMemoryLocation extends MemoryLocation {
-    /* Retains a pointer to the parameter that will provide the address at resolve. */
+    /** Retains a pointer to the {@link Parameter} that will provide the address at resolve. */
     private Parameter location;
 
     /**

@@ -10,9 +10,9 @@ import java.util.function.Function;
  * upon creation.
  */
 public class ProxyMemoryUnit implements ReadableWriteableMemoryUnit {
-    /* Read proxy interface */
+    /** Read proxy interface */
     private final Function<MemoryLocation, Character> onRead;
-    /* Write proxy interface */
+    /** Write proxy interface */
     private final BiConsumer<MemoryLocation, Character> onWrite;
 
     /**

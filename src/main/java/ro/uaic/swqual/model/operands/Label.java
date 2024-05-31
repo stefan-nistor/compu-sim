@@ -8,7 +8,7 @@ import java.util.Objects;
  * Represents a jump label. These should only appear in non-processed instructions.
  */
 public class Label extends Parameter {
-    /* Actual label name */
+    /** Actual label name */
     private final String name;
 
     /**
