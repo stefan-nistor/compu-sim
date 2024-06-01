@@ -4,18 +4,35 @@ import ro.uaic.swqual.exception.ParameterException;
 
 import java.util.Objects;
 
+/**
+ * Represents a jump label. These should only appear in non-processed instructions.
+ */
 public class Label extends Parameter {
+    /** Actual label name */
     private final String name;
 
+    /**
+     * Primary constructor from given label string
+     * @param label string containing label text
+     */
     public Label(String label) {
         assert label != null;
         this.name = label;
     }
 
+    /**
+     * Label name getter
+     * @return label name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Parameter value getter. Always throws, as it should not be accessed by any processing unit
+     * @return never returns
+     * @throws ParameterException always
+     */
     @Override public char getValue() throws ParameterException {
         throw new ParameterException("Label does not contain an actual numeric value");
     }
