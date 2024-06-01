@@ -135,7 +135,7 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
      * It will request an execution of the prebuilt {@link InstructionProcessingUnit#pop} instruction through
      * the registered delegators. After this, it will update the
      *   {@link InstructionProcessingUnit#programCounter} with what was stored on the stack as the return address. <br/>
-     * In a default scenario, the pop prebuilt pop will route through {@link CentralProcessingUnit}.
+     * In a default scenario, the prebuilt pop will route through {@link CentralProcessingUnit}.
      */
     private void ret() {
         super.execute(pop);
@@ -149,7 +149,7 @@ public class InstructionProcessingUnit extends DelegatingUnit implements ClockLi
      * It will push the current {@link InstructionProcessingUnit#programCounter} value onto the stack
      *   using the prebuilt {@link InstructionProcessingUnit#pushCallLoc} instruction through the registered delegators.
      *   After this, it will execute the jump to the requested location (function address - label). <br/>
-     * In a default scenario, the pop prebuilt pop will route through {@link CentralProcessingUnit}.
+     * In a default scenario, the prebuilt push will route through {@link CentralProcessingUnit}.
      * @param address the location of the function to call
      */
     private void call(Parameter address) {
